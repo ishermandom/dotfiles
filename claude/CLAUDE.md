@@ -77,4 +77,5 @@ When asked, read `~/.claude/docs/token-audit.md` for instructions. Don't run unp
 
 # Git
 
-When pushing to GitHub, always use `origin-https`, not `origin`.
+- When pushing to GitHub, always use `origin-https`, not `origin`.
+- When already in the correct working directory, run `git` commands directly without the `-C <path>` flag.
