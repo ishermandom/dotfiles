@@ -6,3 +6,6 @@
 eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)"
 
 export EDITOR="emacs -nw"
+
+# claude CLI
+path+=("$HOME/.local/bin")
