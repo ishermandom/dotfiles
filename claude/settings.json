@@ -3,6 +3,7 @@
     "allow": [
       "Bash(cat:*)",
       "Bash(ls:*)",
+      "WebSearch",
       "Read"
     ],
     "deny": [
@@ -28,6 +29,6 @@
     "swift-lsp@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true
   },
-  "effortLevel": "medium",
+  "effortLevel": "high",
   "theme": "dark"
 }

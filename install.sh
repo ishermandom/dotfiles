@@ -36,10 +36,12 @@ stow_package() {
   mkdir -p "$target"
   # --restow removes stale symlinks then recreates all links for this package,
   # which handles renames and deletions cleanly.
-  stow $STOW_FLAGS --dir "$DOTFILES_DIR" --target "$target" --restow "$package"
+  # --no-folding means that config dirs remain real directories rather than
+  # symlinks, which can work better with some tools.
+  stow $STOW_FLAGS --no-folding --dir "$DOTFILES_DIR" --target "$target" --restow "$package"
 }
 
 # To add a new package, uncomment or add a line below.
 stow_package claude "$HOME/.claude"
 stow_package git "$HOME"
-#stow_package zsh "$HOME"
+stow_package zsh "$HOME"

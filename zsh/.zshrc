@@ -3,12 +3,14 @@
 
 # share_history writes each command immediately and imports new commands from
 # other sessions before showing the prompt.
-# TODO: share_history is a superset of inc_append_history; consider dropping
-# the latter.
-setopt inc_append_history
 setopt share_history
-# TODO: configure HISTFILE, HISTSIZE, SAVEHIST — defaults are tiny (30 events)
-# and history does not persist across sessions without SAVEHIST > 0.
+setopt extended_history   # save timestamp and duration with each entry
+setopt hist_ignore_dups   # skip consecutive duplicates
+setopt hist_ignore_space  # commands prefixed with a space are not saved
+
+HISTFILE=~/.zsh_history
+HISTSIZE=50000
+SAVEHIST=50000
 
 # Prompt colors — edit these values to restyle. Use color names (red, blue,
 # green, yellow, magenta, cyan, white) or 256-color indices (0–255).
