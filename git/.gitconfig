@@ -13,3 +13,11 @@
   pager = true
 [safe]
 	directory = /Users/Shared/code/*
+
+# Override Xcode's system-level gitconfig (/Applications/Xcode.app/.../gitconfig),
+# which sets osxkeychain as the default credential helper for all users.
+# The empty string resets the helper chain before applying our own.
+[credential]
+	useHttpPath = true
+	helper = 
+	helper = store

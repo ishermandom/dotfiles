@@ -74,3 +74,7 @@ for most workloads. Only flag when the mismatch is clear — not on every task.
 ### On-demand token audit
 
 When asked, read `~/.claude/docs/token-audit.md` for instructions. Don't run unprompted.
+
+# Git
+
+When pushing to GitHub, always use `origin-https`, not `origin`.
