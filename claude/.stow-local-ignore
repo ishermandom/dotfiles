@@ -1,0 +1,6 @@
+# Copyright 2026 Ilya Sherman (ishermandom@)
+# SPDX-License-Identifier: MIT
+#
+# Exclude docs/ from stow management; install.sh symlinks it as a directory
+# so new files written there land directly in the repo.
+^/docs

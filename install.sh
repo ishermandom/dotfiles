@@ -46,3 +46,20 @@ stow_package claude "$HOME/.claude"
 stow_package git "$HOME"
 stow_package ruff "$HOME/.config/ruff"
 stow_package zsh "$HOME"
+
+# Symlink a single directory into a target path.
+# Unlike stow_package, the target path itself becomes the symlink (directory
+# folding), so files written there land directly in the repo.
+# Usage: symlink_dir <source> <target>
+symlink_dir() {
+  source="$1"
+  target="$2"
+  if [ -n "$STOW_FLAGS" ]; then
+    echo "symlink_dir: $target -> $source"
+    return
+  fi
+  ln -sf "$source" "$target"
+}
+
+# docs/ is a directory symlink so files written there land in the repo directly.
+symlink_dir "$DOTFILES_DIR/claude/docs" "$HOME/.claude/docs"
