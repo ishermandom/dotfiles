@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Read"
+    ],
+    "deny": [
+      "Edit(**/inputs/**)",
+      "Write(**/inputs/**)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.file_path // empty' | { read -r f; [[ \"$f\" == *.py ]] || exit 0; cd \"$(dirname \"$f\")\" && ruff check --fix \"$f\"; ruff format \"$f\" 2>/dev/null; mypy --strict \"$f\"; } 2>&1 || true",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "swift-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
+  },
+  "effortLevel": "medium",
+  "theme": "dark"
+}
