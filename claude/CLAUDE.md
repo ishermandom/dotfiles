@@ -79,3 +79,4 @@ When asked, read `~/.claude/docs/token-audit.md` for instructions. Don't run unp
 
 - When pushing to GitHub, always use `origin-https`, not `origin`.
 - When already in the correct working directory, run `git` commands directly without the `-C <path>` flag.
+- For commit descriptions: keep the subject line to <= 72 chars, and wrap to 80-col for the remaining lines.
