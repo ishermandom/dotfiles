@@ -13,3 +13,6 @@ path+=("$HOME/.local/bin")
 # Redirect Playwright browser downloads to a shared path so all users can share
 # one Chromium install instead of each user downloading their own copy.
 export PLAYWRIGHT_BROWSERS_PATH=/Users/Shared/playwright
+
+# Private environment variables (not tracked in the public repo).
+[[ -f "$HOME/.zprofile_private" ]] && source "$HOME/.zprofile_private"
