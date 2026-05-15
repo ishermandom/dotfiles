@@ -16,6 +16,7 @@ Every style decision flows from one goal: minimize the mental effort required to
 - **Naming**: names answer "X what?" — neither terse nor verbose. `page_count` not `count`; not `the_total_number_of_pages`
 - **Docstrings**: brief docstring on every top-level definition, even simple ones. "Brief" means efficiently articulated, not just short. Use structured sections (Args, Returns, etc.) only when they genuinely add clarity over prose
 - **Inline comments**: at the specific line(s) that do the work, not only in the docstring. The reader should not have to scroll to understand what a branch does
+- **Comments describe what is, not what was**: history belongs in git — commit messages, PR descriptions, blame. A comment explaining what changed, what used to be, or why something is no longer the case crowds out the current truth and ages into misinformation
 - **TODOs**: write known tradeoffs as TODO comments when not addressing them now, so they aren't lost as mental notes
 - **Named helpers**: extract repeated expressions into named constants or helper variables rather than repeating them inline
 - **Simplicity**: when two approaches are otherwise equivalent, choose the simpler one
@@ -74,6 +75,15 @@ for most workloads. Only flag when the mismatch is clear — not on every task.
 ### On-demand token audit
 
 When asked, read `~/.claude/docs/token-audit.md` for instructions. Don't run unprompted.
+
+## Documentation
+
+- **Concepts over implementation**: Explain what something is trying to achieve and why, not just what it does. This applies everywhere — docstrings, inline comments, and user-facing documentation alike. Implementation details can supplement conceptual framing, but never substitute for it.
+- **Lead with goals**: Open with what something is trying to achieve. Constraints and tradeoffs are secondary.
+- **Section labels match their content precisely**: A label broader than its section misleads. Narrow the label before broadening the section.
+- **Tone**: Matter-of-fact and gentle, not lawyerly or heavy-handed. Avoid language that sounds defensive or thorny.
+- **Less is more**: Before explaining something, ask whether the explanation is needed. Often the facts speak for themselves.
+- **Factual precision**: Verify physical, operational, and real-world details against the source. Don't paraphrase when exact behavior matters.
 
 # Git
 
