@@ -36,9 +36,13 @@ stow_package() {
   mkdir -p "$target"
   # --restow removes stale symlinks then recreates all links for this package,
   # which handles renames and deletions cleanly.
-  # --no-folding means that config dirs remain real directories rather than
-  # symlinks, which can work better with some tools.
-  stow $STOW_FLAGS --no-folding --dir "$DOTFILES_DIR" --target "$target" --restow "$package"
+  # --no-folding keeps config dirs as real directories; most tools expect this.
+  # claude omits it because all its subdirectories are hand-authored content
+  # (docs, skills, rules, …), so directory folding lets stow automatically
+  # pick up new ones without manual curation.
+  no_folding="--no-folding"
+  [ "$package" = "claude" ] && no_folding=""
+  stow $STOW_FLAGS $no_folding --dir "$DOTFILES_DIR" --target "$target" --restow "$package"
 }
 
 # To add a new package, uncomment or add a line below.
@@ -46,20 +50,3 @@ stow_package claude "$HOME/.claude"
 stow_package git "$HOME"
 stow_package ruff "$HOME/.config/ruff"
 stow_package zsh "$HOME"
-
-# Symlink a single directory into a target path.
-# Unlike stow_package, the target path itself becomes the symlink (directory
-# folding), so files written there land directly in the repo.
-# Usage: symlink_dir <source> <target>
-symlink_dir() {
-  source="$1"
-  target="$2"
-  if [ -n "$STOW_FLAGS" ]; then
-    echo "symlink_dir: $target -> $source"
-    return
-  fi
-  ln -sf "$source" "$target"
-}
-
-# docs/ is a directory symlink so files written there land in the repo directly.
-symlink_dir "$DOTFILES_DIR/claude/docs" "$HOME/.claude/docs"
