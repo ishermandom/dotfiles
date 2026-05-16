@@ -81,6 +81,6 @@ fi
 
 # Python agent environment
 # Note that pip packages should be installed separately on each account.
-if [ -f "$HOME/.venvs/agent/bin/activate" ]; then
-  source "$HOME/.venvs/agent/bin/activate"
+if [ -f "$HOME/.venvs/default/bin/activate" ]; then
+  source "$HOME/.venvs/default/bin/activate"
 fi
