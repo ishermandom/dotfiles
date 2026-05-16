@@ -78,3 +78,9 @@ if [[ "$USER" == *sandbox* ]]; then
 else
   compinit
 fi
+
+# Python agent environment
+# Note that pip packages should be installed separately on each account.
+if [ -f "$HOME/.venvs/agent/bin/activate" ]; then
+  source "$HOME/.venvs/agent/bin/activate"
+fi
