@@ -80,6 +80,11 @@ else
   compinit
 fi
 
+# Treat punctuation (/, -, .) as word boundaries so Opt+Delete deletes one
+# path component at a time rather than the whole argument.
+autoload -U select-word-style
+select-word-style bash
+
 # Python agent environment
 # Note that pip packages should be installed separately on each account.
 if [ -f "$HOME/.venvs/default/bin/activate" ]; then
