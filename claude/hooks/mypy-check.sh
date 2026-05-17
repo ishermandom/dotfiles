@@ -9,6 +9,10 @@
 # reasons: the Stop hook receives no information about which files changed,
 # and a change to one file can break the types of callers in other files.
 
+# -quit stops find after the first match, for speed.
+has_python_files=$(find . -name "*.py" -quit 2>/dev/null)
+[ -z "$has_python_files" ] && exit 0
+
 mypy_output=$(mypy --strict . 2>&1)
 mypy_exit_code=$?
 
