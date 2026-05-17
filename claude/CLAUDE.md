@@ -77,6 +77,8 @@ Every session, without being asked:
   file, flag it and confirm.
 - **Resolve symlinks before editing** — `Edit` and `Write` reject symlink paths,
   wasting a round-trip. Use `readlink -f <path>` to get the real path first.
+  Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
+  a dotfiles repo — always dereference before editing any path in that directory.
 - **Prefer parallel tool calls** when independent.
 - **Before test work**, read `~/.claude/docs/testing-guide.md`.
 
