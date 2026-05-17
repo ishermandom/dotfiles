@@ -66,6 +66,7 @@ precmd() {
 
 alias ..='cd ..'
 alias goto='pushd /Users/Shared/code'
+alias architect='claude --model sonnet --effort high'
 
 # Load zsh completions from Homebrew (includes native git completions).
 fpath=($(brew --prefix)/share/zsh/site-functions $fpath)
