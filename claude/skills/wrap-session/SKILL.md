@@ -27,7 +27,10 @@ Compile a draft with these sections:
 - **Avoid** — approaches tried and abandoned, with why
 - **Reflection** — token and attention efficiency: where did tokens go, was
   context well-focused on the right things, what would have been faster?
-  (2–3 bullets)
+  Every identified failure needs a diagnosis (*why* did this happen?) and a
+  mechanism (*what specifically changes* to produce a different outcome?).
+  Both must be specific enough that a skeptic couldn't dismiss them as
+  obvious. "Do better next time" is a wish, not a reflection. (2–3 bullets)
 
 Propose the entry as an Edit to `.claude/handoff.md` directly (prepended,
 entries separated by `---`). Using the Edit tool makes the change visible and
