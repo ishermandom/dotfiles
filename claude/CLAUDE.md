@@ -28,6 +28,7 @@ Every style decision flows from one goal: minimize the mental effort required to
 - **Include context in error messages**: an error message should contain enough information to diagnose the problem without reproducing it. Include relevant inputs — or an excerpt, if they can be large
 - **Prefer instance state over module-level globals**: a module-level object is implicit shared state that can't be overridden in tests without reaching into the module internals. A class that accepts its dependencies through the constructor makes them explicit and replaceable
 - **License**: include a license block at the top of every source file. For personal projects, default to MIT: a copyright line followed by an SPDX identifier (e.g. `# Copyright YEAR Name` / `# SPDX-License-Identifier: MIT`, using the language's comment syntax). Default name: `Ilya Sherman (ishermandom@)`
+- **Abstract types in API signatures**: prefer abstract collection types over concrete ones in function signatures — the contract should express constraints, not implementation details. Applies to parameters and return types alike.
 
 ## Python
 
@@ -36,6 +37,7 @@ Every style decision flows from one goal: minimize the mental effort required to
 - Enforcement: ruff + mypy (configured globally in `~/.config/ruff/pyproject.toml` and `~/.claude/settings.json`)
 - **Idiomatic truth-value testing**: prefer Python's built-in conventions over explicit type checks. Use `if not foo:` rather than `if foo is None:` to check for absent content — the idiomatic form is shorter and often stricter
 - **Named return types**: prefer `@dataclass(frozen=True)` over bare tuples when returning multiple values from a function. Frozen dataclasses are immutable, named, and don't expose confusing positional access. `NamedTuple` is acceptable when tuple unpacking at the call site is genuinely useful.
+- **Abstract collection types in signatures**: use `Sequence` over `list` or `tuple`, `Mapping` over `dict`, `Iterable` where only iteration is needed — in signatures. Implementations may use concrete types freely.
 - **Exception type semantics**: an exception's type is part of its contract — it tells callers what category of failure occurred. Use built-in types only when the error genuinely fits their definition: `ValueError` means a value of the right type but an inappropriate magnitude or content; `TypeError` means the wrong type; `RuntimeError` is a generic catch-all for unexpected runtime state. When no built-in fits, define a purpose-built exception class — the cost is one small class, and the payoff is that every `except` clause is unambiguous about what it's handling. Don't inherit from a built-in solely to piggyback on existing catch clauses; that makes the type hierarchy misleading.
 
 ## Interaction style
@@ -64,6 +66,10 @@ For each increment:
 
 For bug fixes and refactors where the change is inherently a single unit, apply the same spirit — focused scope, described upfront — without forcing an artificial split.
 
+## Plan documents
+
+Treat plan documents as multi-session work queues by default. Complete the explicitly requested item, then stop. After completing it, suggest a next step only if carrying it out now is meaningfully more efficient with the current live context than saving state and starting fresh — e.g., the work is tightly coupled to what's already in context, or the setup cost in a new session would be significant. Otherwise, say nothing and let the user drive.
+
 ## Token and context efficiency
 
 ### Standing rules
@@ -81,6 +87,7 @@ Every session, without being asked:
   Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
   a dotfiles repo — always dereference before editing any path in that directory.
 - **Prefer parallel tool calls** when independent.
+- **Trust hook automation**: don't manually run linting, type-checking, or other checks that hooks are configured to run automatically on save or tool use.
 - **Before test work**, read `~/.claude/docs/testing-guide.md`.
 
 ### Session-switch guidance
