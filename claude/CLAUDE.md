@@ -40,6 +40,20 @@ Every style decision flows from one goal: minimize the mental effort required to
 - **Abstract collection types in signatures**: use `Sequence` over `list` or `tuple`, `Mapping` over `dict`, `Iterable` where only iteration is needed — in signatures. Implementations may use concrete types freely.
 - **Exception type semantics**: an exception's type is part of its contract — it tells callers what category of failure occurred. Use built-in types only when the error genuinely fits their definition: `ValueError` means a value of the right type but an inappropriate magnitude or content; `TypeError` means the wrong type; `RuntimeError` is a generic catch-all for unexpected runtime state. When no built-in fits, define a purpose-built exception class — the cost is one small class, and the payoff is that every `except` clause is unambiguous about what it's handling. Don't inherit from a built-in solely to piggyback on existing catch clauses; that makes the type hierarchy misleading.
 
+## Shell
+
+- **Nontrivial logic in named scripts**: prefer a named `.sh` file over an inline pipeline or compound command. Scripts are readable, auditable, and verifiable without running them.
+- **Descriptive variables for captured output**: assign command output and exit codes to named variables (`output=$(cmd 2>&1)`, `exit_code=$?`) rather than using them inline. Capture `$?` on the very next line — it is overwritten by every subsequent command.
+- **Inline comments on non-obvious flags**: assume the reader rarely writes shell scripts and will not recognize flags like `-quit`, `jq -Rs`, or `2>/dev/null` on sight. Add a brief comment at the specific line explaining what the flag does and why it is used here. Err on the side of over-explaining.
+- **Arrays for optional argument lists**: when a set of flags may or may not be passed, use a bash array (`args=()` / `args=(-m "not wip")` / `"${args[@]}"`) rather than a string variable. An unquoted string variable word-splits on spaces, silently breaking multi-word flags.
+- **No `set -e`**: avoid `set -e` (exit on error). Many common commands return non-zero in expected situations — `grep` returns 1 when there is no match, for example — and `set -e` will silently exit the script in those cases. Handle errors explicitly instead.
+
+## Hooks
+
+- Inlined hook commands should be trivial to understand at a glance. Any nontrivial logic belongs in an external shell script at `.claude/hooks/<name>.sh`.
+- **Test hooks run on Stop**: a single turn often has multiple interdependent edits; running tests after each edit produces false failures mid-turn. Wire test hooks to `Stop` so they run once, after all edits have landed.
+- **Validate after adding**: after wiring up a new hook, trigger the expected behavior and confirm the hook fires correctly — e.g. introduce a deliberate failure to verify a test hook catches it, then restore.
+
 ## Interaction style
 
 When gathering structured preferences or exploring a decision with a small,
