@@ -19,9 +19,14 @@ Every style decision flows from one goal: minimize the mental effort required to
 - **Comments describe what is, not what was**: history belongs in git — commit messages, PR descriptions, blame. A comment explaining what changed, what used to be, or why something is no longer the case crowds out the current truth and ages into misinformation
 - **TODOs**: write known tradeoffs as TODO comments when not addressing them now, so they aren't lost as mental notes
 - **Named helpers**: extract repeated expressions into named constants or helper variables rather than repeating them inline
+- **Don't name for the sake of naming**: a name earns its existence by being referenced in multiple places, or by communicating something the value doesn't. A constant used in exactly one place adds a layer of indirection with no payoff — inline it
 - **Simplicity**: when two approaches are otherwise equivalent, choose the simpler one
 - **Type annotations**: annotate all definitions where the language supports it
 - **Factoring**: extract for clarity; don't abstract ahead of actual reuse
+- **Use enums for bounded value sets**: when a variable or parameter accepts one of a known, finite set of values, define an enum rather than passing raw literals. This documents what's valid, enables IDE support, and catches invalid values at the call site
+- **Don't fail silently**: when a function encounters unexpected state, make the failure visible — raise an exception, log an error, or surface it to the caller. Returning a sentinel value can be the right contract when the caller is expected to handle it, but using one to paper over an error that shouldn't occur hides bugs
+- **Include context in error messages**: an error message should contain enough information to diagnose the problem without reproducing it. Include relevant inputs — or an excerpt, if they can be large
+- **Prefer instance state over module-level globals**: a module-level object is implicit shared state that can't be overridden in tests without reaching into the module internals. A class that accepts its dependencies through the constructor makes them explicit and replaceable
 - **License**: include a license block at the top of every source file. For personal projects, default to MIT: a copyright line followed by an SPDX identifier (e.g. `# Copyright YEAR Name` / `# SPDX-License-Identifier: MIT`, using the language's comment syntax). Default name: `Ilya Sherman (ishermandom@)`
 
 ## Python
@@ -29,6 +34,7 @@ Every style decision flows from one goal: minimize the mental effort required to
 - 2-space indentation; single quotes
 - Anchor to the Google Python Style Guide, overriding where personal preferences conflict
 - Enforcement: ruff + mypy (configured globally in `~/.config/ruff/pyproject.toml` and `~/.claude/settings.json`)
+- **Idiomatic truth-value testing**: prefer Python's built-in conventions over explicit type checks. Use `if not foo:` rather than `if foo is None:` to check for absent content — the idiomatic form is shorter and often stricter
 
 ## Interaction style
 
