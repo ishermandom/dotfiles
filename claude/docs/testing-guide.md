@@ -15,6 +15,11 @@
 
 - pytest; `io.StringIO` for in-memory stream fakes
 - Avoid `parametrize` unless it gives a concrete readability gain
+- **Scripted fakes**: for dependencies with a fixed call sequence (LLM clients,
+  HTTP, queues), a fake that holds a list of scripted replies consumed in order
+  is more readable than mocks. Add `__enter__`/`__exit__` to assert all replies
+  were consumed; `__exit__` should skip the check when an exception is already
+  propagating to avoid masking the real failure.
 
 ## JavaScript
 
