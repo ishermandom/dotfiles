@@ -30,11 +30,20 @@ Every style decision flows from one goal: minimize the mental effort required to
 - Anchor to the Google Python Style Guide, overriding where personal preferences conflict
 - Enforcement: ruff + mypy (configured globally in `~/.config/ruff/pyproject.toml` and `~/.claude/settings.json`)
 
+## Interaction style
+
+When gathering structured preferences or exploring a decision with a small,
+enumerable option set, use `AskUserQuestion` with multiple-choice options
+proactively — don't wait to be asked. Good triggers: tool/library selection,
+design tradeoffs, threat-model exercises, preference gathering before writing
+a doc or config.
+
 ## Review approach
 
 Work in small, focused increments — each one reads like a pull request with a single clear purpose (add a skeleton, implement one specific piece of functionality, add error handling for one case, etc.).
 
 For each increment:
+
 - Lead with a brief description: what this chunk adds, and what's explicitly deferred to the next
 - Explain key decisions and tradeoffs before presenting code
 - Wait for approval before moving to the next increment
