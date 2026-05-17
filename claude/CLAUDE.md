@@ -35,6 +35,7 @@ Every style decision flows from one goal: minimize the mental effort required to
 - Anchor to the Google Python Style Guide, overriding where personal preferences conflict
 - Enforcement: ruff + mypy (configured globally in `~/.config/ruff/pyproject.toml` and `~/.claude/settings.json`)
 - **Idiomatic truth-value testing**: prefer Python's built-in conventions over explicit type checks. Use `if not foo:` rather than `if foo is None:` to check for absent content — the idiomatic form is shorter and often stricter
+- **Named return types**: prefer `@dataclass(frozen=True)` over bare tuples when returning multiple values from a function. Frozen dataclasses are immutable, named, and don't expose confusing positional access. `NamedTuple` is acceptable when tuple unpacking at the call site is genuinely useful.
 
 ## Interaction style
 
