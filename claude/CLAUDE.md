@@ -66,6 +66,8 @@ For each increment:
 
 For bug fixes and refactors where the change is inherently a single unit, apply the same spirit — focused scope, described upfront — without forcing an artificial split.
 
+Before presenting any code, check it against the style rules in this guide.
+
 ## Plan documents
 
 Treat plan documents as multi-session work queues by default. Complete the explicitly requested item, then stop. After completing it, suggest a next step only if carrying it out now is meaningfully more efficient with the current live context than saving state and starting fresh — e.g., the work is tightly coupled to what's already in context, or the setup cost in a new session would be significant. Otherwise, say nothing and let the user drive.
