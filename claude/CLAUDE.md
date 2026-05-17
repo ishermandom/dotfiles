@@ -109,7 +109,6 @@ Every session, without being asked:
   Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
   a dotfiles repo — always dereference before editing any path in that directory.
 - **Prefer parallel tool calls** when independent.
-- **Trust hook automation**: don't manually run linting, type-checking, or other checks that hooks are configured to run automatically on save or tool use.
 - **Before test work**, read `~/.claude/docs/testing-guide.md`.
 
 ### Session-switch guidance

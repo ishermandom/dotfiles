@@ -28,6 +28,17 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/gate_auto_tools.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
