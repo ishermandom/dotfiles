@@ -63,11 +63,10 @@ through symlinks):
 Everything else in `~/.claude/` (sessions, history, projects, plugins, cache,
 etc.) is unversioned local state owned by Claude Code itself.
 
-Project-level `.claude/` directories are gitignored and not version controlled.
-Configuration that should persist across machines belongs in `settings.json`
-above (and by extension the dotfiles repo). Project-level files are reserved for
-unusual per-project overrides that deliberately deviate from global
-configuration.
+Project-level `.claude/` directories are not systematically gitignored.
+Whether to commit them is decided per-project. Configuration that should
+persist across machines belongs in `settings.json` above (and by extension
+the dotfiles repo).
 
 ## How sessions typically run
 
