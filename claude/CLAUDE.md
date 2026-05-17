@@ -74,6 +74,8 @@ Every session, without being asked:
 - **Prefer `Edit` over `Write` for existing files** — `Edit` sends only the diff;
   `Write` re-sends the whole file. Before doing a full `Write` on an existing
   file, flag it and confirm.
+- **Resolve symlinks before editing** — `Edit` and `Write` reject symlink paths,
+  wasting a round-trip. Use `readlink -f <path>` to get the real path first.
 - **Prefer parallel tool calls** when independent.
 - **Before test work**, read `~/.claude/docs/testing-guide.md`.
 
