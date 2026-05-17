@@ -8,12 +8,17 @@
 
 bash_command=$(jq -r '.tool_input.command // ""')  # -r: raw string, strips JSON quotes
 
-word_boundary_before='(^|[[:space:]])'
-auto_tools='(pytest|python -m pytest|ruff|mypy|prettier)'
-word_boundary_after='([[:space:]]|$)'
-pattern="${word_boundary_before}${auto_tools}${word_boundary_after}"
+# Normalize && and || to ; so the pattern only needs to handle ; and |
+# as command separators. This lets us match tool names only at a command
+# boundary, not when they appear as string arguments (e.g. in -m "...pytest...").
+normalized=$(echo "$bash_command" | sed 's/&&/;/g; s/||/;/g')
 
-if echo "$bash_command" | grep -qE "$pattern"; then  # -q: exit code only; -E: extended regex
+cmd_start='(^|[;|])[[:space:]]*'  # start of string or after a separator
+auto_tools='(pytest|python -m pytest|ruff|mypy|prettier)'
+word_end='([[:space:]]|$)'
+pattern="${cmd_start}${auto_tools}${word_end}"
+
+if echo "$normalized" | grep -qE "$pattern"; then  # -q: exit code only; -E: extended regex
   echo '{
     "hookSpecificOutput": {
       "hookEventName": "PreToolUse",
