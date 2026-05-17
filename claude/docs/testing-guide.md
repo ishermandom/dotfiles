@@ -2,6 +2,7 @@
 
 ## General
 
+- **DAMP over DRY**: prioritize readability at the call site over avoiding repetition. Inline literal values — specific inputs, expected outputs, scripted replies — directly in each test. A reader should understand what is being tested without scrolling to a shared constant or fixture. Extract shared setup only when the exact value is genuinely irrelevant to the test's meaning.
 - **I/O boundary testability**: entry points should be thin wrappers that delegate to a stream-accepting function. Tests call that function directly with in-memory streams — no temp files, no monkeypatching.
 - **Test via public APIs**: exercise internal behaviors by constructing inputs that expose them at the public level, not by calling internals directly.
 - **One behavior per test**
