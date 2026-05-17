@@ -46,6 +46,11 @@
             "type": "command",
             "command": "~/.claude/hooks/mypy-check.sh",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/run_tests.sh",
+            "timeout": 60
           }
         ]
       }
