@@ -25,8 +25,9 @@ Work through the changes above in order. For each logical group:
    just what it does. If the motivation is unclear, use `AskUserQuestion`
    to get context before committing — don't guess.
 
-4. **Commit.** Stage only the files for this group. Show the proposed
-   commit message and wait for approval before running `git commit`.
+4. **Commit.** Stage only the files for this group and run `git commit`
+   directly — the tool will prompt for permission. Don't ask for chat
+   approval first.
 
 5. **Repeat** until `git status` shows no remaining tracked changes.
 
