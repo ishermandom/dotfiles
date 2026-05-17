@@ -34,13 +34,25 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.tool_input.file_path // empty' | { read -r f; [[ \"$f\" == *.py ]] || exit 0; cd \"$(dirname \"$f\")\" && ruff check --fix \"$f\"; ruff format \"$f\" 2>/dev/null; mypy --strict \"$f\"; } 2>&1 || true",
-            "timeout": 30
+            "command": "jq -r '.tool_input.file_path // empty' | { read -r f; [[ \"$f\" == *.py ]] || exit 0; ruff check --fix \"$f\" 2>/dev/null; ruff format \"$f\" 2>/dev/null; }",
+            "timeout": 15
           },
           {
             "type": "command",
             "command": "jq -r '.tool_input.file_path // empty' | { read -r f; [[ \"$f\" == *.md ]] || exit 0; /opt/homebrew/bin/prettier --write \"$f\"; } 2>/dev/null || true",
             "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/mypy-check.sh",
+            "timeout": 60
           }
         ]
       }
