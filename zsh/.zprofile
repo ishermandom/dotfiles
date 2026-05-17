@@ -14,5 +14,9 @@ path+=("$HOME/.local/bin")
 # one Chromium install instead of each user downloading their own copy.
 export PLAYWRIGHT_BROWSERS_PATH=/Users/Shared/playwright
 
+# Redirect Ollama model downloads to a shared path so all users share one set
+# of model weights.
+export OLLAMA_MODELS=/Users/Shared/ollama/models
+
 # Private environment variables (not tracked in the public repo).
 [[ -f "$HOME/.zprofile_private" ]] && source "$HOME/.zprofile_private"
