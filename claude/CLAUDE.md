@@ -80,11 +80,6 @@ Every session, without being asked:
   wasting a round-trip. Use `readlink -f <path>` to get the real path first.
   Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
   a dotfiles repo — always dereference before editing any path in that directory.
-- **Add usages before imports** — when a post-edit formatter runs, it will strip
-  an import that has no usage yet. Edit the call sites first so the name is
-  already referenced when the import lands. Ruff removes unused imports (F401)
-  automatically but does not auto-fix undefined names (F821), so the
-  intermediate state is flagged but not mutated.
 - **Prefer parallel tool calls** when independent.
 - **Before test work**, read `~/.claude/docs/testing-guide.md`.
 
