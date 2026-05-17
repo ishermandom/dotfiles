@@ -49,6 +49,12 @@ Every style decision flows from one goal: minimize the mental effort required to
 - **No `set -e`**: avoid `set -e` (exit on error). Many common commands return non-zero in expected situations — `grep` returns 1 when there is no match, for example — and `set -e` will silently exit the script in those cases. Handle errors explicitly instead.
 - **Named regex components**: when a regex pattern is non-obvious, break it into named variables — one per logical part — and concatenate them into a `pattern` variable. This is the shell equivalent of a verbose regex: the names document intent without requiring inline comments on the pattern itself.
 
+## Testing
+
+- **Read the guide first**: before any test work, read `~/.claude/docs/testing-guide.md`.
+  It defines conventions (DAMP, test input helpers, scripted fakes) that directly
+  affect how tests should be written.
+
 ## Configuration
 
 - **Global by default**: put hooks, settings, and scripts in `~/.claude/` unless the behavior is genuinely project-specific. Project-scoped config (`.claude/settings.json`, `.claude/hooks/`) is for things tied to one repo — a project-specific toolchain, permissions, or environment variable. When in doubt, ask: would this rule apply in a different project? If yes, it's global.
@@ -109,7 +115,6 @@ Every session, without being asked:
   Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
   a dotfiles repo — always dereference before editing any path in that directory.
 - **Prefer parallel tool calls** when independent.
-- **Before test work**, read `~/.claude/docs/testing-guide.md`.
 
 ### Session-switch guidance
 
