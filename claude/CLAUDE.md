@@ -38,6 +38,12 @@ proactively — don't wait to be asked. Good triggers: tool/library selection,
 design tradeoffs, threat-model exercises, preference gathering before writing
 a doc or config.
 
+- **Technology currency**: For questions about current best-in-class tools,
+  models, or libraries, run a web research agent call before making
+  recommendations — training data may be a year or more stale. Good
+  triggers: "what's the best X", model/library selection, version
+  comparisons.
+
 ## Review approach
 
 Work in small, focused increments — each one reads like a pull request with a single clear purpose (add a skeleton, implement one specific piece of functionality, add error handling for one case, etc.).
