@@ -34,9 +34,10 @@ Compile a draft with these sections:
 
 Propose the entry as an Edit to `.claude/handoff.md` directly (prepended,
 entries separated by `---`). Using the Edit tool makes the change visible and
-harder to accidentally drop than text in chat. Don't read the file first —
-prepend-only means the existing content is irrelevant, and reading it wastes
-tokens.
+harder to accidentally drop than text in chat. The Edit tool requires a prior
+Read, but only read the first 3–5 lines (`limit: 5`) — enough to get the
+header as an anchor string. Never read the full file; the existing entries are
+irrelevant for prepending.
 
 ## 4. Pending commits
 
