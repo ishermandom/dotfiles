@@ -115,6 +115,20 @@ Every session, without being asked:
   Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
   a dotfiles repo — always dereference before editing any path in that directory.
 - **Prefer parallel tool calls** when independent.
+- **Read files incrementally**: use `grep`/`find` to locate relevant sections,
+  then read only those ranges with `offset`/`limit`. For edits, grep for the
+  insertion point and read a small window around it — a full file read is rarely
+  needed. Read a file in full only when you need to understand interactions
+  across distant sections. For multi-file exploration, use the `Explore`
+  subagent. Don't read multiple related files in parallel speculatively — start
+  with the most likely relevant one and expand only if needed.
+- **Cap subagent output**: default to findings only — what's true and why it
+  matters for the task at hand. Omit source URLs, framing, and recaps by
+  default. Include a URL when it would be needed for a follow-up action in this
+  session (fetching, citing, or verifying a specific page). Include additional
+  detail or caveats when a finding is surprising, contradicts a prior
+  assumption, or would change the approach if omitted. The test: would omitting
+  this cause Claude to act on incomplete or misleading information?
 
 ### Session-switch guidance
 
