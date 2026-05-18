@@ -36,7 +36,12 @@ Propose the entry as an Edit to `.claude/handoff.md` directly (prepended,
 entries separated by `---`). Using the Edit tool makes the change visible and
 harder to accidentally drop than text in chat.
 
-## 4. Learning
+## 4. Pending commits
+
+If in a git repo, run `git status`. If there are uncommitted changes, remind
+the user to commit before closing the session.
+
+## 5. Learning
 
 Update memory files with anything worth persisting: corrections, preferences,
 project facts. If a `~/.claude/docs/` file needs updating, flag it and ask
