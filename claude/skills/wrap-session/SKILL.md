@@ -25,12 +25,19 @@ Compile a draft with these sections:
 - **Files Modified** — changed files
 - **Next Steps** — immediate next work items
 - **Avoid** — approaches tried and abandoned, with why
-- **Reflection** — token and attention efficiency: where did tokens go, was
-  context well-focused on the right things, what would have been faster?
-  Every identified failure needs a diagnosis (*why* did this happen?) and a
-  mechanism (*what specifically changes* to produce a different outcome?).
-  Both must be specific enough that a skeptic couldn't dismiss them as
-  obvious. "Do better next time" is a wish, not a reflection. (2–3 bullets)
+- **Reflection** — two dimensions:
+  - *Token efficiency*: estimate the session's main token costs (file reads:
+    `wc -c` on files read, ~chars/4 for tokens; subagent output: estimate from
+    content length; other large tool results). Identify at least one concrete
+    case of higher-than-necessary consumption with a diagnosis (*why* did this
+    happen?) and a mechanism (*what specifically changes* to prevent it?).
+  - *Attention efficiency*: was context well-focused on the right things?
+    Were there tangents, unnecessary back-and-forth, or work that could have
+    been deferred?
+  Each identified failure needs a diagnosis and mechanism specific enough that
+  a skeptic couldn't dismiss them as obvious. "Do better next time" is a wish,
+  not a reflection. Aim for 2–3 bullets total, but use as many or few as the
+  session warrants.
 
 Propose the entry as an Edit to `.claude/handoff.md` directly (prepended,
 entries separated by `---`). Using the Edit tool makes the change visible and
