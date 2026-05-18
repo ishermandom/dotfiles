@@ -105,8 +105,9 @@ Treat plan documents as multi-session work queues by default. Complete the expli
 Every session, without being asked:
 
 - **Never re-read `CLAUDE.md`** — it's injected automatically into every message.
-- **Check context before `Read`** — if the file is already in a prior tool result
-  or the system prompt, use it; don't fetch again.
+- **Don't `Read` without justification** — before calling `Read`, explicitly
+  state why the current context is insufficient. If the file appeared in any
+  prior tool result this session, use that; don't fetch again.
 - **Prefer `Edit` over `Write` for existing files** — `Edit` sends only the diff;
   `Write` re-sends the whole file. Before doing a full `Write` on an existing
   file, flag it and confirm.
