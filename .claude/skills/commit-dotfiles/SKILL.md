@@ -31,4 +31,7 @@ Work through the changes above in order. For each logical group:
 
 5. **Repeat** until `git status` shows no remaining tracked changes.
 
-Do not push. Do not batch commits. Do not skip the approval step.
+6. **Push.** Run `git push origin-https main`. The tool will prompt for
+   approval.
+
+Do not batch commits. Do not skip the approval step.
