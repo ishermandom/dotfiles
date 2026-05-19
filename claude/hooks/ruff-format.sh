@@ -5,7 +5,7 @@
 # from the turn have landed before formatting runs. The Stop hook receives
 # no information about which files changed, so we check the whole directory.
 
-has_python_files=$(find . -name "*.py" -quit 2>/dev/null)
+has_python_files=$(find . -name "*.py" -print -quit 2>/dev/null)
 [ -z "$has_python_files" ] && exit 0
 
 # 2>/dev/null discards stderr (e.g. "cannot parse file") so that ruff

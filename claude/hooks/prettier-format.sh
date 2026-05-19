@@ -9,7 +9,7 @@
 # on PATH, so we add it explicitly.
 export PATH="/opt/homebrew/bin:$PATH"
 
-has_markdown_files=$(find . -name "*.md" -quit 2>/dev/null)
+has_markdown_files=$(find . -name "*.md" -print -quit 2>/dev/null)
 [ -z "$has_markdown_files" ] && exit 0
 
 prettier --write "**/*.md" 2>/dev/null || true
