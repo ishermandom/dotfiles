@@ -29,16 +29,7 @@ Every style decision flows from one goal: minimize the mental effort required to
 - **Prefer instance state over module-level globals**: a module-level object is implicit shared state that can't be overridden in tests without reaching into the module internals. A class that accepts its dependencies through the constructor makes them explicit and replaceable
 - **License**: include a license block at the top of every source file. For personal projects, default to MIT: a copyright line followed by an SPDX identifier (e.g. `# Copyright YEAR Name` / `# SPDX-License-Identifier: MIT`, using the language's comment syntax). Default name: `Ilya Sherman (ishermandom@)`
 - **Abstract types in API signatures**: prefer abstract collection types over concrete ones in function signatures — the contract should express constraints, not implementation details. Applies to parameters and return types alike.
-
-## Python
-
-- 2-space indentation; single quotes
-- Anchor to the Google Python Style Guide, overriding where personal preferences conflict
-- Enforcement: ruff + mypy (configured globally in `~/.config/ruff/pyproject.toml` and `~/.claude/settings.json`)
-- **Idiomatic truth-value testing**: prefer Python's built-in conventions over explicit type checks. Use `if not foo:` rather than `if foo is None:` to check for absent content — the idiomatic form is shorter and often stricter
-- **Named return types**: prefer `@dataclass(frozen=True)` over bare tuples when returning multiple values from a function. Frozen dataclasses are immutable, named, and don't expose confusing positional access. `NamedTuple` is acceptable when tuple unpacking at the call site is genuinely useful.
-- **Abstract collection types in signatures**: use `Sequence` over `list` or `tuple`, `Mapping` over `dict`, `Iterable` where only iteration is needed — in signatures. Implementations may use concrete types freely.
-- **Exception type semantics**: an exception's type is part of its contract — it tells callers what category of failure occurred. Use built-in types only when the error genuinely fits their definition: `ValueError` means a value of the right type but an inappropriate magnitude or content; `TypeError` means the wrong type; `RuntimeError` is a generic catch-all for unexpected runtime state. When no built-in fits, define a purpose-built exception class — the cost is one small class, and the payoff is that every `except` clause is unambiguous about what it's handling. Don't inherit from a built-in solely to piggyback on existing catch clauses; that makes the type hierarchy misleading.
+- **After `Write` on a new file**: path-matched rules don't load until a matching file is Read. `Read` a short excerpt (line 1 suffices), self-review against the loaded rules, and `Edit` if there are gaps.
 
 ## Shell
 
@@ -65,6 +56,7 @@ Every style decision flows from one goal: minimize the mental effort required to
 - Inlined hook commands should be trivial to understand at a glance. Any nontrivial logic belongs in an external shell script at `.claude/hooks/<name>.sh`.
 - **Test hooks run on Stop**: a single turn often has multiple interdependent edits; running tests after each edit produces false failures mid-turn. Wire test hooks to `Stop` so they run once, after all edits have landed.
 - **Validate after adding**: after wiring up a new hook, trigger the expected behavior and confirm the hook fires correctly — e.g. introduce a deliberate failure to verify a test hook catches it, then restore.
+- **Don't manually run automated hooks**: never propose invoking a linter, type-checker, or test suite that is already wired to a Stop hook — it will run automatically at the end of the turn.
 
 ## Interaction style
 
