@@ -39,6 +39,17 @@
         ]
       }
     ],
+    "InstructionsLoaded": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/log-instructions-loaded.sh"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "matcher": "",
