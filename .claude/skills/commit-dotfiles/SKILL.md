@@ -21,7 +21,7 @@ Work through the changes above in order. For each logical group:
    and CLAUDE.md don't need comments.
 
 3. **Draft a commit message.** Subject line ≤ 72 characters; body wrapped
-   at 80 columns. The body should explain *why* the change was made, not
+   at 80 columns. The body should explain _why_ the change was made, not
    just what it does. If the motivation is unclear, use `AskUserQuestion`
    to get context before committing — don't guess.
 

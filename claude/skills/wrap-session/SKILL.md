@@ -26,18 +26,18 @@ Compile a draft with these sections:
 - **Next Steps** — immediate next work items
 - **Avoid** — approaches tried and abandoned, with why
 - **Reflection** — two dimensions:
-  - *Token efficiency*: estimate the session's main token costs (file reads:
+  - _Token efficiency_: estimate the session's main token costs (file reads:
     `wc -c` on files read, ~chars/4 for tokens; subagent output: estimate from
     content length; other large tool results). Identify at least one concrete
-    case of higher-than-necessary consumption with a diagnosis (*why* did this
-    happen?) and a mechanism (*what specifically changes* to prevent it?).
-  - *Attention efficiency*: was context well-focused on the right things?
+    case of higher-than-necessary consumption with a diagnosis (_why_ did this
+    happen?) and a mechanism (_what specifically changes_ to prevent it?).
+  - _Attention efficiency_: was context well-focused on the right things?
     Were there tangents, unnecessary back-and-forth, or work that could have
     been deferred?
-  Each identified failure needs a diagnosis and mechanism specific enough that
-  a skeptic couldn't dismiss them as obvious. "Do better next time" is a wish,
-  not a reflection. Aim for 2–3 bullets total, but use as many or few as the
-  session warrants.
+    Each identified failure needs a diagnosis and mechanism specific enough that
+    a skeptic couldn't dismiss them as obvious. "Do better next time" is a wish,
+    not a reflection. Aim for 2–3 bullets total, but use as many or few as the
+    session warrants.
 
 Propose the entry as an Edit to `.claude/handoff.md` directly (prepended,
 entries separated by `---`). Using the Edit tool makes the change visible and
@@ -60,5 +60,6 @@ before editing.
 ## 5. Reviewer session
 
 If production code was written, offer:
+
 > "Consider a reviewer session: open a fresh session with the relevant files in
 > context and run `/review`."

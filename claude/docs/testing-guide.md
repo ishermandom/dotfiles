@@ -9,7 +9,7 @@
 - **Test names read as sentences**: `test_expired_token_is_rejected`, not `test_auth`
 - **Structure**: inputs → action → assertion; blank line between stages when it aids readability
 - **Test input helpers**: prefer a typed struct with named fields and sensible defaults for irrelevant ones — hide construction ceremony, never hide what's being exercised. Add a bypass helper for error-handling tests rather than contorting the primary one.
-- **Error cases**: assert both sides — no output produced *and* diagnostic emitted. Match a keyword, not the full message (exact text is an implementation detail).
+- **Error cases**: assert both sides — no output produced _and_ diagnostic emitted. Match a keyword, not the full message (exact text is an implementation detail).
 - **`run_tests`**: every project includes an executable `run_tests` at the root. Resolve paths relative to the script (`$(dirname "$0")`), don't `cd`.
 
 ## Python
