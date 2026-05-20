@@ -90,7 +90,8 @@ read and understand code. In practice this means:
   unless there's a concrete project-specific reason.
 - Inlined hook commands should be trivial to understand at a glance. Any
   nontrivial logic belongs in an external shell script at
-  `.claude/hooks/<name>.sh`.
+  `.claude/hooks/<name>.sh`. Scripts are readable, auditable, and verifiable
+  without running them.
 - **Test hooks run on Stop**: a single turn often has multiple interdependent
   edits; running tests after each edit produces false failures mid-turn. Wire
   test hooks to `Stop` so they run once, after all edits have landed.
