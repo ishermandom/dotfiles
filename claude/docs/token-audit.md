@@ -8,16 +8,16 @@ Produce a structured analysis covering:
 - Optimal effort level for the task (see below)
 - Recommendations for the next session
 
-Append to `docs/introspecttokens.md` under a new 2–4 word header identifying
-the session. Don't read the file first.
+Append to `docs/introspecttokens.md` under a new 2–4 word header identifying the
+session. Don't read the file first.
 
 ---
 
 ## Effort level assessment
 
-The effort parameter controls total token spend (text, tool calls, and thinking).
-Sonnet 4.6 defaults to `high` if unset; `medium` is the recommended starting
-point for most workloads.
+The effort parameter controls total token spend (text, tool calls, and
+thinking). Sonnet 4.6 defaults to `high` if unset; `medium` is the recommended
+starting point for most workloads.
 
 When assessing optimal effort for a completed session:
 
@@ -32,10 +32,10 @@ When assessing optimal effort for a completed session:
 summaries beyond what the task needed; many tool calls where fewer would have
 sufficed; token audit shows high output relative to task complexity.
 
-**Signs the effort was too low:** subtle logic errors crept in; ambiguous
-specs were not flagged and instead guessed wrong; verification steps were
-skipped that would have caught a mistake.
+**Signs the effort was too low:** subtle logic errors crept in; ambiguous specs
+were not flagged and instead guessed wrong; verification steps were skipped that
+would have caught a mistake.
 
-Note that a blocked/corrected edit is not automatically a sign of wrong effort
-— it often reflects ambiguous requirements, which clarifying upfront would fix
+Note that a blocked/corrected edit is not automatically a sign of wrong effort —
+it often reflects ambiguous requirements, which clarifying upfront would fix
 regardless of effort level.

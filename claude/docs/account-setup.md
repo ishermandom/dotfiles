@@ -13,8 +13,8 @@ or exfiltrating actions that a CLI assistant might take — whether by accident 
 via prompt injection.
 
 Code is shared between accounts via **`/Users/Shared/code`**, which both
-accounts can read and write. Everything else in each account's home directory
-is inaccessible to the other at the OS level.
+accounts can read and write. Everything else in each account's home directory is
+inaccessible to the other at the OS level.
 
 ## Sandbox constraints
 
@@ -25,8 +25,8 @@ is inaccessible to the other at the OS level.
 - Can install launchd agents and cron jobs scoped to its own user
 - Has unrestricted outbound network access (no firewall configured)
 - Has push access to specific GitHub repos via fine-grained personal access
-  tokens; branch protection rules on those repos prevent force pushes and
-  branch deletions
+  tokens; branch protection rules on those repos prevent force pushes and branch
+  deletions
 
 ## Threat model and coverage
 
@@ -63,10 +63,9 @@ through symlinks):
 Everything else in `~/.claude/` (sessions, history, projects, plugins, cache,
 etc.) is unversioned local state owned by Claude Code itself.
 
-Project-level `.claude/` directories are not systematically gitignored.
-Whether to commit them is decided per-project. Configuration that should
-persist across machines belongs in `settings.json` above (and by extension
-the dotfiles repo).
+Project-level `.claude/` directories are not systematically gitignored. Whether
+to commit them is decided per-project. Configuration that should persist across
+machines belongs in `settings.json` above (and by extension the dotfiles repo).
 
 ## How sessions typically run
 
