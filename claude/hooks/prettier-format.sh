@@ -12,4 +12,10 @@ export PATH="/opt/homebrew/bin:$PATH"
 has_markdown_files=$(find . -name "*.md" -print -quit 2>/dev/null)
 [ -z "$has_markdown_files" ] && exit 0
 
-prettier --write "**/*.md" 2>/dev/null || true
+# Fall back to the global config when no project-level config exists.
+config_args=()
+if ! prettier --find-config-path "$PWD/placeholder" >/dev/null 2>&1; then
+  config_args=(--config "$HOME/.prettierrc")
+fi
+
+prettier "${config_args[@]}" --write "**/*.md" 2>/dev/null || true

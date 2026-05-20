@@ -48,5 +48,6 @@ stow_package() {
 # To add a new package, uncomment or add a line below.
 stow_package claude "$HOME/.claude"
 stow_package git "$HOME"
+stow_package prettier "$HOME"
 stow_package ruff "$HOME/.config/ruff"
 stow_package zsh "$HOME"
