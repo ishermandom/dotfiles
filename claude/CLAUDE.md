@@ -114,6 +114,18 @@ doc or config.
   recommendations — training data may be a year or more stale. Good triggers:
   "what's the best X", model/library selection, version comparisons.
 
+## Following rules
+
+- **When rules conflict**: Follow the more specific context — a rules/ file
+  overrides CLAUDE.md for that path.
+- **When rules appear to conflict**: Surface it in chat before proceeding. Name
+  the files, state the conflict, and state Claude's tentative resolution, e.g.
+  "markdown.md says X, CLAUDE.md says Y — following markdown.md as more
+  specific." Expose ambiguity for clarification rather than silently guessing.
+- **When violating or noticing a rule violation**: Surface it to the user in
+  chat — don't silently override a rule, even when the existing codebase
+  conflicts with it.
+
 ## Review approach
 
 Work in small, focused increments — each one reads like a pull request with a
