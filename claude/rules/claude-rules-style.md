@@ -52,7 +52,8 @@ complex code" fires while attention is already divided.
 **Imperative mood**: "Use X", not "X should be used" or "consider X".
 
 **Explicit strength**: Use `always`, `prefer`, `avoid`, `never` deliberately —
-they carry different obligations.
+they carry different obligations. Quantifiers like `every` and `never` are
+equivalent to `always` and are fine where they read more naturally.
 
 **Inline rationale**: Include a brief "why" when the rule is unintuitive, when
 violating it is tempting, or when knowing the reason would clarify an ambiguous
