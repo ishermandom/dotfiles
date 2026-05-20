@@ -10,6 +10,7 @@ paths:
 Prettier auto-formats this file type. Write prose near 80 columns to minimize
 rewrapping diffs.
 
+- **Headings**: sentence case — capitalize only the first word and proper nouns.
 - **Code**: fenced code blocks with a language tag. Inline backticks for file
   paths, command names, and literal values.
 
