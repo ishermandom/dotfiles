@@ -89,9 +89,12 @@ preferred'); historical commentary ('previously', 'used to be').
 
 ## When structuring a rules file
 
-**Action-named headers**: Name sections after the trigger or action, not the
-concept. "Before creating a new file" over "File creation preferences" — Claude
-scans headers before body text.
+**Prefer specific section headers**: headers should be specific enough that
+Claude can self-select without reading the body. For transition-triggered
+groups, action-named headers ("Before creating a new file") are clearest. For
+thematic groups, a specific topic label ("Testing", "Exceptions") works equally
+well. Avoid vague labels ("Preferences", "Miscellaneous") that don't narrow
+applicability.
 
 **Bold trigger keywords**: In lists, bold the trigger at the start. Claude's
 attention falls on bold text first.

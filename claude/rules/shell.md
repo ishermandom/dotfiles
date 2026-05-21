@@ -25,6 +25,6 @@ paths:
 - **Prefer decomposing complex regexes into named components**: when a regex
   contains two or more distinct components — anchors (`^`/`$`), character
   classes (`[...]`), groups (`(...)`), or alternation (`|`) — break it into
-  named variables, one per logical part, concatenated into a `pattern`
-  variable. The names document intent without requiring inline comments on the
-  pattern itself.
+  named variables, one per logical part, concatenated into a `pattern` variable.
+  The names document intent without requiring inline comments on the pattern
+  itself.
