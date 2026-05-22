@@ -34,10 +34,6 @@ Work through the changes above in order. For each logical group:
 6. **Push.** Run `git push origin-https main`. The tool will prompt for
    approval.
 
-7. **Trigger Stop hooks.** Tell the user: "Done — reply `continue` to run Stop
-   hooks (linters, type-checkers, tests)." Then stop and wait. The hooks fire
-   when this turn ends; they won't run until the user sends a message.
-
 ## Do not stage
 
 - `.claude/handoff.md` — leave untracked. These files are intentionally neither
