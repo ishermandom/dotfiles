@@ -75,12 +75,6 @@ read and understand code. In practice this means:
   matching file is Read. `Read` a short excerpt (line 1 suffices), self-review
   against the loaded rules, and `Edit` if there are gaps.
 
-## Testing
-
-- **Read the guide first**: before any test work, read
-  `~/.claude/docs/testing-guide.md`. It defines conventions (DAMP, test input
-  helpers, scripted fakes) that directly affect how tests should be written.
-
 ## Configuration
 
 - **Global by default**: put hooks, settings, and scripts in `~/.claude/` unless

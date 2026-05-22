@@ -1,14 +1,19 @@
+---
+paths:
+  - "**/*test*"
+---
+
 # Testing
 
 ## General
 
 - **DAMP over DRY**: prioritize readability at the call site over avoiding
   repetition. Inline literal values — specific inputs, expected outputs,
-  scripted replies — directly in each test. A reader should understand what is
-  being tested without scrolling to a shared constant or fixture. Extract shared
-  setup only when the exact value is genuinely irrelevant to the test's meaning.
-  Before finalizing a test helper, verify that every value the test asserts on
-  is visible in the test body, not inside the helper.
+  scripted replies — directly in each test. Each test should be understandable
+  without scrolling to a shared constant or fixture. Extract shared setup only
+  when the exact value is genuinely irrelevant to the test's meaning. Before
+  finalizing a test helper, verify that every value the test asserts on is
+  visible in the test body, not inside the helper.
 - **I/O boundary testability**: before writing a test that uses `tmp_path` or a
   real filesystem path, restructure the entry point to accept a stream instead —
   keep the entry point as a thin wrapper that opens the file and delegates, then
@@ -37,11 +42,15 @@
 
 ## Python
 
-- pytest; `io.StringIO` for in-memory stream fakes
+- **Test runner**: pytest; use `io.StringIO` for in-memory stream fakes
+- **TDD stubs**: mark a not-yet-implemented test
+  `@pytest.mark.xfail(strict=True)`. `strict=True` causes the suite to fail when
+  the test unexpectedly passes — a reminder to remove the marker once the
+  production code lands.
 - **Builder serialization**: `_make_foo` helpers convert Python values to the
   types the function under test expects — a `list[str]` becomes a JSON string or
   an `io.StringIO`; callers never serialize manually.
-- Avoid `parametrize` unless it gives a concrete readability gain
+- **Avoid `parametrize`**: unless it gives a concrete readability gain
 - **Scripted fakes**: for dependencies with a fixed call sequence (LLM clients,
   HTTP, queues), implement a fake that holds a list of scripted replies consumed
   in order — more readable than mocks. Add `__enter__`/`__exit__` to assert all
@@ -54,10 +63,11 @@
 
 ## JavaScript
 
-- `node:test` + `node:assert/strict` — built-in, no dependencies
-- `--test-reporter=dot` for compact output
-- Non-module source files (e.g. Google Apps Script): add
+- **Test runner**: `node:test` + `node:assert/strict` — built-in, no
+  dependencies
+- **Reporter**: `--test-reporter=dot` for compact output
+- **Non-module source files** (e.g. Google Apps Script): add
   `if (typeof module !== 'undefined') module.exports = { fn };` at the end to
   enable `require()` in tests
-- `run_tests`:
+- **`run_tests`**:
   `exec node --test-reporter=dot "$(dirname "$0")/your_module.test.js"`
