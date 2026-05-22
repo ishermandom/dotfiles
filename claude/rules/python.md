@@ -6,8 +6,8 @@ paths:
 # Python style guide
 
 - ruff enforces formatting (2-space indentation, single quotes); mypy enforces
-  types — both configured globally in `~/.config/ruff/pyproject.toml` and
-  `~/.claude/settings.json`
+  types — both configured globally in `~/.config/ruff/pyproject.toml` and run
+  automatically on Stop
 - **Prefer to follow the Google Python Style Guide** unless these rules conflict
   — these rules take priority
 - **Prefer `if not foo:` over `if foo is None:`** for absent-content checks —

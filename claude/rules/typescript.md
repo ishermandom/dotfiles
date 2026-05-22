@@ -6,19 +6,18 @@ paths:
 
 # TypeScript and JavaScript style guide
 
-- 2-space indentation; single quotes (enforced by linter)
-- Anchor to the Google TypeScript Style Guide, overriding where personal
-  preferences conflict
-- Enforcement: TBD to validate
+- `prettier` enforces formatting (2-space indentation, single quotes) —
+  configured globally in `~/.prettierrc` and runs automatically on Stop
+- Follow the Google TypeScript Style Guide unless these rules conflict — these
+  rules take priority
 - **Types**: prefer explicit types at public interfaces, exported functions, and
-  complex return values. Avoid unnecessary local type annotations when inference
-  is obvious.
-- **Flags**: prefer discriminated unions over boolean configuration flags or
-  loosely structured option objects.
-- **Nullability**: Use undefined consistently for absent values unless null has
-  semantic meaning. Avoid APIs that ambiguously mix null, undefined, and
-  optional properties.
-- **Async / promises**: Prefer explicit async/await flow over nested promise
-  chains. Avoid floating promises.
-- **Minimize mutation scope**: Prefer const by default. Keep mutable state
-  narrowly scoped. Avoid shared mutable module state unless clearly justified.
+  complex return values; omit annotations where local inference is obvious.
+- **Flags**: prefer discriminated unions over boolean configuration flags —
+  boolean flags don't self-document at call sites and resist exhaustive checks.
+- **Nullability**: use `undefined` for absent values unless `null` has distinct
+  semantic meaning; never mix `null`, `undefined`, and optional properties in
+  the same API.
+- **Async / promises**: prefer `async`/`await` over nested promise chains; never
+  leave a promise unhandled.
+- **Minimize mutation scope**: prefer `const` by default; keep mutable state
+  narrowly scoped; avoid shared mutable module state unless clearly justified.

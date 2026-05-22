@@ -144,7 +144,7 @@ For bug fixes and refactors where the change is inherently a single unit, apply
 the same spirit — focused scope, described upfront — without forcing an
 artificial split.
 
-Before presenting any code, check it against the style rules in this guide.
+Before presenting any code, check it against all loaded style guides.
 
 ## Plan documents
 

@@ -44,6 +44,13 @@ preferences, numbered steps for procedures. "Before calling `Write` on an
 existing file" fires when it should; "for existing files, use `Edit`" is
 concept-first and doesn't fire.
 
+**Style rules** (type annotations, nullability, naming conventions) apply
+diffusely rather than at a seam — they fire in a self-review pass, not at a
+discrete transition. For these, use topic-first format: a bold topic label
+(**Nullability**, **Types**) serves as a lookup key. Keep the label concrete
+enough to be recognized during self-review; vague labels (**Preferences**,
+**Config**) don't narrow applicability.
+
 **Anchor to transitions, not ambient conditions**: Prefer triggers that fire at
 clear seams — before or after an atomic action — over mid-stream conditions.
 "Before creating a new file" fires at an unmissable moment; "when writing
@@ -53,7 +60,7 @@ complex code" fires while attention is already divided.
 
 **Explicit strength**: Use `always`, `prefer`, `avoid`, `never` deliberately —
 they carry different obligations. Quantifiers like `every` and `never` are
-equivalent to `always` and are fine where they read more naturally.
+equivalent to `always`; use them where they read more naturally.
 
 **Inline rationale**: Include a brief "why" when the rule is unintuitive, when
 violating it is tempting, or when knowing the reason would clarify an ambiguous
