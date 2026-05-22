@@ -9,11 +9,11 @@
   setup only when the exact value is genuinely irrelevant to the test's meaning.
   Before finalizing a test helper, verify that every value the test asserts on
   is visible in the test body, not inside the helper.
-- **I/O boundary testability**: before writing a test that uses `tmp_path` or
-  a real filesystem path, restructure the entry point to accept a stream
-  instead — keep the entry point as a thin wrapper that opens the file and
-  delegates, then test the inner function directly with in-memory streams. No
-  temp files, no monkeypatching.
+- **I/O boundary testability**: before writing a test that uses `tmp_path` or a
+  real filesystem path, restructure the entry point to accept a stream instead —
+  keep the entry point as a thin wrapper that opens the file and delegates, then
+  test the inner function directly with in-memory streams. No temp files, no
+  monkeypatching.
 - **Test via public APIs**: exercise internal behaviors by constructing inputs
   that expose them at the public level, not by calling internals directly.
 - **One behavior per test**
@@ -47,10 +47,10 @@
   in order — more readable than mocks. Add `__enter__`/`__exit__` to assert all
   replies were consumed; `__exit__` should skip the check when an exception is
   already propagating to avoid masking the real failure.
-- **Varying scripted fake behavior**: pass different replies to the existing fake
-  rather than creating a custom stub subclass — vary the inputs, not the fake.
-  Reserve custom stubs for structural reasons (e.g. raising an exception the
-  scripted fake can't raise).
+- **Varying scripted fake behavior**: pass different replies to the existing
+  fake rather than creating a custom stub subclass — vary the inputs, not the
+  fake. Reserve custom stubs for structural reasons (e.g. raising an exception
+  the scripted fake can't raise).
 
 ## JavaScript
 
