@@ -18,6 +18,11 @@ read and understand code. In practice this means:
   sections — structure on the page should reflect structure in the logic
 - **Naming**: names answer "X what?" — neither terse nor verbose. `page_count`
   not `count`; not `the_total_number_of_pages`
+- **No abbreviations in names**: spell words out in full. Manage length by
+  choosing precise, tight terminology — not by truncating words.
+  `solvability_parser` not `solv_parser`; `message` not `msg`. Exception:
+  established language-level conventions such as `args`, `*args`, `**kwargs`,
+  and loop variables (`i`, `e`) where the abbreviated form is the canonical name
 - **Docstrings**: brief docstring on every top-level definition, even simple
   ones. "Brief" means efficiently articulated, not just short. Use structured
   sections (Args, Returns, etc.) only when they genuinely add clarity over prose
@@ -29,7 +34,8 @@ read and understand code. In practice this means:
   to be, or why something is no longer the case crowds out the current truth and
   ages into misinformation
 - **TODOs**: write known tradeoffs as TODO comments when not addressing them
-  now, so they aren't lost as mental notes
+  now, so they aren't lost as mental notes. Always place a TODO on its own
+  line — never append it to a line that carries other content
 - **Named helpers**: extract repeated expressions into named constants or helper
   variables rather than repeating them inline
 - **Don't name for the sake of naming**: a name earns its existence by being
