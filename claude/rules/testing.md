@@ -31,9 +31,11 @@ paths:
   test. Builders accept native types and handle serialization internally —
   callers pass domain values, not wire-format strings or stream objects. Add a
   bypass helper for error-handling tests rather than contorting the primary one.
-- **Don't wrap the subject under test**: never extract the call under test into
-  a shared helper — it forces a long-distance lookup and obscures what the test
-  exercises.
+- **Only expose relevant parameters at call sites**: when many parameters don't
+  affect the assertion, wrap the call under test in a helper that provides
+  sensible defaults, so tests only spell out what they're actually testing. The
+  wrapper must never hide a value the test asserts on — if a parameter matters
+  to the assertion, pass it explicitly at the call site.
 - **Error cases**: assert both sides — no output produced _and_ diagnostic
   emitted. Match a keyword, not the full message (exact text is an
   implementation detail).
@@ -47,6 +49,10 @@ paths:
   `@pytest.mark.xfail(strict=True)`. `strict=True` causes the suite to fail when
   the test unexpectedly passes — a reminder to remove the marker once the
   production code lands.
+- **Comment non-obvious expectations**: add an inline comment when the reason an
+  assertion is correct isn't apparent from the test name and assertion alone —
+  e.g. when a count encodes a structural protocol, or a specific value reflects
+  a design constraint.
 - **Builder serialization**: `_make_foo` helpers convert Python values to the
   types the function under test expects — a `list[str]` becomes a JSON string or
   an `io.StringIO`; callers never serialize manually.
