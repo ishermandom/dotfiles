@@ -34,8 +34,8 @@ read and understand code. In practice this means:
   to be, or why something is no longer the case crowds out the current truth and
   ages into misinformation
 - **TODOs**: write known tradeoffs as TODO comments when not addressing them
-  now, so they aren't lost as mental notes. Always place a TODO on its own
-  line — never append it to a line that carries other content
+  now, so they aren't lost as mental notes. Always place a TODO on its own line
+  — never append it to a line that carries other content
 - **Named helpers**: extract repeated expressions into named constants or helper
   variables rather than repeating them inline
 - **Don't name for the sake of naming**: a name earns its existence by being
