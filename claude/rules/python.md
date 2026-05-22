@@ -21,6 +21,9 @@ paths:
 - **Always use abstract collection types in signatures**: `Sequence` over `list`
   or `tuple`, `Mapping` over `dict`, `Iterable` where only iteration is needed.
   Implementations may use concrete types freely.
+- **Never silence type errors**: fix the underlying type issue instead of adding
+  `# type: ignore` or `cast()`. If silencing genuinely seems like the right
+  call, stop, explain the case to the user, and get explicit approval.
 - **Never use `typing.Any`**: prefer `object` for unvalidated external data
   (forces explicit narrowing at use sites), a concrete type if the shape is
   known, or a `TypedDict`/`Protocol` when structure matters. If `Any` genuinely
