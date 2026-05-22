@@ -17,10 +17,14 @@
   `test_auth`
 - **Structure**: inputs → action → assertion; blank line between stages when it
   aids readability
-- **Test input helpers**: prefer a typed struct with named fields and sensible
-  defaults for irrelevant ones — hide construction ceremony, never hide what's
-  being exercised. Add a bypass helper for error-handling tests rather than
-  contorting the primary one.
+- **Test input helpers**: name them `_make_foo` or `_build_foo`. Hide
+  construction ceremony and irrelevant defaults; never hide the values under
+  test. Builders accept native types and handle serialization internally — callers
+  pass domain values, not wire-format strings or stream objects. Add a bypass
+  helper for error-handling tests rather than contorting the primary one.
+- **Don't wrap the subject under test**: never extract the call under test into
+  a shared helper — it forces a long-distance lookup and obscures what the test
+  exercises.
 - **Error cases**: assert both sides — no output produced _and_ diagnostic
   emitted. Match a keyword, not the full message (exact text is an
   implementation detail).
@@ -30,12 +34,18 @@
 ## Python
 
 - pytest; `io.StringIO` for in-memory stream fakes
+- **Builder serialization**: `_make_foo` helpers convert Python values to the
+  types the function under test expects — a `list[str]` becomes a JSON string or
+  an `io.StringIO`; callers never serialize manually.
 - Avoid `parametrize` unless it gives a concrete readability gain
 - **Scripted fakes**: for dependencies with a fixed call sequence (LLM clients,
   HTTP, queues), a fake that holds a list of scripted replies consumed in order
   is more readable than mocks. Add `__enter__`/`__exit__` to assert all replies
   were consumed; `__exit__` should skip the check when an exception is already
-  propagating to avoid masking the real failure.
+  propagating to avoid masking the real failure. **Vary the scripted inputs, not
+  the fake**: don't create a custom stub subclass just to change what a fake
+  returns — pass different replies to the same fake. Reserve custom stubs for
+  structural reasons (e.g. raising an exception the scripted fake can't raise).
 
 ## JavaScript
 
