@@ -22,12 +22,11 @@ format_dir() {
 
 format_dir .
 
-# ~/.claude may symlink into a dotfiles repo outside the CWD. Format there
-# too so that edits made via the symlink path are caught by this hook.
-claude_real=$(readlink -f ~/.claude 2>/dev/null)
-if [ -n "$claude_real" ]; then
-  dotfiles_root=$(dirname "$claude_real")
-  if [ "$(realpath .)" != "$(realpath "$dotfiles_root")" ]; then
-    format_dir "$dotfiles_root"
-  fi
+# This script lives at claude/hooks/ruff-format.sh inside the dotfiles repo.
+# Resolve its real path and walk up three levels to find the repo root, then
+# format there too when the CWD is a different project.
+script_real=$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null)
+dotfiles_root=$(dirname "$(dirname "$(dirname "$script_real")")")
+if [ "$(realpath .)" != "$(realpath "$dotfiles_root")" ]; then
+  format_dir "$dotfiles_root"
 fi
