@@ -7,9 +7,13 @@
   scripted replies — directly in each test. A reader should understand what is
   being tested without scrolling to a shared constant or fixture. Extract shared
   setup only when the exact value is genuinely irrelevant to the test's meaning.
-- **I/O boundary testability**: entry points should be thin wrappers that
-  delegate to a stream-accepting function. Tests call that function directly
-  with in-memory streams — no temp files, no monkeypatching.
+  Before finalizing a test helper, verify that every value the test asserts on
+  is visible in the test body, not inside the helper.
+- **I/O boundary testability**: before writing a test that uses `tmp_path` or
+  a real filesystem path, restructure the entry point to accept a stream
+  instead — keep the entry point as a thin wrapper that opens the file and
+  delegates, then test the inner function directly with in-memory streams. No
+  temp files, no monkeypatching.
 - **Test via public APIs**: exercise internal behaviors by constructing inputs
   that expose them at the public level, not by calling internals directly.
 - **One behavior per test**
@@ -19,9 +23,9 @@
   aids readability
 - **Test input helpers**: name them `_make_foo` or `_build_foo`. Hide
   construction ceremony and irrelevant defaults; never hide the values under
-  test. Builders accept native types and handle serialization internally — callers
-  pass domain values, not wire-format strings or stream objects. Add a bypass
-  helper for error-handling tests rather than contorting the primary one.
+  test. Builders accept native types and handle serialization internally —
+  callers pass domain values, not wire-format strings or stream objects. Add a
+  bypass helper for error-handling tests rather than contorting the primary one.
 - **Don't wrap the subject under test**: never extract the call under test into
   a shared helper — it forces a long-distance lookup and obscures what the test
   exercises.
@@ -39,13 +43,14 @@
   an `io.StringIO`; callers never serialize manually.
 - Avoid `parametrize` unless it gives a concrete readability gain
 - **Scripted fakes**: for dependencies with a fixed call sequence (LLM clients,
-  HTTP, queues), a fake that holds a list of scripted replies consumed in order
-  is more readable than mocks. Add `__enter__`/`__exit__` to assert all replies
-  were consumed; `__exit__` should skip the check when an exception is already
-  propagating to avoid masking the real failure. **Vary the scripted inputs, not
-  the fake**: don't create a custom stub subclass just to change what a fake
-  returns — pass different replies to the same fake. Reserve custom stubs for
-  structural reasons (e.g. raising an exception the scripted fake can't raise).
+  HTTP, queues), implement a fake that holds a list of scripted replies consumed
+  in order — more readable than mocks. Add `__enter__`/`__exit__` to assert all
+  replies were consumed; `__exit__` should skip the check when an exception is
+  already propagating to avoid masking the real failure.
+- **Varying scripted fake behavior**: pass different replies to the existing fake
+  rather than creating a custom stub subclass — vary the inputs, not the fake.
+  Reserve custom stubs for structural reasons (e.g. raising an exception the
+  scripted fake can't raise).
 
 ## JavaScript
 
