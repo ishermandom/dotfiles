@@ -16,6 +16,10 @@ read and understand code. In practice this means:
   awkward than a longer line
 - **Blank lines**: use them to create visual breathing room between logical
   sections — structure on the page should reflect structure in the logic
+- **Logical operators in multi-line expressions**: place `and`/`or` at the start
+  of the continuation line, not at the end of the preceding one — this groups
+  the operator visually with the operand it introduces and aligns parallel
+  conditions at the same indent
 - **Naming**: names answer "X what?" — neither terse nor verbose. `page_count`
   not `count`; not `the_total_number_of_pages`
 - **No abbreviations in names**: spell words out in full. Manage length by
@@ -23,6 +27,10 @@ read and understand code. In practice this means:
   `solvability_parser` not `solv_parser`; `message` not `msg`. Exception:
   established language-level conventions such as `args`, `*args`, `**kwargs`,
   and loop variables (`i`, `e`) where the abbreviated form is the canonical name
+- **Boolean names**: prefix with `is_`, `has_`, `can_`, `does_`, or another verb
+  that communicates boolean intent at a glance — `satisfies_foo`, `uses_foo`,
+  `allows_foo`. A bare noun like `tense_agreement` doesn't signal its type;
+  `has_tense_agreement` does
 - **Docstrings**: brief docstring on every top-level definition, even simple
   ones. "Brief" means efficiently articulated, not just short. Use structured
   sections (Args, Returns, etc.) only when they genuinely add clarity over prose
@@ -46,6 +54,9 @@ read and understand code. In practice this means:
   simpler one
 - **Type annotations**: annotate all definitions where the language supports it
 - **Factoring**: extract for clarity; don't abstract ahead of actual reuse
+- **Name shared modules by what they do**: `parsing.py`, `formatting.py` — not
+  `util.py`, `helpers.py`, or `common.py`. A focused name makes it immediately
+  clear whether a new helper belongs in that file
 - **Use enums for bounded value sets**: when a variable or parameter accepts one
   of a known, finite set of values, define an enum rather than passing raw
   literals. This documents what's valid, enables IDE support, and catches
@@ -55,6 +66,11 @@ read and understand code. In practice this means:
   caller. Returning a sentinel value can be the right contract when the caller
   is expected to handle it, but using one to paper over an error that shouldn't
   occur hides bugs
+- **Narrow exception handling**: a `try` block should wrap only the specific
+  statement(s) that can raise; `except` should name only the exact types those
+  statements produce. A wide try that covers several statements hides which
+  operation actually failed and can accidentally catch exceptions it was never
+  meant to handle
 - **Include context in error messages**: an error message should contain enough
   information to diagnose the problem without reproducing it. Include relevant
   inputs — or an excerpt, if they can be large
