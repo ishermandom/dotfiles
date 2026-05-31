@@ -18,7 +18,10 @@ paths:
   real filesystem path, restructure the entry point to accept a stream instead —
   keep the entry point as a thin wrapper that opens the file and delegates, then
   test the inner function directly with in-memory streams. No temp files, no
-  monkeypatching.
+  monkeypatching. For CLI entry points with file-input flags, use `-` as a
+  sentinel (Unix convention) that redirects to an injectable `stdin` parameter —
+  `main()` accepts `stdin: TextIO = sys.stdin`, and `-` routes to it. Tests pass
+  `io.StringIO(...)` directly; argument parsing is exercised without temp files.
 - **Test via public APIs**: exercise internal behaviors by constructing inputs
   that expose them at the public level, not by calling internals directly.
 - **One behavior per test**
