@@ -160,7 +160,12 @@ For bug fixes and refactors where the change is inherently a single unit, apply
 the same spirit — focused scope, described upfront — without forcing an
 artificial split.
 
-Before presenting any code, check it against all loaded style guides.
+Before presenting any code, check it against all loaded style guides —
+explicitly, as a checklist pass, not by passive recall.
+
+When the user gives multiple tasks at once, add them all to the project's
+`tasks.md` (the task tracker) first and ask which to start with. Don't act on a
+list of items in sequence without checking in between.
 
 ## Plan documents
 
