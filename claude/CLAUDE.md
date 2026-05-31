@@ -161,7 +161,9 @@ the same spirit — focused scope, described upfront — without forcing an
 artificial split.
 
 Before presenting any code, check it against all loaded style guides —
-explicitly, as a checklist pass, not by passive recall.
+explicitly, as a checklist pass, not by passive recall. This applies to every
+edit, however small; the rules most likely to slip through are those unrelated
+to the change's main focus.
 
 When the user gives multiple tasks at once, add them all to the project's
 `tasks.md` (the task tracker) first and ask which to start with. Don't act on a
