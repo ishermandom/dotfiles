@@ -18,6 +18,12 @@ paths:
   are immutable, named, and don't expose confusing positional access.
   `NamedTuple` is acceptable when tuple unpacking at the call site is genuinely
   useful.
+- **Prefer f-strings over `%`-style format strings**: f-strings place each value
+  inline at its point of use — the reader sees exactly what fills each slot
+  without counting positional arguments to match them to placeholders. The
+  standard logging advice to use `%`-style for deferred string construction only
+  matters when arguments are expensive to compute; inline the value when it is
+  already available.
 - **Always use abstract collection types in signatures**: `Sequence` over `list`
   or `tuple`, `Mapping` over `dict`, `Iterable` where only iteration is needed.
   Implementations may use concrete types freely.
