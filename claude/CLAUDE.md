@@ -205,13 +205,6 @@ Every session, without being asked:
   across distant sections. For multi-file exploration, use the `Explore`
   subagent. Don't read multiple related files in parallel speculatively — start
   with the most likely relevant one and expand only if needed.
-- **Cap subagent output**: default to findings only — what's true and why it
-  matters for the task at hand. Omit source URLs, framing, and recaps by
-  default. Include a URL when it would be needed for a follow-up action in this
-  session (fetching, citing, or verifying a specific page). Include additional
-  detail or caveats when a finding is surprising, contradicts a prior
-  assumption, or would change the approach if omitted. The test: would omitting
-  this cause Claude to act on incomplete or misleading information?
 
 ### Session-switch guidance
 
