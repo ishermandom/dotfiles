@@ -1,17 +1,24 @@
 ---
 paths:
-  - "**/CLAUDE.md"
+  - "**/.claude/docs/*.md"
   - "**/.claude/rules/*.md"
+  - "**/.claude/skills/**/*.md"
+  - "**/CLAUDE.md"
+  # ~/.claude/* are symlinks into dotfiles; edits happen at the real paths,
+  # which the .claude globs don't match.
+  - "**/dotfiles/claude/docs/*.md"
+  - "**/dotfiles/claude/rules/*.md"
+  - "**/dotfiles/claude/skills/**/*.md"
 ---
 
 # Claude rules style guide
 
-Rules in CLAUDE.md and rules/ files are always read by Claude Code, not a human.
-The goal is rules that fire at the right moment — precise enough that Claude
-recognizes when they apply. Keep them brief: rules compete with other context
-for attention, and their token cost accumulates across a session. Optimize for
-utility first, brevity second. This guide is itself a rules file — its own rules
-apply when editing it.
+CLAUDE.md, rules/, docs/, and skills/ files are read by Claude Code, not a
+human. The goal is rules that fire at the right moment — precise enough that
+Claude recognizes when they apply. Keep them brief: rules compete with other
+context for attention, and their token cost accumulates across a session.
+Optimize for utility first, brevity second. This guide is itself a rules file —
+its own rules apply when editing it.
 
 ## When writing a rule
 
@@ -80,9 +87,11 @@ when a specific alternate term comes to mind — if none does, don't add a
 placeholder.
 
 **Terminology**: Avoid "I", "you", and "a reader" — ambiguous or impersonal. Use
-"the user" for the human and "Claude" for Claude Code itself — naming the model
-binds more directly than "the assistant". Never use personal names — configs
-are written to be shareable.
+"the user" for the human and "Claude" for Claude Code itself. Never use personal
+names — configs are written to be shareable.
+
+<!-- "Claude" over "the assistant": naming the model binds instructions more
+directly. -->
 
 **Be self-contained**: Avoid references to concepts defined elsewhere that may
 not be in context. "Follow the DAMP pattern" is opaque without the testing guide
