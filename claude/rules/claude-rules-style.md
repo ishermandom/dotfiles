@@ -80,7 +80,9 @@ when a specific alternate term comes to mind — if none does, don't add a
 placeholder.
 
 **Terminology**: Avoid "I", "you", and "a reader" — ambiguous or impersonal. Use
-"the user" for the human and "Claude" for Claude Code itself.
+"the user" for the human and "Claude" for Claude Code itself — naming the model
+binds more directly than "the assistant". Never use personal names — configs
+are written to be shareable.
 
 **Be self-contained**: Avoid references to concepts defined elsewhere that may
 not be in context. "Follow the DAMP pattern" is opaque without the testing guide

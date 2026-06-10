@@ -22,9 +22,9 @@ effectively:
   manually or repeatedly
 - An interesting pattern that came up that's worth remembering or internalizing
 
-Suggest one or two takeaways, concretely tied to moments from this session.
-This is chat-only guidance for the user to internalize — don't persist it
-anywhere. Skip if nothing stands out.
+Suggest one or two takeaways, concretely tied to moments from this session. This
+is chat-only guidance for the user to internalize — don't persist it anywhere.
+Skip if nothing stands out.
 
 ## 3. Durable context routing
 
