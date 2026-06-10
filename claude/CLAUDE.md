@@ -114,9 +114,6 @@ read and understand code. In practice this means:
 - **Validate after adding**: after wiring up a new hook, trigger the expected
   behavior and confirm the hook fires correctly — e.g. introduce a deliberate
   failure to verify a test hook catches it, then restore.
-- **Don't manually run automated hooks**: never propose invoking a linter,
-  type-checker, or test suite that is already wired to a Stop hook — it will run
-  automatically at the end of the turn.
 
 ## Interaction style
 
@@ -197,6 +194,12 @@ Every session, without being asked:
   Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
   a dotfiles repo — always dereference before editing any path in that
   directory.
+- **Before running pytest, mypy, ruff, or prettier**: they run automatically at
+  Stop — never invoke the bare tools yourself (a PreToolUse gate denies them).
+  Run a check mid-turn only when its result changes what happens this turn (e.g.
+  confirming an intermediate state lets more work land now), and then via the
+  wrappers `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier}.sh [paths]` —
+  terse output, auto-surfaced to the user.
 - **Prefer parallel tool calls** when independent.
 - **Read files incrementally**: use `grep`/`find` to locate relevant sections,
   then read only those ranges with `offset`/`limit`. For edits, grep for the

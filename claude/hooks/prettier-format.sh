@@ -5,24 +5,14 @@
 # from the turn have landed before formatting runs. The Stop hook receives
 # no information about which files changed, so we check the whole directory.
 
-# Hooks run with a minimal environment; Homebrew's bin directory may not be
-# on PATH, so we add it explicitly.
-export PATH="/opt/homebrew/bin:$PATH"
-
 format_dir() {
   local dir="$1"
-  local has_formattable_files
-  has_formattable_files=$(find "$dir" \( -name "*.md" -o -name "*.js" -o -name "*.ts" \) -print -quit 2>/dev/null)
-  [ -z "$has_formattable_files" ] && return 0
 
-  # Fall back to the global config when no project-level config exists.
-  local config_args=()
-  if ! prettier --find-config-path "$dir/placeholder" >/dev/null 2>&1; then
-    config_args=(--config "$HOME/.prettierrc")
-  fi
-
-  # Run from $dir so that prettier's glob expansion is relative to it.
-  (cd "$dir" && prettier "${config_args[@]}" --write "**/*.md" "**/*.js" "**/*.ts" 2>/dev/null || true)
+  # The prettier invocation (PATH setup, config fallback, file globs) is
+  # delegated to the quiet-prettier wrapper so it lives in one place
+  # (~/.claude/scripts/quiet-prettier.sh). Run from $dir so the wrapper's
+  # globs are relative to it; formatting issues don't block the stop.
+  (cd "$dir" && "$HOME/.claude/scripts/quiet-prettier.sh" >/dev/null 2>&1 || true)
 }
 
 format_dir .

@@ -18,6 +18,10 @@
       "Bash(git log:*)",
       "Bash(git show:*)",
       "Bash(git status:*)",
+      "Bash(~/.claude/scripts/quiet-tests.sh:*)",
+      "Bash(~/.claude/scripts/quiet-mypy.sh:*)",
+      "Bash(~/.claude/scripts/quiet-ruff.sh:*)",
+      "Bash(~/.claude/scripts/quiet-prettier.sh:*)",
       "Read",
       "WebFetch(*)",
       "WebSearch"
@@ -35,6 +39,28 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/gate_auto_tools.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/show-check-output.sh"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/show-check-output.sh"
           }
         ]
       }

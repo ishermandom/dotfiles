@@ -2,9 +2,10 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# PreToolUse hook: prompt before running any tool that the Stop hook runs
-# automatically (pytest, ruff, mypy, prettier). Surfaces a permission prompt
-# so intentional runs can be approved while reflexive ones are denied.
+# PreToolUse hook: deny bare invocations of the tools the Stop hook runs
+# automatically (pytest, ruff, mypy, prettier), pointing intentional runs at
+# the token-lean wrappers in ~/.claude/scripts/ instead. The wrappers don't
+# match the pattern below, so they pass through this gate.
 
 bash_command=$(jq -r '.tool_input.command // ""')  # -r: raw string, strips JSON quotes
 
@@ -23,7 +24,7 @@ if echo "$normalized" | grep -qE "$pattern"; then  # -q: exit code only; -E: ext
     "hookSpecificOutput": {
       "hookEventName": "PreToolUse",
       "permissionDecision": "deny",
-      "permissionDecisionReason": "pytest, ruff, mypy, and prettier run automatically at Stop — running them mid-turn risks false results while edits are still in flight. If this was reflexive, stop here. If intentional (a specific diagnostic reason, e.g. running mypy on one file to understand an error), tell the user what you want to run and why, and ask them to run it with ! <command>."
+      "permissionDecisionReason": "pytest, ruff, mypy, and prettier run automatically at Stop — do not re-run them reflexively mid-turn. If this run adds value (e.g. confirming an intermediate state lets more work land this turn), use the token-lean wrappers instead: ~/.claude/scripts/quiet-{tests,mypy,ruff,prettier}.sh [paths]. Their output is shown to the user automatically."
     }
   }'
 fi

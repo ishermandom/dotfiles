@@ -11,13 +11,12 @@ format_dir() {
   has_python_files=$(find "$dir" -name "*.py" -print -quit 2>/dev/null)
   [ -z "$has_python_files" ] && return 0
 
+  # The ruff invocation is delegated to the quiet-ruff wrapper so the
+  # canonical flags live in one place (~/.claude/scripts/quiet-ruff.sh).
   # 2>/dev/null discards stderr (e.g. "cannot parse file") so that ruff
-  # warnings don't surface as hook errors. The main case where ruff errors —
-  # unparseable files — is already caught by mypy. Non-auto-fixable lint
-  # issues go to stdout and are unaffected. Unexpected ruff crashes would be
-  # silently missed, but that is unlikely in practice.
-  ruff check --fix "$dir" 2>/dev/null
-  ruff format "$dir" 2>/dev/null
+  # warnings don't surface as hook errors; non-auto-fixable lint issues go
+  # to stdout and don't block the stop (|| true).
+  "$HOME/.claude/scripts/quiet-ruff.sh" "$dir" 2>/dev/null || true
 }
 
 format_dir .
