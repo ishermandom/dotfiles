@@ -1,5 +1,6 @@
 ---
 description: End-of-session protocol. Run when wrapping up a session.
+allowed-tools: Read, Edit, Write, Bash
 ---
 
 Work through each step in order.
@@ -29,9 +30,10 @@ Skip if nothing stands out.
 ## 3. Durable context routing
 
 Identify what a future session would need from this one, and write each piece
-into the durable file where that session would look for it. Do not write a
-session log: narrative belongs in git history and chat, and a log entry is where
-context goes to get stale.
+into the durable file where that session would look for it. Do not write
+narrative session reports into project files: narrative belongs in git history
+and chat, and a project-local log entry is where context goes to get stale.
+(Efficiency reflection goes to the global session log — step 4.)
 
 - **Pending work, next steps, and decisions about them** → the project's
   `tasks.md` (or plan doc): update statuses, add tasks, and attach
@@ -47,9 +49,11 @@ If a piece of durable context fits none of the project's existing durable files,
 propose a new file — name and scope — and confirm both with the user before
 creating it.
 
-## 4. Reflection
+## 4. Reflection and session log
 
-Present in chat, across two dimensions:
+Reflect adversarially: assume meaningful inefficiencies occurred unless evidence
+suggests otherwise, and prioritize identifying avoidable waste over highlighting
+accomplishments. Cover:
 
 - _Token efficiency_: estimate the session's main token costs (file reads:
   `wc -c` on files read, ~chars/4 for tokens; subagent output: estimate from
@@ -60,11 +64,31 @@ Present in chat, across two dimensions:
   there tangents, unnecessary back-and-forth, or work that could have been
   deferred? Each identified failure needs a diagnosis and mechanism specific
   enough that a skeptic couldn't dismiss them as obvious. "Do better next time"
-  is a wish, not a reflection. Aim for 2–3 bullets total, but use as many or few
-  as the session warrants.
+  is a wish, not a reflection.
+- _Corrections_: moments the user redirected Claude — what was misunderstood,
+  and what earlier signal would have caught it.
+- _Rules_: standing rules that actively shaped the session, were violated, or
+  should have fired and didn't.
+
+Present the highlights in chat, then append an entry to
+`~/.claude/logs/sessions.md` (create the file if missing):
+
+- Heading: date, project, and session type (coding / debug / refactor / planning
+  / explore).
+- Sections, each omitted when empty: **Inefficiency** (top 1–3 sources of
+  avoidable effort, each with the earliest signal that should have triggered a
+  course change), **Corrections**, **Adjustments** (at most three proposed
+  behavioral changes — specific and narrowly scoped, not "plan better"),
+  **Rules**.
+- Size scales with the session: 1–2 lines for a short clean session, ~10 lines
+  typically, at most ~25 for a complex one. The budget forces selectivity; it is
+  not a target.
 
 A mechanism that generalizes beyond this session belongs in memory or the
 relevant rules file — handle that in the Learning step.
+
+If ~10 or more session entries have accumulated since the last distillation
+marker in the log, suggest running the distill skill.
 
 ## 5. Pending commits
 
