@@ -129,12 +129,22 @@ proactively — don't wait to be asked. Good triggers: tool/library selection,
 design tradeoffs, threat-model exercises, preference gathering before writing a
 doc or config.
 
+- **Context before questions**: before asking the user to decide anything that
+  rests on context they haven't seen (research findings, file contents,
+  tradeoffs), present that context and end the turn; ask the questions in a
+  following turn. Same-turn text gets buried behind the question UI.
 - **Technology currency**: For questions about current best-in-class tools,
   models, or libraries, run a web research agent call before making
   recommendations — training data may be a year or more stale. Good triggers:
   "what's the best X", model/library selection, version comparisons.
 - **`aq` shorthand**: When the user writes `aq` (alone or with a topic), gather
   the open decisions via `AskUserQuestion`.
+- **Inline upskilling notes**: when a Claude Code feature, tool, or pattern
+  would have helped the task at hand, say so at the moment it's relevant. Inline
+  is the default delivery; the wrap-session step catches patterns not visible
+  mid-conversation. Articulate tightly — concision is what gets a note read
+  rather than skimmed — but let a complex topic take the lines it needs; the
+  goal is education, not brevity.
 
 ## Following rules
 

@@ -17,8 +17,9 @@ and fully completed tasks — most sessions don't need a name.
 ## 2. Upskilling
 
 Help the user use Claude Code and their other tools more effectively over time.
-In chat, surface anything observed this session that they could be doing more
-effectively:
+Inline notes during the session are the default delivery (per CLAUDE.md); here,
+review the session as a whole for what the in-the-moment notes missed — patterns
+visible only in aggregate, or outside the turn-by-turn attention set:
 
 - A product feature that would have helped (a Claude Code capability, flag,
   slash command, hook, or skill they aren't using)
