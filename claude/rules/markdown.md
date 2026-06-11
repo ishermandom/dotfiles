@@ -15,15 +15,37 @@ rewrapping diffs.
 - **Code**: always use fenced code blocks with a language tag. Use inline
   backticks for file paths, command names, and literal values.
 
-## When writing plan documents
+## When writing spec documents
 
-Plan documents are multi-session work queues. Their primary job is to let work
-resume without re-reading everything. Optimize for scannability and small diffs
-over time.
+`spec.md` is for someone building or changing the project: requirements,
+architecture decisions and their rationale, data models, edge cases, testing
+strategy. `README.md` serves the complementary audience — someone using the
+project — and stays fully self-contained; the spec may reference the README,
+never the reverse.
+
+- **No status**: never add progress markers or checkboxes to a spec; status
+  lives in `tasks.md`.
+- **Write for re-derivation**: capture enough that the design could be rebuilt
+  or reviewed from the document alone.
+- **Create the file** when design decisions need a durable record; otherwise
+  keep the spec inline in conversation.
+
+## When writing tasks documents
+
+`tasks.md` is the per-project tracker — a multi-session work queue whose primary
+job is to let work resume without re-reading everything. Optimize for
+scannability and small diffs over time. Structure scales with need: a flat
+checkbox list of to-dos suffices for most projects; introduce phases when work
+needs sequencing, with a flat `## Backlog` section for unsequenced items.
+
+The format conventions below keep trackers consistent across projects. How much
+structure to use, what enters the tracker, and how aggressively to prune are
+per-project judgments — keep the process light. Create the file when loose ends
+start accumulating; single-session task breakdowns usually live in chat.
 
 ### When marking task status
 
-Include this near the top of every plan:
+Include this near the top of every tasks file:
 
 ```
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
@@ -68,3 +90,10 @@ stay stable when tasks are reordered or inserted.
 Cross-reference explicitly: "Depends on #slug" at the end of the task line or in
 its notes. Implicit ordering (listing tasks in dependency order) is fine when no
 cross-phase references are needed.
+
+### When pruning completed work
+
+Completed tasks and phases can be summarized or deleted once they stop informing
+the remaining work — git preserves the detail. When in doubt, keep a dropped
+task's rationale, a discovered constraint, or anything another task cites. A
+file whose work is all done can simply be deleted.
