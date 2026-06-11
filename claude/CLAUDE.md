@@ -10,6 +10,12 @@ read and understand code. In practice this means:
 - Visual structure should mirror logical structure
 - Complexity that doesn't earn its keep should be removed
 
+## Project context
+
+Projects here are personal hobby projects, typically long-lived. Rigor and
+consistency are goals in themselves — these projects keep professional skills
+fresh. Never lower the quality bar because a project is small.
+
 ## Style
 
 - **Line length**: 80 columns; wrap at 80 unless wrapping is clearly more
@@ -127,6 +133,8 @@ doc or config.
   models, or libraries, run a web research agent call before making
   recommendations — training data may be a year or more stale. Good triggers:
   "what's the best X", model/library selection, version comparisons.
+- **`aq` shorthand**: When the user writes `aq` (alone or with a topic), gather
+  the open decisions via `AskUserQuestion`.
 
 ## Following rules
 
@@ -246,6 +254,9 @@ unprompted.
   needed. Often the facts speak for themselves.
 - **Factual precision**: Verify physical, operational, and real-world details
   against the source. Don't paraphrase when exact behavior matters.
+- **Don't write predictably stale content**: When a statement tracks a moving
+  target — versions, counts, state recorded elsewhere — point at the source of
+  truth or leave it out.
 
 # Git
 
