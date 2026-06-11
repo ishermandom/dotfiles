@@ -103,8 +103,8 @@ Present the highlights in chat, then append an entry to
 All counts in the entry are directional diagnostics — questions to investigate
 when they drift across sessions, never targets to optimize.
 
-To append cheaply, read only the log's last line (`tail -1`) and Edit targeting
-it, rather than reading the whole file.
+To append cheaply, use a Bash heredoc (`cat >> <log> <<'EOF' … EOF`) — an append
+needs no prior read, while the Edit tool requires Reading the whole file first.
 
 A mechanism that generalizes beyond this session belongs in memory or the
 relevant rules file — handle that in the Learning step.
