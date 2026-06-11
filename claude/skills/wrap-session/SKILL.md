@@ -5,6 +5,9 @@ allowed-tools: Read, Edit, Write, Bash
 
 Work through each step in order.
 
+If wrap-session already ran earlier in this session, evaluate only the work
+since that run — otherwise the session log double-counts the same findings.
+
 ## 1. Session naming
 
 Evaluate whether this session is worth naming. Suggest `/rename <name>` only for
@@ -55,10 +58,10 @@ Reflect adversarially: assume meaningful inefficiencies occurred unless evidence
 suggests otherwise, and prioritize identifying avoidable waste over highlighting
 accomplishments. Cover:
 
-- _Token efficiency_: estimate the session's main token costs (file reads:
-  `wc -c` on files read, ~chars/4 for tokens; subagent output: estimate from
-  content length; other large tool results). Identify at least one concrete case
-  of higher-than-necessary consumption with a diagnosis (_why_ did this happen?)
+- _Token efficiency_: diagnose the session's main cost drivers from observable
+  evidence — file reads (`wc -c` gives sizes when comparing), subagent output
+  volume, other large tool results. Identify at least one concrete case of
+  higher-than-necessary consumption, with a diagnosis (_why_ did this happen?)
   and a mechanism (_what specifically changes_ to prevent it?).
 - _Attention efficiency_: was context well-focused on the right things? Were
   there tangents, unnecessary back-and-forth, or work that could have been
@@ -67,14 +70,26 @@ accomplishments. Cover:
   is a wish, not a reflection.
 - _Corrections_: moments the user redirected Claude — what was misunderstood,
   and what earlier signal would have caught it.
-- _Rules_: standing rules that actively shaped the session, were violated, or
-  should have fired and didn't.
+- _Rules and loaded context_: standing rules and the other artifacts that loaded
+  this session (CLAUDE.md sections, rules files, docs, skill instructions) —
+  which actively shaped the session, were violated, should have fired and
+  didn't, or loaded without earning their tokens. One session is citation data,
+  not a verdict: demotion and removal decisions belong to distillation across
+  many sessions.
+- _Config size_: spot-check the cost side of loaded context — `wc -l` on
+  always-loaded files, flagging outliers — and, when something looks bloated,
+  suggest the user run `/context` (per-feature context breakdown) and `/usage`
+  (per-skill/subagent/MCP cost attribution) for the authoritative measure.
+  Record both signals — line counts and `/context` shares — so their relative
+  effectiveness can be compared over time.
 
 Present the highlights in chat, then append an entry to
 `~/.claude/logs/sessions.md` (create the file if missing):
 
 - Heading: date, project, and session type (coding / debug / refactor / planning
-  / explore).
+  / explore), followed by a scope line of countable facts — e.g.
+  `4 files modified · 2 correction turns · 11 file reads`. Scope facts are
+  events counted from the conversation, not token figures.
 - Sections, each omitted when empty: **Inefficiency** (top 1–3 sources of
   avoidable effort, each with the earliest signal that should have triggered a
   course change), **Corrections**, **Adjustments** (at most three proposed
@@ -83,6 +98,12 @@ Present the highlights in chat, then append an entry to
 - Size scales with the session: 1–2 lines for a short clean session, ~10 lines
   typically, at most ~25 for a complex one. The budget forces selectivity; it is
   not a target.
+
+All counts in the entry are directional diagnostics — questions to investigate
+when they drift across sessions, never targets to optimize.
+
+To append cheaply, read only the log's last line (`tail -1`) and Edit targeting
+it, rather than reading the whole file.
 
 A mechanism that generalizes beyond this session belongs in memory or the
 relevant rules file — handle that in the Learning step.
@@ -107,3 +128,19 @@ If production code was written, offer:
 
 > "Consider a reviewer session: open a fresh session with the relevant files in
 > context and run `/review`."
+
+## 8. Clear, compact, or continue
+
+Close with a genuine judgment on what to do with this session next. Weigh what
+is in context now, what the next task needs, and the cheapest path to it:
+
+- **Clear** when the next task is unrelated and nothing needs to carry forward —
+  eliminates re-ingestion cost entirely.
+- **Compact** only when the next task genuinely needs live context from this
+  session (mid-task state, open decisions, active debugging). Compaction defers
+  re-ingestion cost to the next turn; it does not eliminate it.
+- **Continue** only when context is genuinely small and the next task is a
+  direct extension.
+
+Give 2–3 sentences: the current context state, what the next task likely needs,
+and the recommendation with its reasoning.

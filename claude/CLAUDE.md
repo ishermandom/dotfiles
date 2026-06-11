@@ -233,11 +233,6 @@ When a task arrives, assess complexity and flag in one sentence if the effort
 level seems mismatched. Sonnet 4.6 defaults to `high`; `medium` is recommended
 for most workloads. Only flag when the mismatch is clear — not on every task.
 
-### On-demand token audit
-
-When asked, read `~/.claude/docs/token-audit.md` for instructions. Don't run
-unprompted.
-
 ## Documentation
 
 - **Concepts over implementation**: Explain what something is trying to achieve
