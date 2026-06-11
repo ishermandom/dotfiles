@@ -27,6 +27,10 @@ never the reverse.
   lives in `tasks.md`.
 - **Write for re-derivation**: capture enough that the design could be rebuilt
   or reviewed from the document alone.
+- **Reference sources of truth**: when an operative detail lives and evolves
+  elsewhere (code, configs, another doc), record the decision and its rationale
+  and reference the source rather than mirroring its text — a mirror goes stale
+  the moment the source changes.
 - **Create the file** when design decisions need a durable record; otherwise
   keep the spec inline in conversation.
 
@@ -80,6 +84,10 @@ whichever keeps related content together. Include what Claude or the user
 couldn't infer in a future session; omit the rest. For longer rationale, a
 `### Notes` or `### Background` subsection under the phase header is cleaner
 than deeply indented task bullets.
+
+When a decision is settled in the spec, the note is a pointer — e.g.
+`Note: settled — see spec.md (Session log).` — not a summary. A summary
+duplicates the spec and drifts; keep only fragments the spec doesn't carry.
 
 ### When cross-referencing tasks
 
