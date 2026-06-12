@@ -297,6 +297,11 @@ for most workloads. Only flag when the mismatch is clear — not on every task.
 # Git
 
 - When pushing to GitHub, always use `origin-https`, not `origin`.
+- After creating a new GitHub repo, run `~/.claude/scripts/gh-protect.sh` — it
+  verifies the server-side backstop (a ruleset blocking force pushes and branch
+  deletion). On a reported gap, ask the user to create the printed ruleset in
+  the GitHub UI — everyday tokens deliberately lack the Administration write
+  access that `--apply` needs.
 - When already in the correct working directory, run `git` commands directly
   without the `-C <path>` flag.
 - For commit descriptions: keep the subject line to <= 72 chars, and wrap to
