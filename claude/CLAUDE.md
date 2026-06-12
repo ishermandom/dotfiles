@@ -306,3 +306,11 @@ for most workloads. Only flag when the mismatch is clear — not on every task.
   without the `-C <path>` flag.
 - For commit descriptions: keep the subject line to <= 72 chars, and wrap to
   80-col for the remaining lines.
+- Before amending a commit: amend only when the intermediate state has no
+  standalone value (typo fixes, immediate fix-ups); otherwise — and whenever
+  uncertain — stack a new commit. Lost history costs more than extra commits.
+  Never amend pushed commits.
+- Before committing in any repo other than the current working project — most
+  commonly, dotfiles edits made from another project's session — always ask
+  first, regardless of permission mode: commit authorization is scoped to the
+  session's project, not to every repo the session touches.
