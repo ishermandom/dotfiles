@@ -6,13 +6,28 @@
 # automatically (pytest, ruff, mypy, prettier), pointing intentional runs at
 # the token-lean wrappers in ~/.claude/scripts/ instead. The wrappers don't
 # match the pattern below, so they pass through this gate.
+#
+# Tool names count only in command position — not inside a string argument
+# such as a commit message. Full accuracy would need a bash parser; deleting
+# quoted strings and then normalizing command separators gets close enough.
+#
+# TODO: heredoc bodies are still scanned and can false-positive on lines that
+# begin with a tool name.
 
 bash_command=$(jq -r '.tool_input.command // ""')  # -r: raw string, strips JSON quotes
 
-# Normalize && and || to ; so the pattern only needs to handle ; and |
-# as command separators. This lets us match tool names only at a command
-# boundary, not when they appear as string arguments (e.g. in -m "...pytest...").
-normalized=$(echo "$bash_command" | sed 's/&&/;/g; s/||/;/g')
+# Quote deletion must span newlines: grep anchors ^ at every line of a
+# multi-line string, so a quoted commit message with a line that begins with
+# a tool name would otherwise trip the gate. Hence perl (sed works line by
+# line), with -0777 to read the whole input as one string.
+delete_double_quoted='s/"(\\.|[^"\\])*"//gs'   # \\. steps over escaped chars
+delete_single_quoted='s/\x27[^\x27]*\x27//gs'  # \x27 is a single-quote char
+stripped=$(echo "$bash_command" |
+  perl -0777 -pe "$delete_double_quoted; $delete_single_quoted")
+
+# With quoted strings gone, normalize && and || to ; so the pattern below
+# only needs ; and | as command separators.
+normalized=$(echo "$stripped" | sed 's/&&/;/g; s/||/;/g')
 
 cmd_start='(^|[;|])[[:space:]]*'  # start of string or after a separator
 auto_tools='(pytest|python -m pytest|ruff|mypy|prettier)'
