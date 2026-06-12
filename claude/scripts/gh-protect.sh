@@ -2,44 +2,46 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Verifies that a GitHub repo carries the branch-protection backstop — a
-# ruleset blocking force pushes and branch deletion on all branches — and
-# reports any gap. By default the script only reads; pass --apply to also
-# converge the repo: create the missing ruleset, or overwrite a differing
-# one. Run it whenever a new repo is created.
+# Verifies that a GitHub repo's branches carry the protection backstop —
+# force pushes and deletion blocked, linear history required, on every
+# branch — and reports any gap. Run it whenever a new repo is created.
 #
-# Verification needs only read access on the repo. --apply needs the
-# Administration: write permission — keeping that off everyday tokens is
-# deliberate, since a token that can edit rulesets can also remove them,
-# defeating the backstop.
+# The check is by function, not by name: it asks whether the repo's active,
+# all-branch rulesets together enforce the required rules, regardless of how
+# those rulesets are named or split across rulesets.
 #
-# Usage: gh-protect.sh [--apply] [[HOST/]OWNER/REPO]
+# The script only reads, needing just read access on the repo; it never
+# writes a ruleset. Creating one is left to the user via the GitHub UI: a
+# token that could write rulesets could also remove them, defeating the
+# backstop, so that power stays off the tokens Claude holds. On a gap, the
+# script names the missing protections and prints a config to create.
 #
-# Defaults to the current directory's repo. Exit codes: 0 = protected (or
-# successfully applied); 1 = operational error; 2 = usage error;
-# 3 = not protected (ruleset missing or differing).
+# Usage: gh-protect.sh [[HOST/]OWNER/REPO]
+#
+# Defaults to the current directory's repo. Exit codes: 0 = protected;
+# 1 = operational error; 2 = usage error; 3 = not protected (a required
+# protection is missing).
 
-ruleset_name="gh-protect"
+# The rule types every branch must be covered by, paired with how each reads
+# to the user.
+required_rules=(deletion non_fast_forward required_linear_history)
+
+rule_description() {
+  case "$1" in
+    deletion) echo "block branch deletion" ;;
+    non_fast_forward) echo "block force pushes" ;;
+    required_linear_history) echo "require linear history" ;;
+  esac
+}
 
 usage() {
-  echo "usage: gh-protect.sh [--apply] [[HOST/]OWNER/REPO]" >&2
+  echo "usage: gh-protect.sh [[HOST/]OWNER/REPO]" >&2
   exit 2
 }
 
-# Reprints JSON with sorted keys and uniform indentation, so equality
-# checks and diffs reflect content rather than formatting.
-normalize_json() {
-  python3 -c 'import json, sys
-print(json.dumps(json.load(sys.stdin), indent=2, sort_keys=True))'
-}
-
-should_apply=false
 repo_argument=""
 for argument in "$@"; do
   case "$argument" in
-    --apply)
-      should_apply=true
-      ;;
     -*)
       usage
       ;;
@@ -80,92 +82,80 @@ fi
 
 # includes_parents=false limits the listing to repo-level rulesets;
 # org-level parents do not exist on a personal account, and could not be
-# edited from here anyway.
-existing_id=$(gh api "repos/$repo/rulesets?includes_parents=false" \
-  --jq ".[] | select(.name == \"$ruleset_name\") | .id" 2>&1)
+# acted on from here anyway.
+rulesets_json=$(gh api "repos/$repo/rulesets?includes_parents=false" 2>&1)
 status=$?
 if [ $status -ne 0 ]; then
-  echo "gh-protect: cannot list rulesets for $repo: $existing_id" >&2
+  echo "gh-protect: cannot list rulesets for $repo: $rulesets_json" >&2
   exit 1
 fi
 
-# ~ALL matches every branch, current and future. If blanket protection adds
-# friction later (rebase force-pushes to feature branches, deleting merged
-# branches), narrow the ruleset by changing ~ALL to ~DEFAULT_BRANCH, which
-# tracks the default branch across renames.
-ruleset_json=$(cat <<JSON
+# Only active, branch-targeting rulesets can protect branches; tag and push
+# rulesets, and disabled ones, cannot.
+candidate_ids=$(echo "$rulesets_json" | jq -r \
+  '.[] | select(.target == "branch" and .enforcement == "active") | .id')
+
+# Collect the rule types enforced on every branch, across all candidates. A
+# ruleset counts only if it targets ~ALL — i.e. its rules reach every
+# branch, not just some. The list response omits rules and conditions, so
+# each candidate needs a detail fetch.
+covered_rules=""
+for ruleset_id in $candidate_ids; do
+  ruleset_rules=$(gh api "repos/$repo/rulesets/$ruleset_id" --jq \
+    'select((.conditions.ref_name.include // []) | index("~ALL"))
+     | (.rules // [])[].type' 2>&1)
+  status=$?
+  if [ $status -ne 0 ]; then
+    echo "gh-protect: cannot fetch ruleset $ruleset_id on $repo:" \
+      "$ruleset_rules" >&2
+    exit 1
+  fi
+  covered_rules="$covered_rules$ruleset_rules"$'\n'
+done
+
+# A required rule is satisfied when some all-branch ruleset enforces it.
+missing_descriptions=()
+for required_rule in "${required_rules[@]}"; do
+  # -F fixed string, -x whole-line, -q quiet: an exact match against one
+  # collected rule type, so a short name can't match inside a longer one.
+  if ! echo "$covered_rules" | grep -Fqx "$required_rule"; then
+    missing_descriptions+=("$(rule_description "$required_rule")")
+  fi
+done
+
+if [ ${#missing_descriptions[@]} -eq 0 ]; then
+  echo "gh-protect: $repo is protected — every branch blocks force pushes" \
+    "and deletion and requires linear history"
+  exit 0
+fi
+
+# Join the missing protections into one human-readable clause.
+missing_list=$(printf '%s; ' "${missing_descriptions[@]}")
+missing_list=${missing_list%; }
+
+echo "gh-protect: $repo is not fully protected — no active all-branch" \
+  "ruleset enforces: $missing_list. Create one in the repo's Settings →" \
+  "Rules → Rulesets; for example:"
+
+# ~ALL matches every branch, current and future. The name is just a label —
+# the check above ignores it. If blanket protection adds friction later
+# (rebase force-pushes to feature branches, deleting merged branches),
+# narrow the ruleset by changing ~ALL to ~DEFAULT_BRANCH, which tracks the
+# default branch across renames.
+cat <<JSON
 {
-  "name": "$ruleset_name",
+  "name": "gh-protect",
   "target": "branch",
   "enforcement": "active",
   "bypass_actors": [],
   "conditions": {
     "ref_name": {"include": ["~ALL"], "exclude": []}
   },
-  "rules": [{"type": "deletion"}, {"type": "non_fast_forward"}]
+  "rules": [
+    {"type": "deletion"},
+    {"type": "non_fast_forward"},
+    {"type": "required_linear_history"}
+  ]
 }
 JSON
-)
-
-if [ -z "$existing_id" ]; then
-  if [ "$should_apply" = true ]; then
-    # --input - reads the JSON request body from stdin.
-    output=$(gh api --method POST "repos/$repo/rulesets" \
-      --input - <<<"$ruleset_json" 2>&1)
-    status=$?
-    if [ $status -ne 0 ]; then
-      echo "gh-protect: failed to create ruleset on $repo: $output" >&2
-      exit 1
-    fi
-    echo "gh-protect: created ruleset \"$ruleset_name\" on $repo — all" \
-      "branches now block force pushes and deletion"
-    exit 0
-  fi
-  echo "gh-protect: $repo is not protected — no \"$ruleset_name\" ruleset" \
-    "found. Create it in the repo's Settings → Rules → Rulesets (config" \
-    "below), or rerun with --apply using Administration write access:"
-  echo "$ruleset_json"
-  exit 3
-fi
-
-# The ruleset exists; fetch it to see whether it matches. Project it down
-# to the fields this script manages, so the comparison ignores server-added
-# metadata (id, timestamps, links).
-live_json=$(gh api "repos/$repo/rulesets/$existing_id" --jq \
-  '{name, target, enforcement, conditions,
-    rules, bypass_actors: (.bypass_actors // [])}' 2>&1)
-status=$?
-if [ $status -ne 0 ]; then
-  echo "gh-protect: cannot fetch ruleset $existing_id on $repo:" \
-    "$live_json" >&2
-  exit 1
-fi
-
-expected_normalized=$(normalize_json <<<"$ruleset_json")
-live_normalized=$(normalize_json <<<"$live_json")
-if [ "$live_normalized" = "$expected_normalized" ]; then
-  echo "gh-protect: $repo is protected — ruleset \"$ruleset_name\"" \
-    "matches the expected config"
-  exit 0
-fi
-
-if [ "$should_apply" = true ]; then
-  output=$(gh api --method PUT "repos/$repo/rulesets/$existing_id" \
-    --input - <<<"$ruleset_json" 2>&1)
-  status=$?
-  if [ $status -ne 0 ]; then
-    echo "gh-protect: failed to update ruleset on $repo: $output" >&2
-    exit 1
-  fi
-  echo "gh-protect: updated ruleset \"$ruleset_name\" on $repo to the" \
-    "expected config"
-  exit 0
-fi
-
-echo "gh-protect: ruleset \"$ruleset_name\" on $repo differs from the" \
-  "expected config — possibly intentional. The change --apply would make:"
-# -L names the diff sides in place of the temp filenames the process
-# substitutions produce.
-diff -u -L current -L expected \
-  <(echo "$live_normalized") <(echo "$expected_normalized")
 exit 3
