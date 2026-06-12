@@ -48,7 +48,8 @@ Once the rule passes, write it with these properties:
 when/before/after for trigger-based rules, "never" for constraints, "prefer" for
 preferences, numbered steps for procedures. "Before calling `Write` on an
 existing file" fires when it should; "for existing files, use `Edit`" is
-concept-first and doesn't fire.
+concept-first and doesn't fire. Choose the format by the rule's own trigger —
+neighboring rules' label style doesn't justify concept-first.
 
 **Style rules** (type annotations, nullability, naming conventions) apply
 diffusely rather than at a seam — they fire in a self-review pass, not at a
