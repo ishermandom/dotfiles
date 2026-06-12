@@ -4,11 +4,10 @@ paths:
   - "**/.claude/rules/*.md"
   - "**/.claude/skills/**/*.md"
   - "**/CLAUDE.md"
-  # ~/.claude/* are symlinks into dotfiles; edits happen at the real paths,
-  # which the .claude globs don't match.
-  - "**/dotfiles/claude/docs/*.md"
-  - "**/dotfiles/claude/rules/*.md"
-  - "**/dotfiles/claude/skills/**/*.md"
+  # ~/.claude/* are symlinks into dotfiles, and edits happen at the real
+  # paths — outside the project, where rules never glob-match (verified;
+  # upstream wontfix). CLAUDE.md's Following rules section covers reading
+  # this file manually before such edits.
 ---
 
 # Claude rules style guide
