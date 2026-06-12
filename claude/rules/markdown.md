@@ -78,9 +78,10 @@ inline note explaining why; the decision shouldn't get lost.
 
 ### When organizing tasks
 
-- **Phases**: group related tasks under `## Phase N — Name` headers. Separate
-  phases with `---`. When all tasks in a phase are complete, append ` ✓` to the
-  header.
+- **Phases**: group related tasks under short named headers (`## Auth cleanup`)
+  — no phase numbers; names and `#slug`s identify work and stay meaningful as
+  phases are reordered or pruned. Separate phases with `---`. When all tasks in
+  a phase are complete, append ` ✓` to the header.
 - **Goal**: open each phase with a `**Goal:**` statement — one sentence that
   orients a reader without requiring them to read all the tasks.
 - **Tasks**: one bullet per task, indented notes below as needed.
@@ -116,7 +117,8 @@ cross-phase references are needed.
 
 ### When pruning completed work
 
-Completed tasks and phases can be summarized or deleted once they stop informing
-the remaining work — git preserves the detail. When in doubt, keep a dropped
-task's rationale, a discovered constraint, or anything another task cites. A
-file whose work is all done can simply be deleted.
+Completed and dropped tasks, and whole completed phases, can be summarized or
+deleted once they stop informing the remaining work — git preserves the detail.
+The `[-]` rule above governs drop time, not pruning. When in doubt, keep a
+dropped task's rationale, a discovered constraint, or anything another task
+cites. A file whose work is all done can simply be deleted.
