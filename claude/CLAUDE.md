@@ -93,9 +93,6 @@ fresh. Never lower the quality bar because a project is small.
   concrete ones in function signatures — the contract should express
   constraints, not implementation details. Applies to parameters and return
   types alike.
-- **After `Write` on a new file**: path-matched rules don't load until a
-  matching file is Read. `Read` a short excerpt (line 1 suffices), self-review
-  against the loaded rules, and `Edit` if there are gaps.
 
 ## Configuration
 
@@ -157,6 +154,9 @@ doc or config.
 - **When violating or noticing a rule violation**: Surface it to the user in
   chat — don't silently override a rule, even when the existing codebase
   conflicts with it.
+- **After `Write` on a new file**: path-matched rules don't load until a
+  matching file is Read. `Read` a short excerpt (line 1 suffices), self-review
+  against the loaded rules, and `Edit` if there are gaps.
 
 ## Review approach
 
