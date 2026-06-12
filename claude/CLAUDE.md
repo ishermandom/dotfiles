@@ -159,6 +159,13 @@ doc or config.
   broken premise: a typo, a misunderstanding, or a capability that doesn't
   exist. Pushing through tends to end in a confidently wrong answer. Realign
   first, and prefer cheap experiments that test the premise.
+- **After two failed attempts at the same issue**: stop and diagnose the root
+  cause before trying a third — don't rerun unchanged commands or iterate patch
+  variations on weak understanding; that retry loop converges on a fix that
+  silences the symptom while the bug survives. Once the root cause is
+  understood, present the fix and name explicitly whether it addresses the root
+  cause or only a symptom — the user chooses whether a symptom fix is
+  acceptable.
 
 ## Following rules
 
