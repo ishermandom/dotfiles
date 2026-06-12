@@ -59,7 +59,9 @@ Reflect adversarially: assume meaningful inefficiencies occurred unless evidence
 suggests otherwise, and prioritize identifying avoidable waste over highlighting
 accomplishments. Cover:
 
-- _Token efficiency_: diagnose the session's main cost drivers from observable
+- _Token efficiency_: run `~/.claude/hooks/session-tokens.py --print` for the
+  session's token counts so far (provisional — the SessionEnd hook writes the
+  final figures), then diagnose the session's main cost drivers from observable
   evidence — file reads (`wc -c` gives sizes when comparing), subagent output
   volume, other large tool results. Identify at least one concrete case of
   higher-than-necessary consumption, with a diagnosis (_why_ did this happen?)
@@ -89,8 +91,11 @@ Present the highlights in chat, then append an entry to
 
 - Heading: date, project, and session type (coding / debug / refactor / planning
   / explore), followed by a scope line of countable facts — e.g.
-  `4 files modified · 2 correction turns · 11 file reads`. Scope facts are
-  events counted from the conversation, not token figures.
+  `4 files modified · 2 correction turns · 11 file reads` — then, on its own
+  line, the session marker `--print` reported (`<!-- session: <id> -->`). Scope
+  facts are events counted from the conversation. Never write token figures into
+  the entry: the SessionEnd hook appends the final `tokens:` line at the marker
+  after the session ends.
 - Sections, each omitted when empty: **Inefficiency** (top 1–3 sources of
   avoidable effort, each with the earliest signal that should have triggered a
   course change), **Corrections**, **Adjustments** (at most three proposed
