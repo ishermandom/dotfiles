@@ -57,8 +57,10 @@ start accumulating; single-session task breakdowns usually live in chat.
 - **Verify the task's premise** against the current code before proposing it —
   read or grep what the task claims needs changing. A task written sessions ago
   may be obsolete or already half-done.
-- **Propose, then wait**: a one-screen brief — repo state, last session's end
-  point, the proposed task and why, any concerns — then wait for approval.
+- **Propose, then wait**: a one-screen brief — last session's end point, the
+  proposed task and why, any concerns — then wait for approval. Include repo
+  state only when it demands action (uncommitted or unpushed work); a clean repo
+  is padding, not information.
 
 ### When marking task status
 
