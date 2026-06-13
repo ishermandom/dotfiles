@@ -77,6 +77,14 @@ increasing token usage and making diffs harder to review." If the rationale
 can't fit in one clause, surface the rule to the user for scoping rather than
 expanding inline.
 
+**Maintainer rationale**: When the "why" informs future editing but Claude
+doesn't need it to apply the rule, record it as an HTML comment in CLAUDE.md or
+a rules file — comments there are stripped on injection, costing zero runtime
+tokens. Docs and `SKILL.md` do not strip: their content enters context verbatim
+(read on demand, or injected when the skill runs), so a maintainer aside there
+costs tokens whenever the file loads — keep it in a companion notes file
+instead.
+
 **Specificity floor**: Give every rule a concrete, detectable trigger — the
 primary way to pass the checks above. "Write clear names" doesn't fire. "When
 naming a boolean, prefix with `is_`, `has_`, or `can_`" does.
