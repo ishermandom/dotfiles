@@ -8,6 +8,13 @@ Work through each step in order.
 If wrap-session already ran earlier in this session, evaluate only the work
 since that run — otherwise the session log double-counts the same findings.
 
+This skill surfaces a lot, so the Concision rule (CLAUDE.md, Interaction style)
+is especially load-bearing here. In chat, include only what the user might act
+on, approve, or overrule — at the minimum length to evaluate it, cutting the
+narrative behind a conclusion. Don't recap findings already discussed this
+session; omit steps with nothing to report rather than announcing a skip.
+Durable detail goes to its file, not chat.
+
 ## 1. Session naming
 
 Evaluate whether this session is worth naming. Suggest `/rename <name>` only for
@@ -86,8 +93,9 @@ accomplishments. Cover:
   Record both signals — line counts and `/context` shares — so their relative
   effectiveness can be compared over time.
 
-Present the highlights in chat, then append an entry to
-`~/.claude/logs/sessions.md` (create the file if missing):
+Surface in chat only the items the user might act on or correct (per the output
+filter above), briefly; the full reflection lives in the log entry, not in chat.
+Append an entry to `~/.claude/logs/sessions.md` (create the file if missing):
 
 - Heading: date, project, and session type (coding / debug / refactor / planning
   / explore), followed by a scope line of countable facts — e.g.
@@ -119,8 +127,12 @@ marker in the log, suggest running the distill skill.
 
 ## 5. Pending commits
 
-If in a git repo, run `git status`. If there are uncommitted changes, remind the
-user to commit before closing the session.
+If in a git repo with uncommitted changes, attempt the commit directly for the
+active project — this overrides the CLAUDE.md "commit only when the user asks"
+guidance, which targets mid-session impulses; session end is the expected commit
+point. The permission mode gates it: silent in auto mode, a prompt in default
+mode. Never commit another repo (e.g. dotfiles) this way — surface those changes
+for the user to handle.
 
 ## 6. Learning
 
