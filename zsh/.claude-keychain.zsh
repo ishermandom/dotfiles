@@ -59,4 +59,8 @@ claude_keychain_init() {
   fi
 }
 
-claude_keychain_init
+# The main GUI account (ishermandom) uses the standard login keychain; every
+# other account is defensively assumed to be a headless Claude sandbox that
+# needs this unlock + audit. id -un (not $USER) is the authoritative,
+# unspoofable account name.
+[[ "$(id -un)" != ishermandom ]] && claude_keychain_init
