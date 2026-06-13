@@ -61,6 +61,16 @@
             "command": "~/.claude/hooks/show-check-output.sh"
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/format-markdown-on-edit.sh",
+            "timeout": 15
+          }
+        ]
       }
     ],
     "PostToolUseFailure": [
@@ -125,15 +135,16 @@
       }
     ]
   },
-  "enabledPlugins": {
-    "swift-lsp@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true
-  },
   "statusLine": {
     "type": "command",
     "command": "~/.claude/scripts/statusline.sh",
     "refreshInterval": 5
   },
+  "enabledPlugins": {
+    "swift-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
+  },
   "effortLevel": "medium",
-  "theme": "dark"
+  "theme": "dark",
+  "remoteControlAtStartup": true
 }

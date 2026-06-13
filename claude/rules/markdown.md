@@ -7,8 +7,9 @@ paths:
 
 ## When writing any Markdown
 
-Prettier auto-formats this file type. Write prose near 80 columns to minimize
-rewrapping diffs.
+Prettier formats this file type automatically right after each Edit or Write
+(and again at Stop, as a safety net). Rewraps arrive as file-modification
+notices — anchor any follow-up Edit to the post-format wording.
 
 - **Headings**: always use sentence case — capitalize only the first word and
   proper nouns.
