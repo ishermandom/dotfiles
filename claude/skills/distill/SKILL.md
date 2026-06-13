@@ -85,3 +85,11 @@ the guard; if large output stays rare, drop the idea.
 **Question:** for the `wrap-session` size tooling, are line-count tripwires or
 `/context` shares the more effective check? **Measure:** sessions that exercise
 both enough to compare. Keep the winner and retire the other.
+
+### Task complexity routing
+
+**Question:** do explicit planning tiers by task size (1–2 files → direct; 3–5 →
+design phase; 6+ → full plan) add value, or does the conversational planning
+flow already handle sizing without the ceremony? **Measure:** sessions across a
+range of task sizes — whether mis-sized planning (too heavy or too light)
+recurs. If tiers help, define them; if the flow handles it, drop the idea.
