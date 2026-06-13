@@ -10,6 +10,10 @@ export EDITOR="emacs -nw"
 # claude CLI
 path+=("$HOME/.local/bin")
 
+# Unlock and audit Claude Code's dedicated login keychain. See the sourced file
+# for the one-time keychain setup it requires on a new machine.
+source "$HOME/.claude-keychain.zsh"
+
 # Redirect Playwright browser downloads to a shared path so all users can share
 # one Chromium install instead of each user downloading their own copy.
 export PLAYWRIGHT_BROWSERS_PATH=/Users/Shared/playwright
@@ -19,4 +23,5 @@ export PLAYWRIGHT_BROWSERS_PATH=/Users/Shared/playwright
 export OLLAMA_MODELS=/Users/Shared/ollama/models
 
 # Private environment variables (not tracked in the public repo).
-[[ -f "$HOME/.zprofile_private" ]] && source "$HOME/.zprofile_private"
+# Status: deprecated; currently no private environment variables to import.
+#[[ -f "$HOME/.zprofile_private" ]] && source "$HOME/.zprofile_private"
