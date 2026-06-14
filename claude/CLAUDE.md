@@ -243,9 +243,22 @@ Every session, without being asked:
 - **Don't `Read` without justification** — before calling `Read`, explicitly
   state why the current context is insufficient. If the file appeared in any
   prior tool result this session, use that; don't fetch again.
-- **Prefer `Edit` over `Write` for existing files** — `Edit` sends only the
-  diff; `Write` re-sends the whole file. Before doing a full `Write` on an
-  existing file, flag it and confirm.
+- **Prefer `Edit` over `Write` for an existing file** — output tokens drive
+  cost, and `Edit` regenerates only the changed lines while `Write` regenerates
+  the whole file. `Edit` is cheaper for focused changes; `Write` for a
+  near-total rewrite or a large deletion. Pick whichever generates less.
+  <!-- Cost driver: output-token generation at call time. Taking input as the 1x
+  baseline, per-token rates are uniform across Claude models: output 5x, cache
+  write 1.25x, cache read 0.1x. The generated call later sits in context at
+  cache-read rates, equal for both, so the comparison reduces to output
+  generated — Edit ≈ Σ(old+new strings), Write ≈ final file. Crossover: Write
+  wins once touched text approaches the whole file (deleting most of a large
+  file, the edits' old_strings sum to more than Write's smaller result). Per-op
+  gap is small (a ~500-line file is a few thousand output tokens vs. ~100 for a
+  small edit — at most ~$0.30 even on Fable, the priciest model at $50/MTok
+  output, as of June 2026) — a soft default, not worth a confirmation
+  round-trip. -->
+
 - **Resolve symlinks before editing** — `Edit` and `Write` reject symlink paths,
   wasting a round-trip. Use `readlink -f <path>` to get the real path first.
   Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
