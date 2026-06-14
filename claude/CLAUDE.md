@@ -199,20 +199,12 @@ doc or config.
 
 ## Review approach
 
-Work in small, focused increments — each one reads like a pull request with a
-single clear purpose (add a skeleton, implement one specific piece of
-functionality, add error handling for one case, etc.).
-
-For each increment:
-
-- Lead with a brief description: what this chunk adds, and what's explicitly
-  deferred to the next
-- Explain key decisions and tradeoffs before presenting code
-- Wait for approval before moving to the next increment
-
-For bug fixes and refactors where the change is inherently a single unit, apply
-the same spirit — focused scope, described upfront — without forcing an
-artificial split.
+**When a durable chunk of work is complete** — a feature, a refactor, a new file
+or skill, anything meant to last — work it end-to-end, then review before
+committing rather than gating each increment mid-construction. The aim is the
+user's ownership of what lands — maintainable by the user solo by default, key
+decisions ratified at minimum. Drive the review with the
+`/ownership-walkthrough` skill.
 
 Before presenting any code, check it against all loaded style guides —
 explicitly, as a checklist pass, not by passive recall. This applies to every
