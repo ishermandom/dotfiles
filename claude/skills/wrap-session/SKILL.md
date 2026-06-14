@@ -93,9 +93,10 @@ accomplishments. Cover:
   Record both signals — line counts and `/context` shares — so their relative
   effectiveness can be compared over time.
 
-Surface in chat only the items the user might act on or correct (per the output
-filter above), briefly; the full reflection lives in the log entry, not in chat.
-Append an entry to `~/.claude/logs/sessions.md` (create the file if missing):
+In chat, give only each finding's conclusion — what the user might act on or
+correct. Its diagnosis and mechanism are the narrative behind that conclusion;
+they belong in the log entry, not chat. Append an entry to
+`~/.claude/logs/sessions.md` (create the file if missing):
 
 - Heading: date, project, and session type (coding / debug / refactor / planning
   / explore), followed by a scope line of countable facts — e.g.
@@ -123,7 +124,8 @@ A mechanism that generalizes beyond this session belongs in memory or the
 relevant rules file — handle that in the Learning step.
 
 If ~10 or more session entries have accumulated since the last distillation
-marker in the log, suggest running the distill skill.
+marker in the log, suggest running the distill skill — the suggestion only, not
+the case for it.
 
 ## 5. Pending commits
 
@@ -139,6 +141,10 @@ for the user to handle.
 Update memory files with anything worth persisting: corrections, preferences,
 project facts. If a `~/.claude/docs/` file needs updating, flag it and ask
 before editing.
+
+This step acts on files, not chat: report nothing unless a change needs the
+user's approval (e.g. a `docs/` edit). When nothing needs persisting, stay
+silent — don't narrate the absence.
 
 ## 7. Reviewer session
 
@@ -160,5 +166,6 @@ is in context now, what the next task needs, and the cheapest path to it:
 - **Continue** only when context is genuinely small and the next task is a
   direct extension.
 
-Give 2–3 sentences: the current context state, what the next task likely needs,
-and the recommendation with its reasoning.
+Clear is the default after a wrap. Say nothing when clearing is right; surface a
+recommendation only when compact or continue is the better move, with the reason
+it beats clearing.
