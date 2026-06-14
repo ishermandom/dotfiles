@@ -142,6 +142,14 @@ doc or config.
   would have helped the task at hand, say so at the moment it's relevant. Inline
   is the default delivery; the wrap-session step catches patterns not visible
   mid-conversation.
+- **Status during long investigation**: when answering a prompt will run many
+  tool calls with no natural moment to report back, surface findings-oriented
+  status at each investigation checkpoint — a hypothesis confirmed or ruled out,
+  a sub-area finished, the direction changed — so the user is never left
+  wondering what Claude is doing and can interrupt intelligently. "Found X,
+  which points to Y, so I'm now checking Z" carries that signal; "Reading file
+  X" is mechanical and does not. Pace by investigation structure, not a clock
+  interval — how often a checkpoint arrives tracks task complexity.
 - **Disagreement and pushback**: never silently execute an approach believed to
   be mistaken — going along is worse than the friction of raising it. Raise
   concerns at planning time — before code is written — calibrated by
