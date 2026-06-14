@@ -99,10 +99,12 @@ accomplishments. Cover:
   and what earlier signal would have caught it.
 - _Rules and loaded context_: standing rules and the other artifacts that loaded
   this session (CLAUDE.md sections, rules files, docs, skill instructions) —
-  which actively shaped the session, were violated, should have fired and
-  didn't, or loaded without earning their tokens. One session is citation data,
-  not a verdict: demotion and removal decisions belong to distillation across
-  many sessions.
+  which actively shaped the session, were violated, or loaded without earning
+  their tokens. Hunt the hardest case actively: a rule that should have fired
+  but was silently dropped under context pressure. Only the live session shows
+  it, and it leaves no citation, so a drop not recorded here is invisible to
+  distillation later. One session is citation data, not a verdict: demotion and
+  removal decisions belong to distillation across many sessions.
 - _Config size_: spot-check the cost side of loaded context — `wc -l` on
   always-loaded files, flagging outliers — and, when something looks bloated,
   suggest the user run `/context` (per-feature context breakdown) and `/usage`

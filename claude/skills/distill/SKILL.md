@@ -23,10 +23,13 @@ for:
   a doc note, or a hook.
 - **Repeated Adjustments proposals** — the same behavioral fix proposed in two
   sessions is strong evidence it belongs in durable guidance.
-- **Rule citations**: rules that repeatedly shaped sessions are working — leave
-  them. Rules repeatedly violated are candidates for sharpening or for
-  graduation to a hook. Rules never cited across many sessions are candidates
-  for demotion to an on-demand doc or removal.
+- **Rule adherence**: rules that repeatedly shaped sessions are working — leave
+  them. Rules the log shows repeatedly violated or silently dropped
+  (wrap-session records both from the live session) are graduation candidates —
+  harden a persistent violator gradually via the thin-slice trial: it lives in
+  CLAUDE.md first and graduates to a hook only after 3–5 sessions show it won't
+  hold there. Rules never cited across many sessions are candidates for demotion
+  to an on-demand doc or removal.
 
 ## 3. Review pending hypotheses
 
@@ -93,3 +96,14 @@ design phase; 6+ → full plan) add value, or does the conversational planning
 flow already handle sizing without the ceremony? **Measure:** sessions across a
 range of task sizes — whether mis-sized planning (too heavy or too light)
 recurs. If tiers help, define them; if the flow handles it, drop the idea.
+
+### Mechanical tool trace for rule adherence
+
+**Question:** is the narrative rule-adherence signal in the session log
+(`wrap-session`'s Rules section) insufficient often enough — missing or
+rationalizing rules that were silently dropped — to justify a mechanical
+per-call tool trace as a distillation input? **Measure:** distill runs where a
+violation surfaces from tool-call evidence the narrative had missed or
+downplayed. If that recurs, build the trace — a digested `PostToolUse` JSONL, or
+teach distill to parse the session transcript (which already records every tool
+call); if the narrative suffices, drop the idea.
