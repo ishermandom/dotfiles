@@ -73,6 +73,12 @@ when to act, not by severity:
 
 Log deferrals synchronously — a debt item not written down this turn is lost.
 
+**Structure scan**: for the areas this session changed, evaluate how easy the
+file structure is for an agent to work in — for the next likely edit there, how
+much must it read, infer, edit, and validate, and how much is hidden. Where the
+structure makes that needlessly hard, propose a structural change. Route
+findings by the same timing axis as the debt scan.
+
 If a piece of durable context fits none of the project's existing durable files,
 propose a new file — name and scope — and confirm both with the user before
 creating it.
