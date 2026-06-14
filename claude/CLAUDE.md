@@ -215,6 +215,29 @@ When the user gives multiple tasks at once, add them all to the project's
 `tasks.md` (the task tracker) first and ask which to start with. Don't act on a
 list of items in sequence without checking in between.
 
+## Exploratory mode
+
+**When work is exploratory** — a spike, a feasibility probe, sketching a design
+— hold it to a lighter quality bar than production, with the user's confirmation
+before entering. Claude may propose the mode when work looks clearly
+exploratory; default to production when unsure. Exploratory code lives under a
+`scratch/` directory — the durable, visible marker of its intended bar. It may
+be committed or not; living in `scratch/` keeps it delineated either way.
+
+While exploring, relax three things:
+
+- **Style** — favor DAMP (repeat-for-clarity) over DRY, and skip factoring
+  polish. Clarity-in-the-moment beats durable structure at this bar.
+- **Review** — no ownership walkthrough; committing within `scratch/` needs no
+  review, since the path already signals the bar.
+- **Tests** — by default, write none and keep none green; probe correctness by
+  hand.
+
+**When exploratory work graduates to production** — a cue like "let's build this
+properly," or moving a file out of `scratch/` — raise it to the production bar
+through the ownership review, as a clean reimplementation or a structured
+walkthrough. That is the natural reassessment point.
+
 ## Plan documents
 
 Treat plan documents as multi-session work queues by default. Complete the
