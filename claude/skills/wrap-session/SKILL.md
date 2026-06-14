@@ -33,6 +33,9 @@ visible only in aggregate, or outside the turn-by-turn attention set:
 - An efficiency tip — a faster or lower-friction way to do something they did
   manually or repeatedly
 - An interesting pattern that came up that's worth remembering or internalizing
+- An effort-level mismatch — the session ran at a higher or lower effort setting
+  than the task warranted (high effort on a trivial task, or the reverse).
+  Suggest recalibrating the default for similar work next time
 
 Suggest one or two takeaways, concretely tied to moments from this session. This
 is chat-only guidance for the user to internalize — don't persist it anywhere.
@@ -55,6 +58,20 @@ and chat, and a project-local log entry is where context goes to get stale.
   reader would consult for that topic (e.g. a Findings section, README, spec).
 - **Accomplished work and files modified** → nowhere: commit messages and git
   history already record these.
+
+**Debt scan**: before closing, look over the session's changes for shortcuts
+taken, cleanups skipped, `TODO`s left, and concerns deferred — "nothing comes to
+mind" is not a pass; look at what actually changed. Classify each finding by
+when to act, not by severity:
+
+- **Block now** — leaves the work broken or wrong; fix before closing.
+- **Fix before closing** — cleanup that should land as part of this wrap-up.
+- **Later task** — legitimate follow-up; add it to `tasks.md` this turn, not
+  from memory afterward.
+- **Accept** — not worth fixing; drop it, noting the reason only if it isn't
+  obvious.
+
+Log deferrals synchronously — a debt item not written down this turn is lost.
 
 If a piece of durable context fits none of the project's existing durable files,
 propose a new file — name and scope — and confirm both with the user before
