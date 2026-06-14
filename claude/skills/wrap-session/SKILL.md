@@ -12,8 +12,10 @@ This skill surfaces a lot, so the Concision rule (CLAUDE.md, Interaction style)
 is especially load-bearing here. In chat, include only what the user might act
 on, approve, or overrule — at the minimum length to evaluate it, cutting the
 narrative behind a conclusion. Don't recap findings already discussed this
-session; omit steps with nothing to report rather than announcing a skip.
-Durable detail goes to its file, not chat.
+session; a step with nothing actionable produces no chat output — not even a
+line noting it was skipped, didn't apply, or is already done. Don't confirm
+default paths (naming not needed, no reviewer session, clearing is right): a
+non-action is not a finding. Durable detail goes to its file, not chat.
 
 ## 1. Session naming
 

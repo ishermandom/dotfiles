@@ -89,6 +89,13 @@ instead.
 primary way to pass the checks above. "Write clear names" doesn't fire. "When
 naming a boolean, prefix with `is_`, `has_`, or `can_`" does.
 
+**Keep the directive open where judgment beats a list**: state the rationale and
+let Claude self-select the response, rather than enumerating cases or
+hard-coding one remedy — a closed list over-fits and can fight the rule's own
+goal (a flat "split large files" undercuts the bounded-context aim it serves).
+Specificity belongs in the trigger, not the remedy; add a worked example only
+when the directive would otherwise be unrecognizable.
+
 **Synonyms**: Include synonyms for tool names, concepts, or actions so the rule
 fires whether Claude encounters one term or another. Typically 1–2; add one only
 when a specific alternate term comes to mind — if none does, don't add a
