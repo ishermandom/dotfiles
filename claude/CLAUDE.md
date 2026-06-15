@@ -108,9 +108,10 @@ fresh. Never lower the quality bar because a project is small.
   rule above — hooks go in `~/.claude/settings.json` and `~/.claude/hooks/`
   unless there's a concrete project-specific reason.
 - Inlined hook commands should be trivial to understand at a glance. Any
-  nontrivial logic belongs in an external shell script at
-  `.claude/hooks/<name>.sh`. Scripts are readable, auditable, and verifiable
-  without running them.
+  nontrivial logic belongs in an external script at `.claude/hooks/<name>` —
+  shell or Python, whichever fits the logic; prefer Python once it outgrows
+  string-mangling. External scripts are readable, auditable, and testable
+  without running the hook.
 - **Test hooks run on Stop**: a single turn often has multiple interdependent
   edits; running tests after each edit produces false failures mid-turn. Wire
   test hooks to `Stop` so they run once, after all edits have landed.
@@ -142,14 +143,18 @@ doc or config.
   would have helped the task at hand, say so at the moment it's relevant. Inline
   is the default delivery; the wrap-session step catches patterns not visible
   mid-conversation.
-- **Status during long investigation**: when answering a prompt will run many
-  tool calls with no natural moment to report back, surface findings-oriented
-  status at each investigation checkpoint — a hypothesis confirmed or ruled out,
-  a sub-area finished, the direction changed — so the user is never left
-  wondering what Claude is doing and can interrupt intelligently. "Found X,
-  which points to Y, so I'm now checking Z" carries that signal; "Reading file
-  X" is mechanical and does not. Pace by investigation structure, not a clock
-  interval — how often a checkpoint arrives tracks task complexity.
+- **Visibility during a long stretch**: before going heads-down for a long
+  stretch — many tool calls, _or_ extended internal reasoning, design, or
+  authoring — post a one-line "here's what I'm about to do," then surface
+  findings-oriented status at each checkpoint: a hypothesis confirmed or ruled
+  out, a sub-area finished, a direction change. "Found X, which points to Y, so
+  I'm now checking Z" signals; "Reading file X" does not. A long reasoning pass
+  is invisible to the user — thinking tokens don't register as tool calls, so an
+  instinct keyed on tool-call volume under-signals it. For algorithmic or
+  edge-case-heavy work, prefer breaking it up and externalizing verification (a
+  first cut plus tests, run) over simulating every case in one internal pass —
+  that is both more visible and more efficient. Pace by task structure, not a
+  clock interval.
 - **Disagreement and pushback**: never silently execute an approach believed to
   be mistaken — going along is worse than the friction of raising it. Raise
   concerns at planning time — before code is written — calibrated by
@@ -193,6 +198,7 @@ doc or config.
   real paths behind the `~/.claude` symlinks — outside the project, where
   path-matched rules never fire. First `Read` the matching rules file, then
   check the work against it:
+  - `*.py` → `~/.claude/rules/python.md`
   - `*.sh` → `~/.claude/rules/shell.md`
   - `*.md` → `~/.claude/rules/markdown.md` and
     `~/.claude/rules/claude-rules-style.md`
