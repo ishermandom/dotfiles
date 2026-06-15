@@ -3,8 +3,11 @@
 Captures what's known so far about using Language Server Protocol servers in the
 Claude Code harness, and the per-language decisions and open questions. The goal
 that prompted this: **richer code comprehension for the agent** (resolve symbols
-precisely instead of reading whole files or grepping). Written from research in
-mid-2026; version-sensitive claims are flagged and should be re-checked.
+precisely instead of reading whole files or grepping). It also records how the
+Python static-analysis stack (the mypy type gate and ruff lint) divides the
+work, since those decisions are entangled with the LSP question. Written from
+research in mid-2026; version-sensitive claims are flagged and should be
+re-checked.
 
 ## Two distinct jobs — don't conflate them
 
@@ -25,6 +28,27 @@ checker (jedi emits no type diagnostics by nature) or configure the checker to
 emit none (pyright `typeCheckingMode: "off"` keeps navigation, drops
 diagnostics). mypy stays the gate either way. (Verify the navigation-only
 behavior when wiring; see TODOs.)
+
+## The static-analysis stack: ruff lint vs. the type gate
+
+The gate is two complementary tools occupying different domains, so they don't
+fight:
+
+- **mypy** owns the type system (types match, None-safety, signatures). No lint.
+- **ruff lint** (`ruff check`) owns everything else — bug patterns, dead code,
+  style, import order, syntax modernization. It does no type checking; ruff
+  defers types to mypy/pyright by design.
+
+Both run on the Stop hook (`ruff-format.sh` → `quiet-ruff.sh` runs
+`ruff check --fix` _and_ `ruff format`; mypy runs separately). So ruff lint is
+already enabled — ruff is a linter as much as a formatter. The rule set lives in
+`~/.config/ruff/pyproject.toml` (source of truth). The only overlaps with mypy
+(F821 undefined-name, F401 unused-import) _agree_ — no conflict. The genuine
+"two tools fighting" risk is running mypy _and_ a second type checker (pyright);
+ruff + mypy is the canonical non-conflicting pair.
+
+The specific rule selection — and the rationale for each enabled rule and each
+ignore — is documented inline in `~/.config/ruff/pyproject.toml`.
 
 ## Claude Code's LSP integration (harness mechanics)
 
@@ -87,12 +111,24 @@ capability with TS as the first real proving ground, not as a Python fix.
 
 #### mypy-vs-pyright context (durable, from prior research)
 
+**What the conformance numbers mean.** The typing-conformance suite measures
+fidelity to the typing _specification_ (generics, protocols, overloads,
+narrowing, newer PEPs) — not how many real bugs a checker catches. mypy's lower
+score (~60% vs pyright ~97%) is dominated by advanced/edge features; on everyday
+fully-annotated code both catch what matters (wrong arg types, None-safety, bad
+returns). Crucially, mypy is _not_ the spec authority — it's the original and
+most-established checker, but the spec (Typing Council) is the authority and
+pyright tracks it more closely. So a low score reads as "less spec-faithful and
+slower," not "poor at finding your bugs." The differences that do show in
+practice: pyright has stronger flow narrowing (catches some bugs mypy misses)
+and is much faster, with a different false-positive profile.
+
 Why mypy was a defensible starting choice and isn't strictly worse:
 
-- mypy: reference implementation of the typing spec, behaviorally stable
-  (infrequent, announced changes), pure-Python/no-Node, plugin system (Django,
-  SQLAlchemy), most-documented error codes; `dmypy` daemon exists if speed ever
-  matters.
+- mypy: the original, most-established checker (not the spec authority),
+  behaviorally stable (infrequent, announced changes), pure-Python/no-Node,
+  plugin system (Django, SQLAlchemy), most-documented error codes; `dmypy`
+  daemon exists if speed ever matters.
 - pyright downsides beyond the usual three (Node dep / stricter default / no
   plugins): stricter inference yields real false positives mypy never emits;
   weekly releases occasionally regress (a checker's verdict can change on

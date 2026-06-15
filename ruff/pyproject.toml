@@ -8,4 +8,21 @@ quote-style = "single"
 indent-style = "space"
 
 [tool.ruff.lint]
-select = ["E", "W", "F", "I", "UP"]
+select = [
+  "E",       # pycodestyle errors — whitespace, indentation, statement style
+  "W",       # pycodestyle warnings
+  "F",       # pyflakes — real bugs: undefined names, unused imports/variables
+  "I",       # isort — import ordering
+  "UP",      # pyupgrade — modernize syntax for the target Python version
+  "B",       # flake8-bugbear — bug-prone patterns, e.g. mutable default args
+  "ANN",     # flake8-annotations — enforce the annotate-everything rule
+  "SIM",     # flake8-simplify — simplifiable code (redundant if/bool, merges)
+  "C4",      # flake8-comprehensions — idiomatic comprehensions and calls
+  "RUF",     # Ruff-specific rules — unused noqa, ClassVar, ambiguous unicode
+  "PTH",     # flake8-use-pathlib — prefer pathlib over os.path
+  "RET504",  # flake8-return — no unnecessary assignment before a return
+]
+ignore = [
+  "E501",  # line-too-long — the formatter handles width; E501 would only
+           #   flag unbreakable lines (long URLs / strings)
+]
