@@ -80,10 +80,9 @@ expanding inline.
 **Maintainer rationale**: When the "why" informs future editing but Claude
 doesn't need it to apply the rule, record it as an HTML comment in CLAUDE.md or
 a rules file — comments there are stripped on injection, costing zero runtime
-tokens. Docs and `SKILL.md` do not strip: their content enters context verbatim
-(read on demand, or injected when the skill runs), so a maintainer aside there
-costs tokens whenever the file loads — keep it in a companion notes file
-instead.
+tokens. `SKILL.md` and docs do not strip, so a maintainer aside there costs
+tokens whenever the file loads; for a skill, keep it in a companion notes file
+instead — see "When recording maintainer rationale for a skill".
 
 **Specificity floor**: Give every rule a concrete, detectable trigger — the
 primary way to pass the checks above. "Write clear names" doesn't fire. "When
@@ -152,3 +151,21 @@ for the matched path) alone.
 **When a rule contradicts observed practice**: If a rule appears to conflict
 with patterns Claude observes in the current project, surface it to the user as
 a candidate for revision rather than silently ignoring or following it.
+
+## When recording maintainer rationale for a skill
+
+Maintainer rationale is the editing-time "why" a future editor needs but the
+running skill does not. `SKILL.md` enters context verbatim whenever the skill
+runs, so an aside placed there costs tokens on every run.
+
+**Put editing-time rationale in a `notes.md` beside the skill's `SKILL.md`**:
+the test is where the line is needed — to run the skill it stays in `SKILL.md`,
+to edit the skill later it moves to `notes.md`.
+
+**Never reference `notes.md` from the skill body**: only `SKILL.md` is injected
+at runtime, so an unreferenced companion costs zero context — a reference would
+pull it in and defeat the purpose.
+
+**When rationale spans multiple skills**: keep it in the most foundational
+skill's `notes.md` and cross-reference it from the other skills' notes — one
+home, no drift.
