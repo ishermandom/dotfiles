@@ -1,0 +1,3 @@
+# Python bytecode (e.g. from the hooks under claude/hooks/).
+__pycache__/
+*.pyc

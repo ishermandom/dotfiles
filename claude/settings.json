@@ -47,7 +47,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/gate_auto_tools.sh"
+            "command": "~/.claude/hooks/gate_auto_tools.py"
           }
         ]
       }
