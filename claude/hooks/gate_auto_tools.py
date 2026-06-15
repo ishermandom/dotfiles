@@ -13,6 +13,16 @@
 # argument), never an invocation. Perfect accuracy would need a shell parser;
 # the residual gaps (e.g. a literal `<<` inside a quoted argument) only ever
 # cause under-gating, which is harmless for an ergonomic guard.
+#
+# TODO: consider replacing the three regex heuristics (heredoc-body stripping,
+# quoted-string stripping, command-position matching) with AST-based parsing
+# via `bashlex`, which distinguishes command word from argument/quoted/heredoc
+# data structurally and would retire the residual misclassification gaps.
+# Deferred as a robustness upgrade, not a fix: the regex approach has zero
+# dependencies and degrades safely (under-gates only). bashlex would add a
+# third-party dependency to this every-Bash-call hook — installed in the hook's
+# python3 runtime, with explicit fail-open on a missing dep or parse error —
+# plus per-call parse overhead.
 
 import json
 import re
