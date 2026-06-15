@@ -4,6 +4,19 @@ Rationale that informs future editing of this skill but isn't needed to run it.
 Not referenced from `SKILL.md` — only `SKILL.md` is injected when the skill
 runs, so this companion file costs zero runtime context.
 
+## Design decisions
+
+### `allowed-tools` is left unrestricted
+
+The skill's frontmatter sets no `allowed-tools` allowlist: the walkthrough
+invokes `/code-review` and `/simplify` as sub-skills and runs git and edits, so
+a tight allowlist risks silently breaking the self-review step.
+
+### Skill name
+
+Chosen for collision-free tab completion — the built-in `/review` already exists
+— and so that either word ("ownership" or "walkthrough") completes it.
+
 ## TODOs and follow-ups
 
 ### A spec-compliance stage
