@@ -1,0 +1,25 @@
+# Maintainer notes: ownership-walkthrough
+
+Rationale that informs future editing of this skill but isn't needed to run it.
+Not referenced from `SKILL.md` — only `SKILL.md` is injected when the skill
+runs, so this companion file costs zero runtime context.
+
+## TODOs and follow-ups
+
+### A spec-compliance stage
+
+The skill reviews two axes: code quality (step 1, `/code-review --fix`) and
+ownership (steps 2–5, the risk-labeled attention map). It does not explicitly
+check spec compliance — whether the change does what the task asked, as distinct
+from whether the code is good or whether the user understands it. A change can
+be clean and fully understood yet solve the wrong problem.
+
+Folding a distinct spec-compliance stage in was considered and deferred. In
+interactive use — the mode this skill targets — the user watches the work and
+reads the actual diff, so a compliance mismatch surfaces organically (step 5
+already explains decisions and the alternatives weighed). A separate stage earns
+its cost only under autonomous execution, where the user did not watch the work.
+
+If autonomous execution is ever adopted, the natural site is a compliance pass
+preceding step 1's code-quality pass — the "compliance first, then quality"
+order (the Superpowers two-stage-review pattern).
