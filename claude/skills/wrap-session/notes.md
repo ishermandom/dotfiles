@@ -64,8 +64,8 @@ design decisions:
   aggregates that signal across sessions but cannot recover a drop that went
   unrecorded. This splits the labor: live detection at wrap, the cross-session
   verdict at distillation — which hardens a persistent violator to a hook only
-  after a few sessions confirm it won't hold in CLAUDE.md (the thin-slice
-  trial). One session is citation data, not a verdict.
+  after a few sessions confirm it won't hold in CLAUDE.md. One session is
+  citation data, not a verdict.
 - The entry size budget is a forcing function for selectivity, not a target, and
   all counts are directional diagnostics — never targets to optimize.
 - Distillation runs as a manual skill, on demand; each run appends a marker
@@ -114,5 +114,5 @@ Decisions and rationale:
 
 Once ~5 sessions of a type exist, compare against the per-type rolling baseline
 and treat >1.5× baseline as a question to investigate, not a verdict.
-Within-type variance is hard to game; raw counts are gameable and not worth
+Within-type variance is harder to game; raw counts are gameable and not worth
 targeting.

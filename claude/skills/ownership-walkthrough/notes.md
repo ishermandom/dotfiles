@@ -14,8 +14,9 @@ a tight allowlist risks silently breaking the self-review step.
 
 ### Skill name
 
-Chosen for collision-free tab completion — the built-in `/review` already exists
-— and so that either word ("ownership" or "walkthrough") completes it.
+Chosen for collision-free tab completion so that either word ("ownership" or
+"walkthrough") completes it. Note that the more natural "review" term is omitted
+as it conflicts with the built in "/review" and "/code-review" skills.
 
 ## TODOs and follow-ups
 
@@ -39,6 +40,6 @@ order (the Superpowers two-stage-review pattern).
 
 ### First-use validation
 
-The skill has never run on a real production change. On its first use, watch for
-friction in two spots: partitioning the diff into logical units (step 2), and
-invoking `/code-review --fix` from within the skill (step 1).
+The skill has never run on a real production change. On its first uses, watch
+for friction in two spots: partitioning the diff into logical units (step 2),
+and invoking `/code-review --fix` from within the skill (step 1).

@@ -17,21 +17,11 @@ parked uncertainty for a settled decision.
 
 Design decisions:
 
-- **Open questions, not tasks**: a question like "is large hook output a real
-  context problem?" can't be answered by deciding — only by observing usage.
-  Parking it as an open evaluation keeps it from being built speculatively or
-  lost as a stale backlog item; the build ships only when evidence warrants.
-- **Inline in the skill, not a log file**: the registry holds plans, which are
-  git-tracked and read on every distill run regardless — so inline carries no
-  extra cost, while `~/.claude/logs/` is untracked and append-only, the wrong
-  shape for a mutable list.
+- **Open questions, not tasks**: framing pending evaluations as open questions
+  prevents mistakenly acting before there is evidence from observed usage.
+- **Inline in the skill**: the registry holds plans, which are git-tracked and
+  read on every distill run regardless — so inline carries no extra cost, while
+  an external location might be untracked.
 - **distill owns it alone**: evidence accrues from the session log distill
   already reads, so no wrap-session involvement is needed; the occasional
   distill cadence matches measurements that resolve only once usage accumulates.
-
-Seeded from two deferred measurements that previously lived in a project
-`tasks.md`: the hook-output context cost and the wrap-session size-check
-mechanism. A later entry parks whether a mechanical per-call tool trace is worth
-building for rule-adherence diagnosis — deferred rather than built because the
-raw trace already lives in session transcripts and the digest's payoff is
-unproven.

@@ -40,8 +40,8 @@ rationale). Rationale scoped to a single skill lives in that skill's companion
   compounds; cross-session continuity and consistency matter more than raw
   speed.
 - Polyglot: Python, shell, and TypeScript/JS today; a Rust project is likely
-  soon. Conventions vary by language; assumptions from one language must not
-  bleed into another.
+  soon. Conventions vary by language; assumptions from one language don't always
+  translate into another.
 - Risk surface: code runs locally — the blast radius of a bug is the user's own
   time and machine. Best practices still apply: keeping professional engineering
   skills fresh is a primary purpose of these projects, so production-grade rigor
@@ -53,13 +53,13 @@ rationale). Rationale scoped to a single skill lives in that skill's companion
 
 The collaboration system has five layers:
 
-| Layer                   | Mechanism             | Role                                          |
-| ----------------------- | --------------------- | --------------------------------------------- |
-| Enforcement             | Hooks (settings.json) | Deterministic; runs regardless of context     |
-| Router + critical rules | CLAUDE.md             | Short, high-signal; every rule carries weight |
-| Reference material      | ~/.claude/docs/       | Topic-clustered; loaded by Claude on-demand   |
-| Explicit workflows      | ~/.claude/skills/     | User-triggered slash commands                 |
-| Cross-session facts     | memory/               | Evolving observations; never standing rules   |
+| Layer               | Mechanism             | Role                                          |
+| ------------------- | --------------------- | --------------------------------------------- |
+| Enforcement         | Hooks (settings.json) | Deterministic; runs regardless of context     |
+| Always-on rules     | CLAUDE.md             | Short, high-signal; every rule carries weight |
+| Reference material  | ~/.claude/docs/       | Topic-clustered; loaded by Claude on-demand   |
+| Explicit workflows  | ~/.claude/skills/     | User-triggered slash commands                 |
+| Cross-session facts | memory/               | Evolving observations; never standing rules   |
 
 ### File layout
 
@@ -68,7 +68,7 @@ not a full file listing.
 
 ```
 ~/.claude/
-  CLAUDE.md                  # Router + critical rules + always-on style
+  CLAUDE.md                  # Critical rules + always-on style
   settings.json              # Hooks + dangerous-operation blocklist
   rules/                     # Path-scoped style, loaded on a matching file
                              #   (markdown.md, python.md, shell.md, …)
@@ -84,7 +84,7 @@ not a full file listing.
 
 ### CLAUDE.md and size discipline
 
-CLAUDE.md stays short (~60–80 lines) and holds only:
+CLAUDE.md stays focused and holds only:
 
 - **Core principles** from the style guide (e.g. "minimize cognitive load").
   Detailed rules (line length, naming, language conventions) live in
