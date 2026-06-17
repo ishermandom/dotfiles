@@ -10,10 +10,10 @@ paths:
   chaining transformations — assign each step to a named variable
   (`output=$(cmd 2>&1)`, `exit_code=$?`). Capture `$?` on the very next line —
   it is overwritten by every subsequent command.
-- **Always comment non-obvious flags**: when a flag's effect isn't obvious from
-  its name alone — like `find -quit`, `jq -Rs`, or `2>/dev/null` — add a brief
-  inline comment explaining what it does and why it's used here. When in doubt,
-  add the comment.
+- **Always comment non-obvious constructs**: when a flag or construct's effect
+  isn't obvious from its name or syntax alone — like `find -quit`, `jq -Rs`,
+  `2>/dev/null`, or `${var: -1}` — add a brief inline comment explaining what it
+  does and why it's used here. When in doubt, add the comment.
 - **Prefer bash arrays for optional flag lists**: when a set of flags may or may
   not be passed, prefer a bash array (`args=()` / `args=(-m "not wip")` /
   `"${args[@]}"`) over a string variable — an unquoted string variable
