@@ -101,6 +101,11 @@ fresh. Never lower the quality bar because a project is small.
   (`.claude/settings.json`, `.claude/hooks/`) is for things tied to one repo — a
   project-specific toolchain, permissions, or environment variable. When in
   doubt, ask: would this rule apply in a different project? If yes, it's global.
+- **Keep `settings.json` lists alphabetized**: when adding or editing entries in
+  a curated string list (`permissions.allow`, `permissions.deny`), keep the list
+  in ASCII sort order. Leave the `hooks` arrays as-is — their order is
+  execution-significant, not alphabetical.
+  <!-- Lives here, not in settings.json: JSON can't hold a comment. -->
 
 ## Hooks
 
