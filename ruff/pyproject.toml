@@ -2,6 +2,7 @@
 line-length = 80
 indent-width = 2
 target-version = "py312"
+cache-dir = "~/.cache/ruff"
 
 [tool.ruff.format]
 quote-style = "single"
