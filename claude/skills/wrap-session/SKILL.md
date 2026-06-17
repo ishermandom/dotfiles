@@ -122,8 +122,10 @@ accomplishments. Cover:
 
 In chat, give only each finding's conclusion — what the user might act on or
 correct. Its diagnosis and mechanism are the narrative behind that conclusion;
-they belong in the log entry, not chat. Append an entry to
-`~/.claude/logs/sessions.md` (create the file if missing):
+they belong in the log entry, not chat. This split holds even when the user has
+asked for analysis directly in the conversation — a user question is not an
+exception. Write to the log first, then surface the conclusion in chat. Append
+an entry to `~/.claude/logs/sessions.md` (create the file if missing):
 
 - Heading: date, project, and session type (coding / debug / refactor / planning
   / explore), followed by a scope line of countable facts — e.g.
