@@ -1,6 +1,5 @@
 ---
 description: End-of-session protocol. Run when wrapping up a session.
-allowed-tools: Read, Edit, Write, Bash
 ---
 
 Work through each step in order.
