@@ -42,8 +42,8 @@ paths:
 - **Error cases**: assert both sides — no output produced _and_ diagnostic
   emitted. Match a keyword, not the full message (exact text is an
   implementation detail).
-- **`run_tests`**: every project includes an executable `run_tests` at the root.
-  Resolve paths relative to the script (`$(dirname "$0")`), don't `cd`.
+- **`run_tests.sh`**: every project includes an executable `run_tests.sh` at the
+  root. Resolve paths relative to the script (`$(dirname "$0")`), don't `cd`.
 
 ## Python
 
@@ -78,5 +78,5 @@ paths:
 - **Non-module source files** (e.g. Google Apps Script): add
   `if (typeof module !== 'undefined') module.exports = { fn };` at the end to
   enable `require()` in tests
-- **`run_tests`**:
+- **`run_tests.sh`**:
   `exec node --test-reporter=dot "$(dirname "$0")/your_module.test.js"`

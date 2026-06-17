@@ -4,14 +4,14 @@
 # Runs on Stop rather than PostToolUse (Write|Edit) so that multi-file edits
 # that depend on each other aren't flagged mid-turn.
 #
-# Expects a ./run_tests script at the project root; exits silently if absent.
+# Expects a ./run_tests.sh script at the project root; exits silently if absent.
 # When tests fail, blocks the stop turn and feeds the output back as context.
 #
 # The actual invocation is delegated to the quiet-tests wrapper so the
 # canonical flags live in one place (~/.claude/scripts/quiet-tests.sh); its
 # short-traceback setting keeps failure feedback token-lean here too.
 
-[ -f ./run_tests ] || exit 0
+[ -f ./run_tests.sh ] || exit 0
 
 test_output=$(PYTEST_FROM_HOOK=1 "$HOME/.claude/scripts/quiet-tests.sh" 2>&1)
 test_exit_code=$?
