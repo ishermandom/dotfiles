@@ -14,6 +14,14 @@ path+=("$HOME/.local/bin")
 # for the one-time keychain setup it requires on a new machine.
 source "$HOME/.claude-keychain.zsh"
 
+# Warn if the home directory allows world access. macOS sets 755 by default,
+# which lets any local user list and traverse into ~.
+_home_perms=$(stat -f '%A' "$HOME")
+if [[ "$_home_perms" != '700' ]]; then
+  print -P "%F{yellow}Warning:%f ~ permissions are $_home_perms, expected 700. Fix: chmod 700 ~"
+fi
+unset _home_perms
+
 # Redirect Playwright browser downloads to a shared path so all users can share
 # one Chromium install instead of each user downloading their own copy.
 export PLAYWRIGHT_BROWSERS_PATH=/Users/Shared/playwright
