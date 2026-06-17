@@ -22,6 +22,8 @@
       "Bash(~/.claude/scripts/quiet-mypy.sh:*)",
       "Bash(~/.claude/scripts/quiet-ruff.sh:*)",
       "Bash(~/.claude/scripts/quiet-prettier.sh:*)",
+      "Bash(cat >> ~/.claude/logs/:*)",
+      "Skill(wrap-session)",
       "Read",
       "WebFetch(*)",
       "WebSearch"
