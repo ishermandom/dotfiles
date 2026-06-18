@@ -2,8 +2,9 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Behavior spec for the git permission gate. Run with the hooks directory on
-# PYTHONPATH:
+# Behavior spec for the git permission gate, exercised through its only public
+# entry point — main() reading a hook payload from stdin and writing a decision
+# to stdout. Run with the hooks directory on PYTHONPATH:
 #   PYTHONPATH=~/.claude/hooks pytest ~/.claude/hooks/gate_git_test.py
 
 import io
@@ -11,7 +12,37 @@ import json
 
 import gate_git
 import pytest
-from gate_git import Decision, checkout_discard_warning, evaluate, main
+
+# --- helpers: drive the gate through its main() entry point ---
+
+
+def _run_gate_on_raw_stdin(stdin_text: str) -> str:
+  """main()'s stdout for arbitrary raw stdin (for malformed-payload tests)."""
+  stdout = io.StringIO()
+  gate_git.main(stdin=io.StringIO(stdin_text), stdout=stdout)
+  return stdout.getvalue()
+
+
+def _run_gate(command: str) -> str:
+  """main()'s stdout for a Bash payload carrying `command`."""
+  return _run_gate_on_raw_stdin(
+    json.dumps({'tool_input': {'command': command}})
+  )
+
+
+def _decision_for(command: str) -> str | None:
+  """The permissionDecision main() emits for `command`.
+
+  None when main() emits nothing — a plain DEFER that falls through to
+  settings.json and the prompt.
+  """
+  raw = _run_gate(command)
+  if not raw:
+    return None
+  decision = json.loads(raw)['hookSpecificOutput']['permissionDecision']
+  assert isinstance(decision, str)
+  return decision
+
 
 # --- unrecoverable destructive operations are denied ---
 
@@ -53,11 +84,13 @@ DENYLISTED: tuple[str, ...] = (
   'git tag -d v1.0',
   'git tag -f v1.0 HEAD',
   'git update-ref -d refs/heads/dead',
+  'git update-ref --stdin',  # batch ref mutation; payload invisible to parser
   'git filter-branch --tree-filter true HEAD',
   'git filter-repo --path secret --invert-paths',
   'git reflog expire --expire=now --all',
   'git gc --prune=now',
   'git gc --prune now',  # two-token spelling
+  'git prune',  # removes unreachable objects immediately
   # Remote-destructive — mutates GitHub state, the core threat.
   'git push --force',
   'git push -f origin main',
@@ -65,6 +98,7 @@ DENYLISTED: tuple[str, ...] = (
   'git push --delete origin feature',
   'git push -d origin feature',
   'git push --mirror',
+  'git push --prune origin main',  # deletes remote refs with no local match
   'git -C /r push --force',
   'git push origin :feature',  # delete refspec — no flag, but removes a ref
   'git push origin +HEAD:main',  # force refspec — no flag, but overwrites
@@ -128,11 +162,13 @@ DEFERRED: tuple[str, ...] = (
   'git rebase main',  # recoverable rewrite — deliberately not denied
   'git push',  # plain push is neither force nor delete
   'git push origin main',
+  'git push --push-option +rebase origin main',  # value, not a force refspec
   'git fetch',
   'git pull',
   'git reset --soft HEAD~1',  # soft reset keeps the working tree
   'git reset HEAD file.txt',  # mixed reset unstages; no data loss
   'git clean -n',  # dry run; without -f it deletes nothing
+  'git prune --dry-run',  # dry run only lists; never removes objects
   'git checkout main',  # plain branch switch; no -f
   'git switch main',
   'git restore --staged file.txt',  # unstage only; no worktree loss
@@ -150,6 +186,7 @@ DEFERRED: tuple[str, ...] = (
   'git -p log',  # forced pager can exec core.pager
   'git --paginate show',
   'git -c core.pager=cat log',  # -c injects config
+  'git --exec-path=/opt/git-core status',  # exec-path redirect blocks allow
   # branch / worktree forms that are not read-only listing.
   'git branch new-topic',  # creates a ref
   'git branch -m old new',  # rename (non-force; -M would be denied)
@@ -184,32 +221,32 @@ UNSAFE_SHAPES: tuple[str, ...] = (
 @pytest.mark.parametrize('command', DENYLISTED)
 def test_unrecoverable_destructive_operation_is_denied(command: str) -> None:
   """A denylisted operation is blocked, even behind a global flag."""
-  assert evaluate(command) is Decision.DENY
+  assert _decision_for(command) == 'deny'
 
 
 @pytest.mark.parametrize('command', ALLOWLISTED)
 def test_simple_safe_invocation_is_allowed(command: str) -> None:
   """A single, simple read-only invocation auto-allows, including -C forms."""
-  assert evaluate(command) is Decision.ALLOW
+  assert _decision_for(command) == 'allow'
 
 
 @pytest.mark.parametrize('command', DEFERRED)
 def test_non_destructive_non_allowlisted_command_defers(command: str) -> None:
-  """A command that is neither dangerous nor allowlisted falls through."""
-  assert evaluate(command) is Decision.DEFER
+  """A command that is neither dangerous nor allowlisted emits no decision."""
+  assert _decision_for(command) is None
 
 
 @pytest.mark.parametrize('command', UNSAFE_SHAPES)
 def test_non_simple_shape_is_never_auto_allowed(command: str) -> None:
   """A read-only invocation in a compound/dynamic shape defers, never allows."""
-  assert evaluate(command) is Decision.DEFER
+  assert _decision_for(command) is None
 
 
 # --- pathspec checkout is not denied, but is flagged with a discard warning ---
 
 # `git checkout <pathspec>` discards uncommitted changes irreversibly, yet
 # can't be told apart from a branch switch without repo state — so it is not
-# hard-denied; the gate surfaces a warning instead.
+# hard-denied; the gate surfaces a warning by turning it into an "ask".
 CHECKOUT_DISCARDS: tuple[str, ...] = (
   'git checkout -- file.txt',
   'git checkout .',
@@ -227,15 +264,15 @@ CHECKOUT_NO_DISCARD: tuple[str, ...] = (
 
 
 @pytest.mark.parametrize('command', CHECKOUT_DISCARDS)
-def test_pathspec_checkout_warns_about_discard(command: str) -> None:
-  """A pathspec checkout returns a discard warning."""
-  assert checkout_discard_warning(command) is not None
+def test_pathspec_checkout_is_asked_with_discard_warning(command: str) -> None:
+  """A pathspec checkout defers to an 'ask' (which carries the warning)."""
+  assert _decision_for(command) == 'ask'
 
 
 @pytest.mark.parametrize('command', CHECKOUT_NO_DISCARD)
-def test_branch_switch_has_no_discard_warning(command: str) -> None:
-  """A branch switch or non-checkout command returns no warning."""
-  assert checkout_discard_warning(command) is None
+def test_branch_switch_is_not_turned_into_an_ask(command: str) -> None:
+  """A branch switch or non-checkout command is never turned into an 'ask'."""
+  assert _decision_for(command) != 'ask'
 
 
 # --- fail-closed: bashlex unavailable degrades even a clear deny to a defer ---
@@ -247,50 +284,33 @@ def test_defers_when_bashlex_unavailable(
   # With bashlex absent the gate can't parse, so even a clear destructive op
   # degrades to a prompt — the settings.json deny entries are the fallback.
   monkeypatch.setattr(gate_git, '_HAS_BASHLEX', False)
-  assert evaluate('git reset --hard') is Decision.DEFER
+  assert _decision_for('git reset --hard') is None
 
 
-# --- main() emits the right hook JSON for each decision ---
+# --- main()'s emitted JSON carries the right shape and reason for each path ---
 
 
-def _run_gate(command: str) -> str:
-  """Run main() on a Bash payload carrying `command`; return its stdout."""
-  payload = json.dumps({'tool_input': {'command': command}})
-  return _run_gate_on_raw_stdin(payload)
-
-
-def _run_gate_on_raw_stdin(stdin_text: str) -> str:
-  """Run main() on arbitrary raw stdin; return its stdout (for bad payloads)."""
-  stdout = io.StringIO()
-  main(stdin=io.StringIO(stdin_text), stdout=stdout)
-  return stdout.getvalue()
-
-
-def test_main_emits_deny_with_reason_for_destructive() -> None:
+def test_deny_carries_a_reason() -> None:
   output = json.loads(_run_gate('git -C /r reset --hard'))['hookSpecificOutput']
   assert output['permissionDecision'] == 'deny'
   assert 'destructive' in output['permissionDecisionReason']
 
 
-def test_main_emits_allow_without_reason_for_readonly() -> None:
+def test_allow_carries_no_reason() -> None:
   output = json.loads(_run_gate('git -C /r status'))['hookSpecificOutput']
   assert output['permissionDecision'] == 'allow'
   assert 'permissionDecisionReason' not in output  # an allow carries no reason
 
 
-def test_main_emits_ask_with_warning_for_pathspec_checkout() -> None:
+def test_ask_carries_the_discard_warning() -> None:
   output = json.loads(_run_gate('git checkout -- f.txt'))['hookSpecificOutput']
   assert output['permissionDecision'] == 'ask'
   assert 'discard' in output['permissionDecisionReason']
 
 
-def test_main_emits_nothing_for_deferred_command() -> None:
-  assert _run_gate('git commit -m wip') == ''
-
-
-def test_main_emits_nothing_for_malformed_payload() -> None:
+def test_malformed_payload_emits_nothing() -> None:
   assert _run_gate_on_raw_stdin('not json at all') == ''
 
 
-def test_main_emits_nothing_for_non_string_command() -> None:
+def test_non_string_command_emits_nothing() -> None:
   assert _run_gate_on_raw_stdin('{"tool_input": {"command": 123}}') == ''

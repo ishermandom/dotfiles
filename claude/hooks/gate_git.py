@@ -145,8 +145,11 @@ READ_ONLY_SUBCOMMANDS = frozenset({'status', 'log', 'diff', 'show'})
 
 # Global flags that, even before a read-only subcommand, can run arbitrary code
 # or inject config: `-c`/`--config-env` set config (pager, alias, diff driver),
-# and `-p`/`--paginate` force the pager. Their presence blocks auto-allow.
-ALLOW_BLOCKING_GLOBALS = frozenset({'-c', '--config-env', '-p', '--paginate'})
+# `--exec-path` redirects where git resolves its programs (and is prepended to
+# PATH), and `-p`/`--paginate` force the pager. Their presence blocks auto-allow.
+ALLOW_BLOCKING_GLOBALS = frozenset(
+  {'-c', '--config-env', '--exec-path', '-p', '--paginate'}
+)
 
 # Flags safe to auto-allow on a read-only subcommand: display and filtering
 # options only. This is an allowlist by design — an unrecognized flag DEFERs
@@ -431,12 +434,16 @@ def _gc_prunes_now(args: Sequence[str]) -> bool:
 
 def _push_is_destructive(args: Sequence[str]) -> bool:
   """Whether a `git push` rewrites or deletes remote refs."""
+  destructive_flags = {'-f', '--delete', '-d', '--mirror', '--prune'}
   for arg in args:
-    # `--force` matches plain force, `--force-with-lease`, and `--force-if-*`.
-    if arg.startswith('--force') or arg in {'-f', '--delete', '-d', '--mirror'}:
+    # `--force` covers plain force, `--force-with-lease`, and `--force-if-*`;
+    # `--prune` deletes remote refs that have no local counterpart.
+    if arg.startswith('--force') or arg in destructive_flags:
       return True
     # Refspec forms: `:dst` deletes the remote ref; `+src:dst` force-updates it.
-    if arg.startswith(':') or arg.startswith('+'):
+    # A force refspec always carries a colon, so require one — this avoids
+    # misreading a `+value` flag argument such as `--push-option +rebase`.
+    if arg.startswith(':') or (arg.startswith('+') and ':' in arg):
       return True
   return False
 
@@ -471,7 +478,7 @@ def _is_dangerous(invocation: GitInvocation) -> bool:
     # (`git checkout -- <path>` / `git checkout .`) also discards uncommitted
     # changes, but it cannot be reliably told apart from a branch switch
     # without repo state, so it is deferred-with-a-warning rather than blocked
-    # on a guess — see checkout_discard_warning and DISCARD_WARNING.
+    # on a guess — see _pathspec_checkout_warning and DISCARD_WARNING.
     return '-f' in args or '--force' in args
   if subcommand == 'switch':
     return '-f' in args or '--force' in args or '--discard-changes' in args
@@ -492,13 +499,17 @@ def _is_dangerous(invocation: GitInvocation) -> bool:
       '-d' in args or '--delete' in args or '-f' in args or '--force' in args
     )
   if subcommand == 'update-ref':
-    return '-d' in args or '--delete' in args
+    # --stdin feeds a batch of ref updates/deletes the parser cannot see.
+    return '-d' in args or '--delete' in args or '--stdin' in args
   if subcommand in {'filter-branch', 'filter-repo'}:
     return True
   if subcommand == 'reflog':
     return _subcommand_verb(args) == 'expire'
   if subcommand == 'gc':
     return _gc_prunes_now(args)
+  if subcommand == 'prune':
+    # `git prune` removes unreachable objects immediately; -n/--dry-run lists.
+    return '-n' not in args and '--dry-run' not in args
 
   # Remote-destructive — mutates GitHub state, the core threat.
   if subcommand == 'push':
@@ -553,20 +564,12 @@ def _is_auto_allowable(invocation: GitInvocation) -> bool:
   return False
 
 
-def evaluate(command: str) -> Decision:
-  """Classify a Bash command string into a gate Decision.
+def _classify(trees: Sequence[_Node]) -> Decision:
+  """Classify already-parsed command trees into a gate Decision.
 
-  DENY if any git call in it (including inside a substitution) is destructive;
-  ALLOW if the whole command is one plain read-only git call; else DEFER.
+  DENY if any git call (including inside a substitution) is destructive; ALLOW
+  if the whole command is one plain auto-allowable git call; else DEFER.
   """
-  # Fast path: this runs on every Bash call, but only a git command can match —
-  # skip the parse entirely when 'git' does not even appear.
-  if 'git' not in command:
-    return Decision.DEFER
-  trees = _safe_parse(command)
-  if trees is None:
-    return Decision.DEFER
-
   # Deny scan first — deny takes precedence, and it covers every git call,
   # even one hidden in a later compound clause or a substitution.
   for node in _command_nodes(trees):
@@ -585,19 +588,8 @@ def evaluate(command: str) -> Decision:
   return Decision.DEFER
 
 
-def checkout_discard_warning(command: str) -> str | None:
-  """A warning if the command does a pathspec `git checkout` that discards work.
-
-  Returns None when there is no such checkout. See DISCARD_WARNING for why this
-  is a warning rather than a hard deny.
-  """
-  # Fast path (this runs on the defer path of every Bash call): skip the parse
-  # unless a checkout could be present.
-  if 'checkout' not in command:
-    return None
-  trees = _safe_parse(command)
-  if trees is None:
-    return None
+def _pathspec_checkout_warning(trees: Sequence[_Node]) -> str | None:
+  """A discard warning if parsed trees contain a pathspec `git checkout`."""
   for node in _command_nodes(trees):
     invocation = _git_invocation_of(node)
     if (
@@ -641,13 +633,16 @@ def main(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout) -> None:
   if not isinstance(command, str):
     return
 
-  decision = evaluate(command)
+  # Parse once and reuse the trees for both the decision and the discard
+  # warning, rather than parsing for each — this runs on every Bash call.
+  trees = _safe_parse(command) if 'git' in command else None
+  decision = _classify(trees) if trees is not None else Decision.DEFER
   if decision is Decision.DENY:
     _emit(stdout, 'deny', DENY_REASON)
   elif decision is Decision.ALLOW:
     _emit(stdout, 'allow')
-  else:
-    warning = checkout_discard_warning(command)
+  elif trees is not None and 'checkout' in command:
+    warning = _pathspec_checkout_warning(trees)
     if warning is not None:
       _emit(stdout, 'ask', warning)
 
