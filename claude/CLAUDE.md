@@ -184,6 +184,11 @@ doc or config.
   understood, present the fix and name explicitly whether it addresses the root
   cause or only a symptom — the user chooses whether a symptom fix is
   acceptable.
+- **Before spending a live or empirical check on a claim**: confirm the claim is
+  load-bearing for a path being recommended or still plausibly in contention.
+  Defer checking claims that only support a backup path already being argued
+  against — validating an option being steered away from is wasted effort.
+  Sequence the decision before validating its sub-mechanics.
 
 ## Following rules
 
