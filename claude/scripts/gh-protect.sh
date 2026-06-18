@@ -16,6 +16,11 @@
 # backstop, so that power stays off the tokens Claude holds. On a gap, the
 # script names the missing protections and prints a config to create.
 #
+# Authentication: a GH_TOKEN / GH_ENTERPRISE_TOKEN env var or a prior
+# `gh auth login` is used when present. Otherwise, for the current repo, the
+# token git push saved in the credential store is reused — read-only here, so
+# the push token suffices and no separate login is needed.
+#
 # Usage: gh-protect.sh [[HOST/]OWNER/REPO]
 #
 # Defaults to the current directory's repo. Exit codes: 0 = protected;
@@ -54,6 +59,48 @@ for argument in "$@"; do
       ;;
   esac
 done
+
+# gh authenticates from GH_TOKEN, GH_ENTERPRISE_TOKEN, or a prior
+# `gh auth login`. When none is present — common right after a repo is created,
+# before any gh login — fall back to the token that `git push` left in the
+# credential store for this repo's remote. This check is read-only, so reusing
+# the push token is safe and saves a separate login.
+#
+# Scoped to the no-argument (current-repo) case: the store keys tokens by the
+# exact remote URL git pushed to (with credential.useHttpPath, per-repo tokens
+# are split by path), and that URL is readable precisely only from the local
+# repo's remotes — not reconstructable from an OWNER/REPO string.
+if [ -z "$repo_argument" ] \
+   && [ -z "${GH_TOKEN:-}" ] \
+   && [ -z "${GH_ENTERPRISE_TOKEN:-}" ]; then
+  gh auth status >/dev/null 2>&1
+  gh_auth_status=$?
+  if [ $gh_auth_status -ne 0 ]; then
+    # The first https remote: only https remotes have a credential-store entry,
+    # so ssh remotes (git@…) are skipped.
+    remote_url=""
+    for remote_name in $(git remote 2>/dev/null); do
+      candidate_url=$(git remote get-url "$remote_name" 2>/dev/null)
+      case "$candidate_url" in
+        https://*) remote_url="$candidate_url"; break ;;
+      esac
+    done
+
+    if [ -n "$remote_url" ]; then
+      # Hand git the URL so it parses host/path and applies useHttpPath exactly
+      # as push did. GIT_TERMINAL_PROMPT=0 stops an interactive prompt when
+      # nothing is stored; 2>/dev/null drops helper chatter. An empty result is
+      # fine — it just means no stored token, and the gh call below reports it.
+      filled_credential=$(printf 'url=%s\n\n' "$remote_url" \
+        | GIT_TERMINAL_PROMPT=0 git credential fill 2>/dev/null)
+      # Keep only the filled-in password line — that is the token.
+      store_token=$(echo "$filled_credential" | sed -n 's/^password=//p')
+      if [ -n "$store_token" ]; then
+        export GH_TOKEN="$store_token"
+      fi
+    fi
+  fi
+fi
 
 # Resolve and validate the target repo in one step: with no argument,
 # gh infers the repo from the current directory's git remotes.
