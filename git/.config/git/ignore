@@ -1,0 +1,7 @@
+# Global gitignore (Git's core.excludesfile, XDG default location).
+
+# Claude Code records "don't ask again" permission approvals in
+# .claude/settings.local.json, the per-machine personal settings file. Ignore
+# it in every repo so personal permission state is never committed. Settings
+# meant to be shared belong in .claude/settings.json, which is not ignored.
+**/.claude/settings.local.json
