@@ -5,3 +5,9 @@
 # it in every repo so personal permission state is never committed. Settings
 # meant to be shared belong in .claude/settings.json, which is not ignored.
 **/.claude/settings.local.json
+
+# macOS
+.DS_Store
+
+# Editor swap files
+*.swp
