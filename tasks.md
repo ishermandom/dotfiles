@@ -19,15 +19,3 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       session). Rotate within the hook so it stays bounded without manual `mv`.
   - Note: decide a rotation trigger (size threshold or date) and a retention
     policy for archived logs.
-
-- [x] **Script the wrap-session reflection gather so it doesn't prompt** — step
-      4 collects its inputs (token counts, `tasks.md`, the distill-since count)
-      via ad-hoc shell, and the `2>/dev/null` / `>` redirects those commands
-      carry point outside the workspace, tripping Claude Code's write-scope gate
-      and forcing a permission prompt even for allowlisted commands.
-  - Note: kept implementations separate rather than one wrapper. The only input
-    lacking a prompt-free path was the distill-since count — now
-    `~/.claude/scripts/distillation_backlog.py` (allowlisted). Token counts
-    already had `session-tokens.py --print`; `tasks.md` reads go through the
-    Read tool. Neither carries an out-of-workspace redirect, so no wrapper was
-    needed.
