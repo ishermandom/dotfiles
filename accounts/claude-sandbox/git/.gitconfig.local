@@ -1,0 +1,18 @@
+# Configuration specific to the claude-sandbox account, included by the shared
+# ~/.gitconfig. Stowed from accounts/claude-sandbox/ only when install.sh runs
+# as this account.
+
+# Override the system-level gitconfig (Homebrew's at /opt/homebrew/etc/gitconfig
+# or Xcode's, depending on which git is in use), which defaults the credential
+# helper to osxkeychain. The empty string resets the helper chain before
+# applying our own.
+#
+# We use `store` (plaintext ~/.git-credentials, mode 600) rather than
+# osxkeychain because this account has no meaningful Keychain protection: the
+# login keychain has an empty password and auto-unlocks, so osxkeychain would
+# add opacity without encryption at rest. The real safeguard is narrowly
+# scoped, fine-grained tokens, which bound the blast radius if the file leaks.
+[credential]
+	useHttpPath = true
+	helper =
+	helper = store

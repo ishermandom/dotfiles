@@ -14,10 +14,10 @@
 [safe]
 	directory = /Users/Shared/code/*
 
-# Override Xcode's system-level gitconfig (/Applications/Xcode.app/.../gitconfig),
-# which sets osxkeychain as the default credential helper for all users.
-# The empty string resets the helper chain before applying our own.
-[credential]
-	useHttpPath = true
-	helper = 
-	helper = store
+# Account-specific configuration is layered in per account via stow overlays
+# under accounts/<account>/ in the dotfiles repo. Credential handling lives
+# there: https token storage is used only on the sandbox account, so it must
+# not be baked into this shared file. A missing file is silently ignored, so
+# accounts without an overlay (which use Git's defaults) need no entry.
+[include]
+	path = ~/.gitconfig.local
