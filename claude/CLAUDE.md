@@ -274,6 +274,10 @@ Every session, without being asked:
 - **Don't `Read` without justification** — before calling `Read`, explicitly
   state why the current context is insufficient. If the file appeared in any
   prior tool result this session, use that; don't fetch again.
+- **Don't spend a tool call re-verifying state already guaranteed** — when a
+  standing instruction fixes a value (e.g. push to `origin-https`) or a wrong
+  value would fail loudly on the next step, skip the confirming query; it costs
+  a call, often a permission prompt, for no new information.
 - **Prefer `Edit` over `Write` for an existing file** — output tokens drive
   cost, and `Edit` regenerates only the changed lines while `Write` regenerates
   the whole file. `Edit` is cheaper for focused changes; `Write` for a
@@ -354,6 +358,10 @@ for most workloads. Only flag when the mismatch is clear — not on every task.
   create the printed ruleset in the GitHub UI.
 - For commit descriptions: keep the subject line to <= 72 chars, and wrap to
   80-col for the remaining lines.
+- For a multi-line commit message, pass it through a heredoc
+  (`git commit -F - <<'EOF'`) rather than stacked `-m` flags — the heredoc shows
+  the line breaks literally, so the 72/80-col wrapping is verifiable in the
+  command itself.
 - Before amending a commit: amend only when the intermediate state has no
   standalone value (typo fixes, immediate fix-ups); otherwise — and whenever
   uncertain — stack a new commit. Lost history costs more than extra commits.
