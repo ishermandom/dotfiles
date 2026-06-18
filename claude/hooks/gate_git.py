@@ -247,6 +247,24 @@ SAFE_READ_FLAGS = frozenset(
   }
 )
 
+# The value-less short flags from SAFE_READ_FLAGS, as bare letters, so a
+# clustered short-flag token (`-sb`) auto-allows when every letter is one of
+# these. Each is a display- or filter-only toggle whose output is read-only —
+# none writes a file, runs a program, or mutates state:
+#   s  status: short format
+#   b  status: show branch
+#   z  status: NUL-terminated records
+#   p  log/diff/show: show the patch (content display)
+#   w  diff: ignore all whitespace
+#   i  log: case-insensitive --grep
+#   E  log: extended-regexp --grep
+#   F  log: fixed-string --grep
+#   R  diff: reverse the diff
+# Value-taking short flags (`-n`, `-U`, `-S`, `-G`, `-C`, `-M`) are excluded:
+# once one appears in a cluster the remaining characters are its value, not more
+# flags, so such a cluster cannot be validated letter-by-letter.
+SAFE_READ_BOOLEAN_SHORT_FLAGS = frozenset('sbzpwiEFR')
+
 # Read-only `git branch` listing flags. branch auto-allows only when *every*
 # argument is one of these — any operand (a branch to create or rename) or any
 # other flag (`-d`/`-m`/`-u`/…) falls through to a prompt instead.
@@ -574,11 +592,23 @@ def _is_safe_read_arg(arg: str) -> bool:
   """Whether an argument to a read-only subcommand is safe to auto-allow.
 
   Operands (refs, paths) are harmless on a read-only subcommand; a flag is safe
-  only if it is on SAFE_READ_FLAGS. The `--flag=value` form is keyed on the name.
+  only if it is on SAFE_READ_FLAGS. The `--flag=value` form is keyed on the
+  name. A clustered short-flag token (`-sb`) is safe when every letter is a
+  value-less read flag — git treats `-sb` as `-s -b`, so matching the whole
+  token against SAFE_READ_FLAGS alone would needlessly prompt for it. The deny
+  path already decomposes clusters (_has_short_flag); this keeps the allow path
+  symmetric.
   """
   if not arg.startswith('-'):
     return True
-  return arg.split('=', 1)[0] in SAFE_READ_FLAGS
+  if arg.split('=', 1)[0] in SAFE_READ_FLAGS:
+    return True
+  # A clustered short-flag token: a single dash, then letters, no `=` value. A
+  # value-taking flag can't appear (it would consume the rest as its value), so
+  # every letter must be on the value-less safe set.
+  if arg.startswith('--') or '=' in arg:
+    return False
+  return all(letter in SAFE_READ_BOOLEAN_SHORT_FLAGS for letter in arg[1:])
 
 
 def _is_auto_allowable(invocation: GitInvocation) -> bool:

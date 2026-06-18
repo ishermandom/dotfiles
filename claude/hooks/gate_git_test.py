@@ -133,6 +133,9 @@ DENYLISTED: tuple[str, ...] = (
 ALLOWLISTED: tuple[str, ...] = (
   'git status',
   'git status --short',
+  'git status -sb',  # clustered short flags (-s -b) auto-allow
+  'git -C /tmp/repo status -sb',  # ...even behind an intervening -C
+  'git diff -Rw',  # clustered diff toggles (-R reverse, -w ignore-space)
   'git -C /tmp/repo status',
   'git -C /tmp/repo/sub status --short',  # path with slashes
   'git --no-pager status',
@@ -190,6 +193,8 @@ DEFERRED: tuple[str, ...] = (
   'git log --output=/tmp/log.txt',  # --output writes a file
   'git diff --ext-diff',  # runs a configured external diff command
   'git status --totally-unknown-flag',  # unknown flag → fail-closed
+  'git status -sx',  # unknown letter in a short-flag cluster → fail-closed
+  'git log -pS',  # -S (pickaxe) takes a value, so the cluster can't be split
   'git -p log',  # forced pager can exec core.pager
   'git --paginate show',
   'git -c core.pager=cat log',  # -c injects config
