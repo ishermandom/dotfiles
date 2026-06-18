@@ -19,3 +19,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       session). Rotate within the hook so it stays bounded without manual `mv`.
   - Note: decide a rotation trigger (size threshold or date) and a retention
     policy for archived logs.
+
+- [ ] **Script the wrap-session reflection gather so it doesn't prompt** — step
+      4 collects its inputs (token counts, `tasks.md`, the distill-since count)
+      via ad-hoc shell, and the `2>/dev/null` / `>` redirects those commands
+      carry point outside the workspace, tripping Claude Code's write-scope gate
+      and forcing a permission prompt even for allowlisted commands. Wrap the
+      gather in one allowlisted script that does the reads internally and prints
+      a single result.
+  - Note: mirror the existing `~/.claude/scripts/append-session-log.py` and
+    `session-tokens.py`, which exist for exactly this reason.
