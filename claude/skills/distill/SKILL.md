@@ -83,12 +83,6 @@ file (naming that file's path in the preview)? **Measure:** whether log entries
 show hook dumps large or frequent enough to bury later content. If yes, build
 the guard; if large output stays rare, drop the idea.
 
-### Size-check mechanism
-
-**Question:** for the `wrap-session` size tooling, are line-count tripwires or
-`/context` shares the more effective check? **Measure:** sessions that exercise
-both enough to compare. Keep the winner and retire the other.
-
 ### Task complexity routing
 
 **Question:** do explicit planning tiers by task size (1–2 files → direct; 3–5 →

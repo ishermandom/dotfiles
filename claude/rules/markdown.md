@@ -9,7 +9,9 @@ paths:
 
 Prettier formats this file type automatically right after each Edit or Write
 (and again at Stop, as a safety net). Rewraps arrive as file-modification
-notices — anchor any follow-up Edit to the post-format wording.
+notices. After any such notice for a file this turn, re-read the target region
+before composing an `old_string` — match the post-format wording, not your
+pre-format snapshot.
 
 - **Headings**: always use sentence case — capitalize only the first word and
   proper nouns.

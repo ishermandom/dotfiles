@@ -116,11 +116,11 @@ accomplishments. Cover:
   distillation later. One session is citation data, not a verdict: demotion and
   removal decisions belong to distillation across many sessions.
 - _Config size_: spot-check the cost side of loaded context — `wc -l` on
-  always-loaded files, flagging outliers — and, when something looks bloated,
-  suggest the user run `/context` (per-feature context breakdown) and `/usage`
-  (per-skill/subagent/MCP cost attribution) for the authoritative measure.
-  Record both signals — line counts and `/context` shares — so their relative
-  effectiveness can be compared over time.
+  always-loaded files, flagging outliers. This line-count tripwire is the
+  routine check, since Claude can compute it directly. When something looks
+  bloated, suggest the user run `/context` (per-feature context breakdown) and
+  `/usage` (per-skill/subagent/MCP cost attribution) for an authoritative
+  breakdown — a manual deep-dive, not a recorded signal.
 
 In chat, give only each finding's conclusion — what the user might act on or
 correct. Its diagnosis and mechanism are the narrative behind that conclusion;

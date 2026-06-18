@@ -2,6 +2,23 @@
 
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
 
+- [ ] **Add a "Bash command shape" directive to guide allowlist-friendly
+      commands** — distillation found prompt/correction thrash from compound or
+      prefixed Bash commands recurring across ~5 sessions (compound `&&`/pipes,
+      redundant `git -C <cwd>`, `2>/dev/null` redirects). The
+      `claude-code-permission-matching` memory documents the mechanics but rides
+      in context unapplied; a CLAUDE.md behavioral directive is the graduation
+      step.
+  - Note: a first draft ("prefer a single literal command whose leading text
+    matches an allowlist entry…") was judged still inaccurate — nail down what's
+    actually true of current matching before writing.
+  - Note: the memory's empirical claims (mid-`*` not a wildcard, deny>allow,
+    redirect write-scope) may be partly obsolete or unvalidated — re-validate
+    live against the current Claude Code version, then word the directive to
+    rest only on confirmed, version-independent behavior.
+  - Note: drop `git -C` as an always-bad example (may be allowlisted now) and
+    `2>/dev/null` (already covered by CLAUDE.md "don't fail silently").
+
 - [ ] **Auto-allow `--` and operand pathspecs on read-only git subcommands** —
       the git gate's `_is_safe_read_arg` (`claude/hooks/gate_git.py`) treats the
       `--` operand separator as an unrecognized flag, so common read commands

@@ -148,6 +148,11 @@ doc or config.
   would have helped the task at hand, say so at the moment it's relevant. Inline
   is the default delivery; the wrap-session step catches patterns not visible
   mid-conversation.
+- **Inference vs. established fact**: never state an unverified claim with the
+  confidence of a verified one. When asserting something not directly checked —
+  implementation history, code structure, why a command behaved a certain way —
+  flag it as inference ("looks like", "presumably") or verify it against the
+  source (git log, the file, the user) first.
 - **Visibility during a long stretch**: before going heads-down for a long
   stretch — many tool calls, _or_ extended internal reasoning, design, or
   authoring — post a one-line "here's what I'm about to do," then surface
@@ -319,7 +324,9 @@ Every session, without being asked:
   needed. Read a file in full only when you need to understand interactions
   across distant sections. For multi-file exploration, use the `Explore`
   subagent. Don't read multiple related files in parallel speculatively — start
-  with the most likely relevant one and expand only if needed.
+  with the most likely relevant one and expand only if needed. Log and config
+  files are usually analysis inputs — prefer a grep or windowed read of the
+  relevant section over a full read.
 
 ### Session-switch guidance
 

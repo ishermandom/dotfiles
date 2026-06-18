@@ -91,6 +91,13 @@ no wrap entry gets a minimal type-less "stats-only" entry instead.
 
 Decisions and rationale:
 
+- The config-size check uses `wc -l` line counts, not `/context` shares: Claude
+  can compute line counts directly, but `/context` is a user-run slash command
+  whose output Claude never sees unless the user runs it and it lands in the
+  transcript. Recording `/context` shares would require a manual user action
+  every session, so in practice it never happened — line counts are the
+  self-serviceable signal. `/context` and `/usage` stay as a manual deep-dive
+  the user can run when a line-count outlier suggests real bloat.
 - Raw counters, not derived ratios, go in the log: ratios (per file changed,
   against per-type baselines) derive at distillation time from the raws plus the
   event counts, so metric definitions can evolve without invalidating history.
