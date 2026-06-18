@@ -59,6 +59,7 @@ DENYLISTED: tuple[str, ...] = (
   'git -c core.pager=cat reset --hard',  # intervening -c k=v
   'git --no-pager reset --hard',  # boolean global flag
   'git --git-dir=/r/.git reset --hard',  # =-form global flag
+  'git --attr-source HEAD reset --hard',  # value-taking global must not bypass
   'git clean -f',
   'git clean -fd',
   'git clean -xf',
@@ -90,6 +91,7 @@ DENYLISTED: tuple[str, ...] = (
   'git filter-branch --tree-filter true HEAD',
   'git filter-repo --path secret --invert-paths',
   'git reflog expire --expire=now --all',
+  "git reflog delete 'HEAD@{0}'",  # delete drops a specific reflog entry
   'git gc --prune=now',
   'git gc --prune now',  # two-token spelling
   'git prune',  # removes unreachable objects immediately

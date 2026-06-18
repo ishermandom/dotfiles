@@ -115,6 +115,7 @@ GLOBAL_VALUE_OPTIONS = frozenset(
   {
     '-C',
     '-c',
+    '--attr-source',
     '--config-env',
     '--git-dir',
     '--work-tree',
@@ -304,7 +305,7 @@ class GitInvocation:
   has_blocking_global: bool
 
 
-def _safe_parse(command: str) -> list[_Node] | None:
+def _safe_parse(command: str) -> Sequence[_Node] | None:
   """Parse a command into bashlex trees; None if it can't be parsed safely.
 
   Returns None when bashlex is unavailable or the command is syntactically
@@ -342,7 +343,7 @@ def _iter_nodes(node: _Node) -> Iterator[_Node]:
 
 def _command_nodes(
   trees: Sequence[_Node],
-) -> list[_Node]:
+) -> Sequence[_Node]:
   """Every command node anywhere in the parsed command(s)."""
   return [
     node
@@ -352,7 +353,7 @@ def _command_nodes(
   ]
 
 
-def _words_of(command_node: _Node) -> list[str]:
+def _words_of(command_node: _Node) -> Sequence[str]:
   """The literal words of a command node, ignoring redirects."""
   return [part.word for part in command_node.parts if part.kind == 'word']
 
@@ -534,7 +535,9 @@ def _is_dangerous(invocation: GitInvocation) -> bool:
   if subcommand in {'filter-branch', 'filter-repo'}:
     return True
   if subcommand == 'reflog':
-    return _subcommand_verb(args) == 'expire'
+    # expire bulk-prunes entries; delete drops specific ones — both shrink the
+    # reflog safety net that keeps other rewrites recoverable.
+    return _subcommand_verb(args) in {'expire', 'delete'}
   if subcommand == 'gc':
     return _gc_prunes_now(args)
   if subcommand == 'prune':
