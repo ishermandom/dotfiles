@@ -92,7 +92,10 @@ accomplishments. Cover:
 
 - _Token efficiency_: run `~/.claude/hooks/session-tokens.py --print` for the
   session's token counts so far (provisional — the SessionEnd hook writes the
-  final figures), then diagnose the session's main cost drivers from observable
+  final figures). Run it and any other gathering command bare: a redirect to an
+  out-of-workspace path (`2>/dev/null`, `>`) trips Claude Code's write-scope
+  gate and forces a permission prompt even when the command itself is
+  allowlisted. Then diagnose the session's main cost drivers from observable
   evidence — file reads (`wc -c` gives sizes when comparing), subagent output
   volume, other large tool results. Identify at least one concrete case of
   higher-than-necessary consumption, with a diagnosis (_why_ did this happen?)
