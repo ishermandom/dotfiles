@@ -165,9 +165,11 @@ the Edit tool).
 A mechanism that generalizes beyond this session belongs in memory or the
 relevant rules file — handle that in the Learning step.
 
-If ~10 or more session entries have accumulated since the last distillation
-marker in the log, suggest running the distill skill — the suggestion only, not
-the case for it.
+Run `~/.claude/scripts/distillation_backlog.py` for the count of reflection
+entries since the log's last distillation marker — the entries distillation
+consumes (stats-only entries, reported separately, carry none). If it reports
+~10 or more reflection entries, suggest running the distill skill — the
+suggestion only, not the case for it.
 
 ## 5. Pending commits
 

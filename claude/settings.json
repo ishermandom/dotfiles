@@ -20,6 +20,7 @@
       "Bash(which:*)",
       "Bash(~/.claude/hooks/session-tokens.py:*)",
       "Bash(~/.claude/scripts/append-session-log.py:*)",
+      "Bash(~/.claude/scripts/distillation_backlog.py:*)",
       "Bash(~/.claude/scripts/quiet-mypy.sh:*)",
       "Bash(~/.claude/scripts/quiet-prettier.sh:*)",
       "Bash(~/.claude/scripts/quiet-ruff.sh:*)",
