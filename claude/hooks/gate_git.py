@@ -399,12 +399,22 @@ def _git_invocation_of(command_node: _Node) -> GitInvocation | None:
   return _parse_invocation(words)
 
 
-def _is_force_clean(arg: str) -> bool:
-  """Whether a `git clean` argument forces deletion (`-f`/`--force`/`-xf`…)."""
-  if arg == '--force':
-    return True
-  # A short-flag bundle like -f, -fd, -xf carries the force flag in its letters.
-  return arg.startswith('-') and not arg.startswith('--') and 'f' in arg[1:]
+def _has_short_flag(args: Sequence[str], letters: str) -> bool:
+  """Whether any short-flag cluster in `args` contains one of `letters`.
+
+  git accepts clustered short flags (`-fd` is `-f -d`), so a destructive flag
+  can hide inside a bundle that exact-token matching would miss. Letters are
+  case-sensitive — `-D` (force-delete a branch) differs from `-d`. A rare
+  over-match is possible when a value-taking short flag's value happens to
+  contain a letter (e.g. `clean -e <pattern>`); that only ever over-denies,
+  which is fail-safe.
+  """
+  return any(
+    arg.startswith('-')
+    and not arg.startswith('--')
+    and any(letter in arg[1:] for letter in letters)
+    for arg in args
+  )
 
 
 def _restore_discards_worktree(args: Sequence[str]) -> bool:
@@ -434,16 +444,30 @@ def _gc_prunes_now(args: Sequence[str]) -> bool:
 
 def _push_is_destructive(args: Sequence[str]) -> bool:
   """Whether a `git push` rewrites or deletes remote refs."""
-  destructive_flags = {'-f', '--delete', '-d', '--mirror', '--prune'}
+  # Flags that rewrite or delete remote refs: `--force` (incl. -with-lease and
+  # -if-*), `--delete`, `--mirror`, `--prune`, and a force (-f) or delete (-d)
+  # hidden in a short-flag cluster like `-fd`.
+  if (
+    any(arg.startswith('--force') for arg in args)
+    or '--delete' in args
+    or '--mirror' in args
+    or '--prune' in args
+    or _has_short_flag(args, 'fd')
+  ):
+    return True
+  # A positional refspec also rewrites refs: `:dst` deletes, `+...` force-
+  # updates (including the colon-less shorthand `+branch`). Skip the value of a
+  # value-taking flag so e.g. `--push-option +rebase` is not read as a refspec.
+  value_flags = {'-o', '--push-option', '--receive-pack', '--exec', '--repo'}
+  skip_next = False
   for arg in args:
-    # `--force` covers plain force, `--force-with-lease`, and `--force-if-*`;
-    # `--prune` deletes remote refs that have no local counterpart.
-    if arg.startswith('--force') or arg in destructive_flags:
-      return True
-    # Refspec forms: `:dst` deletes the remote ref; `+src:dst` force-updates it.
-    # A force refspec always carries a colon, so require one — this avoids
-    # misreading a `+value` flag argument such as `--push-option +rebase`.
-    if arg.startswith(':') or (arg.startswith('+') and ':' in arg):
+    if skip_next:
+      skip_next = False
+      continue
+    if arg in value_flags:
+      skip_next = True
+      continue
+    if arg.startswith(':') or arg.startswith('+'):
       return True
   return False
 
@@ -470,7 +494,7 @@ def _is_dangerous(invocation: GitInvocation) -> bool:
   if subcommand == 'reset':
     return '--hard' in args
   if subcommand == 'clean':
-    return any(_is_force_clean(arg) for arg in args)
+    return _has_short_flag(args, 'f') or '--force' in args
   if subcommand == 'stash':
     return _subcommand_verb(args) in {'drop', 'clear'}
   if subcommand == 'checkout':
@@ -479,9 +503,13 @@ def _is_dangerous(invocation: GitInvocation) -> bool:
     # changes, but it cannot be reliably told apart from a branch switch
     # without repo state, so it is deferred-with-a-warning rather than blocked
     # on a guess — see _pathspec_checkout_warning and DISCARD_WARNING.
-    return '-f' in args or '--force' in args
+    return _has_short_flag(args, 'f') or '--force' in args
   if subcommand == 'switch':
-    return '-f' in args or '--force' in args or '--discard-changes' in args
+    return (
+      _has_short_flag(args, 'f')
+      or '--force' in args
+      or '--discard-changes' in args
+    )
   if subcommand == 'restore':
     return _restore_discards_worktree(args)
   if subcommand == 'worktree':
@@ -493,10 +521,12 @@ def _is_dangerous(invocation: GitInvocation) -> bool:
 
   # History rewrite that loses refs irreversibly.
   if subcommand == 'branch':
-    return '-D' in args or '-M' in args or '-f' in args or '--force' in args
+    # -D force-deletes, -M force-renames, -f forces; lowercase -d/-m are the
+    # safe (merged-only delete, non-force rename) forms and stay out.
+    return _has_short_flag(args, 'DMf') or '--force' in args
   if subcommand == 'tag':
     return (
-      '-d' in args or '--delete' in args or '-f' in args or '--force' in args
+      _has_short_flag(args, 'df') or '--delete' in args or '--force' in args
     )
   if subcommand == 'update-ref':
     # --stdin feeds a batch of ref updates/deletes the parser cannot see.

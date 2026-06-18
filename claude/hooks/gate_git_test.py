@@ -81,8 +81,10 @@ DENYLISTED: tuple[str, ...] = (
   'git branch -D feature',
   'git branch -f main origin/main',
   'git branch -M main',
+  'git branch -Dv feature',  # bundled: -D (force-delete) inside a cluster
   'git tag -d v1.0',
   'git tag -f v1.0 HEAD',
+  'git tag -df v1.0',  # bundled tag delete/force
   'git update-ref -d refs/heads/dead',
   'git update-ref --stdin',  # batch ref mutation; payload invisible to parser
   'git filter-branch --tree-filter true HEAD',
@@ -97,11 +99,13 @@ DENYLISTED: tuple[str, ...] = (
   'git push --force-with-lease',
   'git push --delete origin feature',
   'git push -d origin feature',
+  'git push -fd origin main',  # bundled short flags hide -f (force) / -d
   'git push --mirror',
   'git push --prune origin main',  # deletes remote refs with no local match
   'git -C /r push --force',
   'git push origin :feature',  # delete refspec — no flag, but removes a ref
   'git push origin +HEAD:main',  # force refspec — no flag, but overwrites
+  'git push origin +main',  # colon-less force-push shorthand
   'git remote remove origin',
   'git remote rm upstream',
   'git remote -v remove origin',  # a flag before the verb must not bypass
@@ -162,6 +166,7 @@ DEFERRED: tuple[str, ...] = (
   'git rebase main',  # recoverable rewrite — deliberately not denied
   'git push',  # plain push is neither force nor delete
   'git push origin main',
+  'git push -u origin main',  # -u (set-upstream) is not destructive
   'git push --push-option +rebase origin main',  # value, not a force refspec
   'git fetch',
   'git pull',
@@ -190,6 +195,7 @@ DEFERRED: tuple[str, ...] = (
   # branch / worktree forms that are not read-only listing.
   'git branch new-topic',  # creates a ref
   'git branch -m old new',  # rename (non-force; -M would be denied)
+  'git branch -d merged',  # lowercase -d (merged-only delete) is not -D
   'git worktree list',  # not on the allow set
   'git worktree remove /tmp/wt',  # non-force remove is not hard-denied
   'ls -la',  # not git at all
@@ -254,12 +260,11 @@ CHECKOUT_DISCARDS: tuple[str, ...] = (
   'git -C /repo checkout -- a b',
 )
 
-# A branch switch (no pathspec) and non-checkout commands carry no warning.
+# A branch switch (no pathspec) defers without a discard warning.
 CHECKOUT_NO_DISCARD: tuple[str, ...] = (
   'git checkout main',
   'git -C /r checkout topic',
   'git switch main',
-  'git status',
 )
 
 
@@ -270,9 +275,9 @@ def test_pathspec_checkout_is_asked_with_discard_warning(command: str) -> None:
 
 
 @pytest.mark.parametrize('command', CHECKOUT_NO_DISCARD)
-def test_branch_switch_is_not_turned_into_an_ask(command: str) -> None:
-  """A branch switch or non-checkout command is never turned into an 'ask'."""
-  assert _decision_for(command) != 'ask'
+def test_branch_switch_defers_without_a_discard_warning(command: str) -> None:
+  """A branch switch (no pathspec) defers silently — no discard 'ask'."""
+  assert _decision_for(command) is None
 
 
 # --- fail-closed: bashlex unavailable degrades even a clear deny to a defer ---
