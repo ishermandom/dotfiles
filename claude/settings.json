@@ -51,6 +51,10 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/gate_auto_tools.py"
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/gate_git.py"
           }
         ]
       }

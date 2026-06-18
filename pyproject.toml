@@ -1,0 +1,42 @@
+# Copyright 2026 Ilya Sherman (ishermandom@)
+# SPDX-License-Identifier: MIT
+#
+# Project metadata and tool configuration for the dotfiles repo. This is not an
+# installable package (there is intentionally no [build-system]): the [project]
+# table documents the Python dependencies the hooks need present in the runtime
+# venv, and the [tool.*] sections centralize test and type-check configuration.
+# Provision the venv directly, e.g. `pip install bashlex` plus the dev tools.
+
+[project]
+name = "dotfiles-hooks"
+version = "0"
+requires-python = ">=3.11"
+
+# bashlex is a runtime dependency of the git permission gate (claude/hooks/
+# gate_git.py): it parses Bash commands so the gate can find the git subcommand
+# behind intervening global flags like `-C <path>`.
+dependencies = [
+  "bashlex",
+]
+
+[project.optional-dependencies]
+dev = [
+  "mypy",
+  "pytest",
+  "ruff",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["claude/hooks"]
+# claude/hooks is not a package, so put it on sys.path for the test modules'
+# sibling imports (`from gate_git import ...`); this replaces a manual
+# PYTHONPATH in run_tests.sh.
+pythonpath = ["claude/hooks"]
+
+[tool.mypy]
+# bashlex ships no type stubs (no py.typed marker). Treat its imports as
+# untyped rather than failing the strict check on a third-party gap we don't
+# control; the gate_git code contains the resulting Any behind a Protocol.
+[[tool.mypy.overrides]]
+module = ["bashlex.*"]
+ignore_missing_imports = true

@@ -347,8 +347,6 @@ for most workloads. Only flag when the mismatch is clear — not on every task.
 - After creating a new GitHub repo, run `~/.claude/scripts/gh-protect.sh` to
   verify its branch-protection ruleset; on a reported gap, ask the user to
   create the printed ruleset in the GitHub UI.
-- When already in the correct working directory, run `git` commands directly
-  without the `-C <path>` flag.
 - For commit descriptions: keep the subject line to <= 72 chars, and wrap to
   80-col for the remaining lines.
 - Before amending a commit: amend only when the intermediate state has no
