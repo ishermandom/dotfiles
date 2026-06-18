@@ -145,8 +145,19 @@ an entry to `~/.claude/logs/sessions.md` (create the file if missing):
 All counts in the entry are directional diagnostics — questions to investigate
 when they drift across sessions, never targets to optimize.
 
-To append cheaply, use a Bash heredoc (`cat >> <log> <<'EOF' … EOF`) — an append
-needs no prior read, while the Edit tool requires Reading the whole file first.
+To append without a prompt, pipe the entry into
+`~/.claude/scripts/append-session-log.py` via a heredoc:
+
+```bash
+~/.claude/scripts/append-session-log.py <<'EOF'
+…entry…
+EOF
+```
+
+The script is allowlisted and does the write internally, so it never prompts — a
+raw `cat >> <log>` redirect prompts every time, because Claude Code gates writes
+to paths outside the workspace. The append needs no prior read either (unlike
+the Edit tool).
 
 A mechanism that generalizes beyond this session belongs in memory or the
 relevant rules file — handle that in the Learning step.

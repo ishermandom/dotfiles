@@ -19,6 +19,7 @@
       "Bash(wc:*)",
       "Bash(which:*)",
       "Bash(~/.claude/hooks/session-tokens.py:*)",
+      "Bash(~/.claude/scripts/append-session-log.py:*)",
       "Bash(~/.claude/scripts/quiet-mypy.sh:*)",
       "Bash(~/.claude/scripts/quiet-prettier.sh:*)",
       "Bash(~/.claude/scripts/quiet-ruff.sh:*)",
@@ -50,6 +51,17 @@
           {
             "type": "command",
             "command": "~/.claude/hooks/gate_auto_tools.py"
+          }
+        ]
+      }
+    ],
+    "PermissionRequest": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/log_permission_prompts.py"
           }
         ]
       }
