@@ -225,7 +225,14 @@ decisions ratified at minimum. Drive the review with the
 Before presenting any code, check it against all loaded style guides —
 explicitly, as a checklist pass, not by passive recall. This applies to every
 edit, however small; the rules most likely to slip through are those unrelated
-to the change's main focus.
+to the change's main focus. Cover altitude in the same pass, not only style:
+confirm the change sits at the right depth and semantics, not just that it
+matches the guides.
+
+When choosing how to run that review: for a small diff that fits in full
+context, reviewing inline can beat fanning out cold `/code-review` subagents —
+but inline review leans on passive recall, so cover every angle deliberately,
+conventions and altitude most of all, since those are what otherwise slip past.
 
 When the user gives multiple tasks at once, add them all to the project's
 `tasks.md` (the task tracker) first and ask which to start with. Don't act on a
