@@ -4,8 +4,8 @@ description:
   or similar with no task in flight.
 ---
 
-Drive the session-start resume protocol: determine the single best next task,
-propose it, and wait for approval. Work the steps in order.
+Drive the resume protocol: determine the single best next task, propose it, and
+wait for approval. Work the steps in order.
 
 ## Steps
 
