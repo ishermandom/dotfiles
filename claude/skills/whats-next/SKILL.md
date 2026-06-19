@@ -19,7 +19,7 @@ wait for approval. Work the steps in order.
    or say there is no tracker and ask the user what to work on.
 
 3. **Pick the first actionable task** in execution order; skip blocked or
-   deferred tasks, noting each in one line. If there are multiple resaonable
+   deferred tasks, noting each in one line. If there are multiple reasonable
    next tasks, list up to ~3.
 
 4. **Verify the task's premise** against the current code before proposing it —
