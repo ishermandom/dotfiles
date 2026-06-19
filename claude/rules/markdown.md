@@ -52,18 +52,8 @@ start accumulating; single-session task breakdowns usually live in chat.
 
 ### When resuming work from a tasks file
 
-- **Repo state first**: check `git status` and recent `git log` before the
-  tracker. Uncommitted changes or unpushed work-in-progress mean the in-flight
-  work is the real next item — surface it before proposing a tracker task.
-- **Pick the first actionable task** in execution order; skip blocked or
-  deferred tasks, noting each in one line.
-- **Verify the task's premise** against the current code before proposing it —
-  read or grep what the task claims needs changing. A task written sessions ago
-  may be obsolete or already half-done.
-- **Propose, then wait**: a one-screen brief — last session's end point, the
-  proposed task and why, any concerns — then wait for approval. Include repo
-  state only when it demands action (uncommitted or unpushed work); a clean repo
-  is padding, not information.
+At the start of a session, the `whats-next` skill drives this — see it for the
+resume protocol.
 
 ### When marking task status
 
