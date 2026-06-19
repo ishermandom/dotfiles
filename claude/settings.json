@@ -109,7 +109,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/log-instructions-loaded.sh"
+            "command": "~/.claude/hooks/log_instructions_loaded.py"
           }
         ]
       }

@@ -19,14 +19,18 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: drop `git -C` as an always-bad example (may be allowlisted now) and
     `2>/dev/null` (already covered by CLAUDE.md "don't fail silently").
 
-- [ ] **Generalize log rotation across the ~/.claude logs** — the
-      permission-prompt hook now self-rotates, but the other unbounded logs
-      under `~/.claude/logs/` (e.g. `instructions-loaded.log`, `sessions.md`)
-      still grow without limit. Extract a shared rotation helper and apply it to
-      each producing hook.
-  - Note: model it on `log_permission_prompts.py`'s scheme (size-triggered
-    rotation, date-named archives in `logs/archive/`, byte-budget pruning scoped
-    per-source by filename pattern) — promote that logic into a reusable module
-    the hooks import rather than duplicating it.
-  - Note: per-source budgets and rotation caps will differ; thread them as
-    parameters, not constants baked into the helper.
+- [ ] **Consider rotating `sessions.md` as part of the distillation skill** —
+      `sessions.md` is the curated session log; it is deliberately _not_
+      auto-rotated, since rotating fragments its searchable history.
+      `session-tokens.py` now warns (into the diagnostic log) once it passes
+      `SESSIONS_LOG_WARN_BYTES` (512 KiB). The distillation skill is the natural
+      place to surface that warning visibly and decide whether to rotate or
+      distill the log down.
+  - Note: the shared `log_rotation.py` helper already supports this — pass
+    `sessions.md` its own caps if rotation is chosen.
+
+- [ ] **Fix `PTH105` in `session-tokens.py`'s `write_log`** — ruff flags
+      `os.replace(temporary_path, log_path)` (use `Path.replace`). Pre-existing
+      tech debt, not enforced on Stop (only ruff _format_ runs there, not
+      _check_), so it sits latent. Swap to `temporary_path.replace(log_path)`
+      and drop the now-unused `import os` if nothing else needs it.

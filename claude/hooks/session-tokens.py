@@ -24,8 +24,20 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
 
+import log_rotation
+
 DEFAULT_LOG_PATH = Path.home() / '.claude' / 'logs' / 'sessions.md'
 DIAGNOSTIC_LOG_PATH = Path.home() / '.claude' / 'logs' / 'session-tokens.log'
+
+# Bound the diagnostic log's disk use; it's a small error trace, so a tight
+# budget suffices.
+DIAGNOSTIC_LOG_MAX_ACTIVE_BYTES = 64 * 1024
+DIAGNOSTIC_LOG_TOTAL_BUDGET_BYTES = 256 * 1024
+
+# sessions.md is a curated record, so it isn't auto-rotated — rotating would
+# fragment its searchable history. Warn once it grows past this instead, so it
+# can be distilled or rotated deliberately.
+SESSIONS_LOG_WARN_BYTES = 512 * 1024
 
 # Counter fields summed into the log, plus the non-counter fields
 # current transcript records carry. A field outside this set means the
@@ -58,6 +70,11 @@ def log_diagnostic(message: str) -> None:
   timestamp = datetime.now().isoformat(timespec='seconds')
   with DIAGNOSTIC_LOG_PATH.open('a') as log_file:
     log_file.write(f'{timestamp} {message}\n')
+  log_rotation.rotate_if_needed(
+    DIAGNOSTIC_LOG_PATH,
+    DIAGNOSTIC_LOG_MAX_ACTIVE_BYTES,
+    DIAGNOSTIC_LOG_TOTAL_BUDGET_BYTES,
+  )
 
 
 @dataclass(frozen=True)
@@ -230,6 +247,15 @@ def record_session_end(payload: Mapping[str, object], log_path: Path) -> None:
     )
     updated_text = log_text + entry
   write_log(log_path, updated_text)
+
+  # sessions.md isn't rotated; flag it for deliberate cleanup once it's large.
+  size = log_path.stat().st_size
+  if size > SESSIONS_LOG_WARN_BYTES:
+    log_diagnostic(
+      f'{log_path.name} has grown to {size} bytes, past the '
+      f'{SESSIONS_LOG_WARN_BYTES}-byte warn threshold; consider distilling or '
+      f'rotating it'
+    )
 
 
 def live_transcript_path(cwd: Path) -> Path:
