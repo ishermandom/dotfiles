@@ -72,11 +72,16 @@ paths:
 
 ## JavaScript
 
-- **Test runner**: `node:test` + `node:assert/strict` — built-in, no
-  dependencies
+- **Test runner**: default to `node:test` + `node:assert/strict` — built-in, no
+  dependencies — for pure logic and non-DOM code. Use **vitest + jsdom** instead
+  when the code under test manipulates the DOM: vitest supplies a per-file DOM
+  environment (`// @vitest-environment jsdom`) that `node:test` has no built-in
+  answer for. Don't add vitest to a non-DOM project.
 - **Reporter**: `--test-reporter=dot` for compact output
 - **Non-module source files** (e.g. Google Apps Script): add
   `if (typeof module !== 'undefined') module.exports = { fn };` at the end to
   enable `require()` in tests
 - **`run_tests.sh`**:
-  `exec node --test-reporter=dot "$(dirname "$0")/your_module.test.js"`
+  `exec node --test-reporter=dot "$(dirname "$0")/your_module.test.js"` (a
+  vitest project runs `exec npm --prefix "$(dirname "$0")/<pkg-dir>" test`
+  instead)
