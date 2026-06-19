@@ -101,6 +101,13 @@ fresh. Never lower the quality bar because a project is small.
   (`.claude/settings.json`, `.claude/hooks/`) is for things tied to one repo — a
   project-specific toolchain, permissions, or environment variable. When in
   doubt, ask: would this rule apply in a different project? If yes, it's global.
+- **When persisting a durable preference or insight**: choose CLAUDE.md for a
+  global, authoritative one — it is global (every project), git-tracked, and
+  injected as an authoritative instruction, so it applies reliably and stays
+  reviewable. Reserve the auto-memory store for project-local facts, or ones
+  that recall rarely enough that its load-only-when-recalled cost pays off; it
+  is project-local, untracked, and loads as non-authoritative background
+  context.
 - **Keep `settings.json` lists alphabetized**: when adding or editing entries in
   a curated string list (`permissions.allow`, `permissions.deny`), keep the list
   in ASCII sort order. Leave the `hooks` arrays as-is — their order is
