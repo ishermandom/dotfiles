@@ -30,9 +30,14 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `SAFE_READ_FLAGS`.
   - Note: stay fail-closed and extend `gate_git_test.py` alongside the change.
 
-- [ ] **Build log rotation into the permission-prompt logging hook** — the hook
-      that appends to `~/.claude/logs/permission-prompts.log` never rotates, so
-      the file grows unbounded (already ~157KB; archived once by hand this
-      session). Rotate within the hook so it stays bounded without manual `mv`.
-  - Note: decide a rotation trigger (size threshold or date) and a retention
-    policy for archived logs.
+- [ ] **Generalize log rotation across the ~/.claude logs** — the
+      permission-prompt hook now self-rotates, but the other unbounded logs
+      under `~/.claude/logs/` (e.g. `instructions-loaded.log`, `sessions.md`)
+      still grow without limit. Extract a shared rotation helper and apply it to
+      each producing hook.
+  - Note: model it on `log_permission_prompts.py`'s scheme (size-triggered
+    rotation, date-named archives in `logs/archive/`, byte-budget pruning scoped
+    per-source by filename pattern) — promote that logic into a reusable module
+    the hooks import rather than duplicating it.
+  - Note: per-source budgets and rotation caps will differ; thread them as
+    parameters, not constants baked into the helper.
