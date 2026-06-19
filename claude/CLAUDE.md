@@ -319,6 +319,13 @@ Every session, without being asked:
   wrappers `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier}.sh [paths]` —
   terse output, auto-surfaced to the user.
 - **Prefer parallel tool calls** when independent.
+- **Prefer to search code with `rg`**: ripgrep for recursive searches. The
+  bundled `grep` shim (backed by ugrep) handles quick literal or piped lookups,
+  and is the better pick for compressed/archived logs and fuzzy matching.
+  <!-- The `grep` shim runs ugrep in BRE mode (`-G`): `|`, `+`, `(` are
+  literal without `-E` — an easy silent misfire. rg defaults to recursive,
+  smart-case, gitignore-aware search with an ERE-ish flavor matching how
+  patterns get written. -->
 - **Read files incrementally**: use `grep`/`find` to locate relevant sections,
   then read only those ranges with `offset`/`limit`. For edits, grep for the
   insertion point and read a small window around it — a full file read is rarely
