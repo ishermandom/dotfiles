@@ -120,6 +120,13 @@ cross-phase references are needed.
 
 ### When pruning completed work
 
+**Prune at completion by default.** When you mark a task `[x]`, in the same edit
+delete it instead if its detail is preserved elsewhere (the commit, the code, or
+a follow-up task) and it no longer informs remaining work. Keep an `[x]` entry
+only when its done-state still informs _in-progress_ work this session — e.g. an
+unfinished task depends on it. Don't let completed checkboxes accumulate for a
+later cleanup pass.
+
 Completed and dropped tasks, and whole completed phases, can be summarized or
 deleted once they stop informing the remaining work — git preserves the detail.
 The `[-]` rule above governs drop time, not pruning. When in doubt, keep a
