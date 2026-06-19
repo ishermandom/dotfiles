@@ -19,17 +19,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: drop `git -C` as an always-bad example (may be allowlisted now) and
     `2>/dev/null` (already covered by CLAUDE.md "don't fail silently").
 
-- [ ] **Auto-allow `--` and operand pathspecs on read-only git subcommands** —
-      the git gate's `_is_safe_read_arg` (`claude/hooks/gate_git.py`) treats the
-      `--` operand separator as an unrecognized flag, so common read commands
-      like `git diff -- <path>` and `git log -- <path>` defer to a prompt.
-  - Note: `--` is a more common form than the clustered short flags the gate
-    already auto-allows. Fix: recognize `--` as a safe operand separator.
-  - Note: consider the attached-value short-flag form in the same pass —
-    `git diff -U5` defers because `-U5` doesn't match the bare `-U` in
-    `SAFE_READ_FLAGS`.
-  - Note: stay fail-closed and extend `gate_git_test.py` alongside the change.
-
 - [ ] **Generalize log rotation across the ~/.claude logs** — the
       permission-prompt hook now self-rotates, but the other unbounded logs
       under `~/.claude/logs/` (e.g. `instructions-loaded.log`, `sessions.md`)

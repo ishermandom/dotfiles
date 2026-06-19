@@ -247,10 +247,10 @@ SAFE_READ_FLAGS = frozenset(
   }
 )
 
-# The value-less short flags from SAFE_READ_FLAGS, as bare letters, so a
-# clustered short-flag token (`-sb`) auto-allows when every letter is one of
-# these. Each is a display- or filter-only toggle whose output is read-only —
-# none writes a file, runs a program, or mutates state:
+# The value-less short flags from SAFE_READ_FLAGS, as bare letters. A clustered
+# short-flag token mixes these freely (`-sb` is `-s -b`); each is a display- or
+# filter-only toggle whose output is read-only — none writes a file, runs a
+# program, or mutates state:
 #   s  status: short format
 #   b  status: show branch
 #   z  status: NUL-terminated records
@@ -260,10 +260,21 @@ SAFE_READ_FLAGS = frozenset(
 #   E  log: extended-regexp --grep
 #   F  log: fixed-string --grep
 #   R  diff: reverse the diff
-# Value-taking short flags (`-n`, `-U`, `-S`, `-G`, `-C`, `-M`) are excluded:
-# once one appears in a cluster the remaining characters are its value, not more
-# flags, so such a cluster cannot be validated letter-by-letter.
 SAFE_READ_BOOLEAN_SHORT_FLAGS = frozenset('sbzpwiEFR')
+
+# The value-taking single-letter SAFE_READ_FLAGS, as bare letters. git parses a
+# cluster left to right, and the first of these consumes the rest of the token
+# as its value (`-U5` is `-U` with value `5`; `-pU5` is `-p` then `-U5`), so one
+# can end a cluster but no flag hides behind it. Each takes a read-only value —
+# a count, a search pattern, or a rename/copy threshold:
+#   u  status: --untracked-files mode
+#   n  log: --max-count
+#   S  log: pickaxe string
+#   G  log: pickaxe regex
+#   U  diff: --unified context lines
+#   M  diff: --find-renames threshold
+#   C  diff: --find-copies threshold
+SAFE_READ_VALUE_SHORT_FLAGS = frozenset('unSGUMC')
 
 # Read-only `git branch` listing flags. branch auto-allows only when *every*
 # argument is one of these — any operand (a branch to create or rename) or any
@@ -588,27 +599,58 @@ def _is_plain_command(node: _Node) -> bool:
   return True
 
 
+def _is_safe_short_flag_cluster(token: str) -> bool:
+  """Whether a `-xyz` short-flag cluster is safe on a read-only subcommand.
+
+  git parses a cluster left to right; the first value-taking flag consumes the
+  rest of the token as its value (`-U5` is `-U` with value `5`), so once one is
+  reached nothing after it is a flag. The cluster is safe when every letter up
+  to that point is a boolean read flag and the letter that ends the scan is
+  either boolean or value-taking — any other letter is an unknown flag, so the
+  whole token defers.
+  """
+  for letter in token[1:]:
+    if letter in SAFE_READ_VALUE_SHORT_FLAGS:
+      return True  # the rest of the token is this flag's value — not flags
+    if letter not in SAFE_READ_BOOLEAN_SHORT_FLAGS:
+      return False
+  return True
+
+
 def _is_safe_read_arg(arg: str) -> bool:
   """Whether an argument to a read-only subcommand is safe to auto-allow.
 
   Operands (refs, paths) are harmless on a read-only subcommand; a flag is safe
   only if it is on SAFE_READ_FLAGS. The `--flag=value` form is keyed on the
-  name. A clustered short-flag token (`-sb`) is safe when every letter is a
-  value-less read flag — git treats `-sb` as `-s -b`, so matching the whole
-  token against SAFE_READ_FLAGS alone would needlessly prompt for it. The deny
-  path already decomposes clusters (_has_short_flag); this keeps the allow path
-  symmetric.
+  name; a clustered short-flag token is checked letter-by-letter
+  (_is_safe_short_flag_cluster). The `--` operand separator is handled by the
+  caller (_read_only_args_are_safe), not here.
   """
   if not arg.startswith('-'):
     return True
   if arg.split('=', 1)[0] in SAFE_READ_FLAGS:
     return True
-  # A clustered short-flag token: a single dash, then letters, no `=` value. A
-  # value-taking flag can't appear (it would consume the rest as its value), so
-  # every letter must be on the value-less safe set.
+  # Anything left is a flag token. A long flag, or an `=`-valued token not
+  # matched above, is unrecognized; otherwise it is a short-flag cluster.
   if arg.startswith('--') or '=' in arg:
     return False
-  return all(letter in SAFE_READ_BOOLEAN_SHORT_FLAGS for letter in arg[1:])
+  return _is_safe_short_flag_cluster(arg)
+
+
+def _read_only_args_are_safe(args: Sequence[str]) -> bool:
+  """Whether every argument to a read-only subcommand is safe to auto-allow.
+
+  A `--` ends option parsing: git treats every later token as a pathspec
+  operand, which is inert on a read-only subcommand (even a flag-looking one
+  like `--output=x` is just a path that won't match), so the scan stops and
+  allows the rest. Each token before `--` must pass _is_safe_read_arg.
+  """
+  for arg in args:
+    if arg == '--':
+      return True
+    if not _is_safe_read_arg(arg):
+      return False
+  return True
 
 
 def _is_auto_allowable(invocation: GitInvocation) -> bool:
@@ -623,7 +665,7 @@ def _is_auto_allowable(invocation: GitInvocation) -> bool:
   if invocation.subcommand == 'branch':
     return all(arg in SAFE_BRANCH_FLAGS for arg in invocation.args)
   if invocation.subcommand in READ_ONLY_SUBCOMMANDS:
-    return all(_is_safe_read_arg(arg) for arg in invocation.args)
+    return _read_only_args_are_safe(invocation.args)
   return False
 
 

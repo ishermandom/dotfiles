@@ -153,6 +153,27 @@ ALLOWLISTED: tuple[str, ...] = (
   'git branch',
   'git branch -a',
   'git -C /repo branch -vv',
+  # `--` ends option parsing: later tokens are pathspec operands, inert on a
+  # read-only subcommand — even a flag-looking one is just a path that won't
+  # match.
+  'git diff -- file.txt',
+  'git log -- src/',
+  'git diff HEAD -- a b',
+  'git -C /repo diff --stat -- file',
+  'git diff -- --output=x',  # post-`--` `--output` is a pathspec, not the flag
+  # Attached-value short flags (`-U5` is `-U 5`), and a value-taking short flag
+  # ending a cluster — git reads the token's tail as the flag's value (or the
+  # next token, when the tail is empty), so no flag hides behind it.
+  'git diff -U5',  # unified context lines, value attached
+  'git log -n20',  # max-count, value attached
+  'git log -Sneedle',  # pickaxe string, value attached
+  'git log -pS',  # -S pickaxe (string) ends the cluster
+  'git log -pG',  # -G pickaxe (regex)
+  'git log -pn',  # -n max-count
+  'git status -su',  # -u untracked-files
+  'git diff -pU',  # -U unified context lines
+  'git diff -pM',  # -M find-renames
+  'git diff -pC',  # -C find-copies
 )
 
 # --- non-destructive but non-allowlisted commands defer to the prompt ---
@@ -194,23 +215,14 @@ DEFERRED: tuple[str, ...] = (
   'git diff --ext-diff',  # runs a configured external diff command
   'git status --totally-unknown-flag',  # unknown flag → fail-closed
   'git status -sx',  # unknown letter in a short-flag cluster → fail-closed
-  # A value-taking short flag in a cluster can't be split letter-by-letter (the
-  # rest of the token is its value), so a cluster carrying one defers rather
-  # than auto-allowing — one case per value-taking letter, each paired with a
-  # known-safe letter so only the value-taking letter can be the reason.
-  'git log -pS',  # -S pickaxe (string)
-  'git log -pG',  # -G pickaxe (regex)
-  'git log -pn',  # -n max-count
-  'git status -su',  # -u untracked-files (optional value)
-  'git diff -pU',  # -U unified context lines
-  'git diff -pM',  # -M find-renames (optional value)
-  'git diff -pC',  # -C find-copies (optional value)
+  'git diff -xU5',  # unknown letter before a value-taking flag → fail-closed
   'git -p log',  # forced pager can exec core.pager
   'git --paginate show',
   'git -c core.pager=cat log',  # -c injects config
   'git --exec-path=/opt/git-core status',  # exec-path redirect blocks allow
   # branch / worktree forms that are not read-only listing.
   'git branch new-topic',  # creates a ref
+  'git branch -- main',  # `--` operand allowance is scoped to read-only subs
   'git branch -m old new',  # rename (non-force; -M would be denied)
   'git branch -d merged',  # lowercase -d (merged-only delete) is not -D
   'git worktree list',  # not on the allow set
@@ -265,25 +277,18 @@ def test_non_simple_shape_is_never_auto_allowed(command: str) -> None:
   assert _decision_for(command) is None
 
 
-# --- the cluster-safe letters stay in sync with SAFE_READ_FLAGS ---
-
-# The single-letter SAFE_READ_FLAGS that consume a value (`-n<count>`,
-# `-S<string>`, `-M[<n>]`, …), so they can't be validated inside a clustered
-# token and are deliberately kept out of SAFE_READ_BOOLEAN_SHORT_FLAGS. Listed
-# here only to pin the partition below; that such a cluster never auto-allows is
-# the security-sensitive property, covered end-to-end through main() by the
-# value-taking-cluster cases in DEFERRED.
-VALUE_TAKING_READ_SHORT_FLAGS = frozenset('unSGUMC')
+# --- the cluster short-flag sets stay in sync with SAFE_READ_FLAGS ---
 
 
-def test_cluster_safe_letters_are_recognized_safe_flags() -> None:
-  """The cluster-safe letters partition the single-letter SAFE_READ_FLAGS.
+def test_cluster_short_flags_partition_single_letter_safe_flags() -> None:
+  """Boolean and value-taking cluster letters partition single-letter flags.
 
-  Bidirectional, so neither set can drift silently: every cluster-safe letter is
-  a recognized standalone safe flag (a cluster can't allow what `-X` alone
-  wouldn't), and every single-letter safe flag is classified as cluster-safe or
+  Bidirectional, so neither set can drift silently: every cluster letter is a
+  recognized standalone safe flag (a cluster can't allow what `-X` alone
+  wouldn't), and every single-letter safe flag is classified boolean or
   value-taking (a newly added one can't be quietly dropped from clusters, nor
-  quietly allowed in one).
+  quietly mishandled in one). The behavior each class produces is covered
+  end-to-end through main() by the cluster cases in ALLOWLISTED and DEFERRED.
   """
   single_letter_flags = frozenset(
     flag[1:]
@@ -291,15 +296,17 @@ def test_cluster_safe_letters_are_recognized_safe_flags() -> None:
     if len(flag) == 2 and flag.startswith('-')
   )
 
-  # Disjoint: no letter is both cluster-safe and value-taking.
+  # Disjoint: no letter is both boolean and value-taking.
   assert not (
-    gate_git.SAFE_READ_BOOLEAN_SHORT_FLAGS & VALUE_TAKING_READ_SHORT_FLAGS
+    gate_git.SAFE_READ_BOOLEAN_SHORT_FLAGS
+    & gate_git.SAFE_READ_VALUE_SHORT_FLAGS
   )
-  # Complete: the two together cover every single-letter safe flag, so the
-  # difference in sizes is exactly the value-taking count, none unclassified.
+  # Complete: together they cover every single-letter safe flag, none
+  # unclassified.
   assert (
     single_letter_flags
-    == gate_git.SAFE_READ_BOOLEAN_SHORT_FLAGS | VALUE_TAKING_READ_SHORT_FLAGS
+    == gate_git.SAFE_READ_BOOLEAN_SHORT_FLAGS
+    | gate_git.SAFE_READ_VALUE_SHORT_FLAGS
   )
 
 
