@@ -16,7 +16,6 @@ the SessionEnd hook writes the final, complete line.
 
 import argparse
 import json
-import os
 import re
 import sys
 from collections.abc import Iterable, Mapping, Sequence
@@ -220,7 +219,7 @@ def write_log(log_path: Path, text: str) -> None:
   log_path.parent.mkdir(parents=True, exist_ok=True)
   temporary_path = log_path.parent / (log_path.name + '.tmp')
   temporary_path.write_text(text)
-  os.replace(temporary_path, log_path)
+  temporary_path.replace(log_path)
 
 
 def record_session_end(payload: Mapping[str, object], log_path: Path) -> None:

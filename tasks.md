@@ -28,9 +28,3 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       distill the log down.
   - Note: the shared `log_rotation.py` helper already supports this — pass
     `sessions.md` its own caps if rotation is chosen.
-
-- [ ] **Fix `PTH105` in `session-tokens.py`'s `write_log`** — ruff flags
-      `os.replace(temporary_path, log_path)` (use `Path.replace`). Pre-existing
-      tech debt, not enforced on Stop (only ruff _format_ runs there, not
-      _check_), so it sits latent. Swap to `temporary_path.replace(log_path)`
-      and drop the now-unused `import os` if nothing else needs it.
