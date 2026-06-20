@@ -381,6 +381,11 @@ for most workloads. Only flag when the mismatch is clear — not on every task.
 
 # Git
 
+- Commit directly to the default branch (`main`); don't branch first. The user
+  works one thread at a time and reviews locally, so the harness branch-first
+  default doesn't apply. Branch or use a worktree only for a specific need — an
+  abandonable spike, parallel agents, or a PR-only review tool like
+  `/code-review ultra`.
 - When pushing to GitHub, always use `origin-https`, not `origin`.
 - After creating a new GitHub repo, run `~/.claude/scripts/gh-protect.sh` to
   verify its branch-protection ruleset; on a reported gap, ask the user to
