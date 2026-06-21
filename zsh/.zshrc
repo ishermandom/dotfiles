@@ -31,6 +31,10 @@ zstyle ':vcs_info:git:*' actionformats '%b|%a%u'
 
 setopt prompt_subst
 
+# Named directories: %~ abbreviates these prefixes in the prompt path, so the
+# leading segment stays informative — ~code rather than a generic /Users.
+hash -d code=/Users/Shared/code
+
 _build_prompt() {
   local exit_code=$1
 
@@ -44,7 +48,8 @@ _build_prompt() {
   [[ -n "${_user}${_host}" ]] && user_seg="%F{$_pc_user}${_user}${_sep}${_host}%f "
 
   # Full path when ≤ 4 components deep; first-dir/…/last-two when deeper.
-  # Outside the home directory, first-dir is a literal path segment, not ~.
+  # The first-dir anchor is ~, a named directory like ~code (see hash -d
+  # above), or a literal root segment such as /tmp when no name matches.
   local path_seg="%F{$_pc_path}%(5~|%-1~/…/%2~|%~)%f"
 
   # Git segment is empty outside a repo.
