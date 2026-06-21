@@ -17,6 +17,15 @@ pre-format snapshot.
   proper nouns.
 - **Code**: always use fenced code blocks with a language tag. Use inline
   backticks for file paths, command names, and literal values.
+- **Nested list items**: indent a child bullet 2 spaces, aligned with the
+  parent's `-` marker, never to the text after a `- [ ] ` checkbox — a child
+  indented to the checkbox text gets folded into the parent paragraph by
+  Prettier, silently destroying the sublist.
+
+<!-- Nested list items: a `-` item's CommonMark content column is 2 (after the
+marker); the `[ ]` is content, not marker, so it does not shift nesting out to
+column 6. At 6 spaces with no blank line the child parses as a lazy paragraph
+continuation, which Prettier then renders inline. Verified empirically. -->
 
 ## When writing spec documents
 
