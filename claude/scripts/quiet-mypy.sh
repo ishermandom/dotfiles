@@ -30,11 +30,13 @@ else
   done
 fi
 
-# git rev-parse --show-toplevel prints the repo root, or nothing (its error is
-# discarded) when we are not in a repo. The ":-" parameter expansion then
-# supplies a fallback, so run_dir is the repo root inside a repo, else the
-# current directory.
-repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+# Anchor on the first target's repo root — the files' repo, which may differ
+# from the current directory. git rev-parse must run from a directory, so step
+# up when the target is a file. The ":-" fallback runs in place when the target
+# is not in a git repo.
+first_dir=${targets[0]}
+[ -f "$first_dir" ] && first_dir=$(dirname "$first_dir")
+repo_root=$(cd "$first_dir" && git rev-parse --show-toplevel 2>/dev/null)
 run_dir="${repo_root:-$PWD}"
 
 # Run mypy from run_dir. The cd is inside "$(...)", so it changes directory only
