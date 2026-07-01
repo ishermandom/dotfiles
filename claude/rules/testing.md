@@ -48,6 +48,9 @@ paths:
 ## Python
 
 - **Test runner**: pytest; use `io.StringIO` for in-memory stream fakes
+- **Test file naming**: name a module's tests `<module>_test.py` in the same
+  directory — so a test sorts alphabetically beside the code it covers
+  (`notation.py` / `notation_test.py`), not off under a separate `tests/` tree
 - **TDD stubs**: mark a not-yet-implemented test
   `@pytest.mark.xfail(strict=True)`. `strict=True` causes the suite to fail when
   the test unexpectedly passes — a reminder to remove the marker once the
