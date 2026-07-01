@@ -59,7 +59,12 @@ paths:
 - **Builder serialization**: `_make_foo` helpers convert Python values to the
   types the function under test expects — a `list[str]` becomes a JSON string or
   an `io.StringIO`; callers never serialize manually.
-- **Avoid `parametrize`**: unless it gives a concrete readability gain
+- **Multiple inputs, one behavior**: prefer separate DAMP tests with inline
+  values when each case has distinct meaning worth naming. Use `parametrize`
+  when several inputs exercise the same behavior and per-case names add nothing
+  (e.g. a set of malformed inputs all rejected identically). Never loop over
+  inputs inside one test — a failure hides which case broke, and it reads worse
+  than `parametrize`.
 - **Scripted fakes**: for dependencies with a fixed call sequence (LLM clients,
   HTTP, queues), implement a fake that holds a list of scripted replies consumed
   in order — more readable than mocks. Add `__enter__`/`__exit__` to assert all
