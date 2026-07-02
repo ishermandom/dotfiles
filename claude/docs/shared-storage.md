@@ -58,6 +58,15 @@ for current architectures).
   they live in the project worktree and are promoted into
   `/Users/Shared/models/mlx/` only on graduating to durable, cross-project use.
 
+## Datasets — plain files under `/Users/Shared/data`
+
+Hand-managed datasets (clue corpora and similar) live one directory per dataset
+under `/Users/Shared/data/`, parallel to `/Users/Shared/code`. The boundary with
+`/Users/Shared/models`: `models/` holds tool-managed stores whose internal
+layout belongs to the tool (Ollama, the Hugging Face cache); `data/` holds plain
+files arranged by hand. Same inheritable ACLs (`share-directory.sh`), same
+user-run download rule.
+
 ## Python tooling — per-account, no shared venv
 
 The established pattern stands: each project declares dependencies in its
