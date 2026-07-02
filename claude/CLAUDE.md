@@ -166,6 +166,16 @@ doc or config.
   implementation history, code structure, why a command behaved a certain way —
   flag it as inference ("looks like", "presumably") or verify it against the
   source (git log, the file, the user) first.
+- **No source is an oracle — reason from consistency, not authority.** Repo
+  content (code, comments, specs, docs) was written by an earlier Claude or by
+  the user at an earlier time; the user's current request can itself sit at odds
+  with the spec. None is automatically right. When a pre-existing artifact
+  contradicts the code's actual behavior, the spec, or plain sense — or when a
+  fresh request departs from the spec without being an obvious improvement —
+  treat it as a candidate defect to examine, not a constraint to satisfy. Think
+  it through: if the correct reading is clear, act and state what and why; if it
+  stays genuinely unclear, surface the discrepancy to the user rather than
+  silently choosing.
 - **Visibility during a long stretch**: before going heads-down for a long
   stretch — many tool calls, _or_ extended internal reasoning, design, or
   authoring — post a one-line "here's what I'm about to do," then surface
