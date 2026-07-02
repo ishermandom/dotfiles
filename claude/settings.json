@@ -88,6 +88,11 @@
             "type": "command",
             "command": "~/.claude/hooks/format-markdown-on-edit.sh",
             "timeout": 15
+          },
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/reflow_prose.py",
+            "timeout": 30
           }
         ]
       }

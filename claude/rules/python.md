@@ -5,6 +5,18 @@ paths:
 
 # Python style guide
 
+After any file-modification notice for a Python file this turn, re-read the
+target region before composing an `old_string` — the prose reflow hook
+(`~/.claude/hooks/reflow_prose.py`) rewraps comment and docstring prose right
+after each Edit or Write, so match the post-reflow wording, not the pre-reflow
+snapshot.
+
+- **Comment and docstring prose is markdown, auto-reflowed to 80 columns**: a
+  blank comment line (`#` alone) separates paragraphs; adjacent plain lines
+  merge into one, so express structure as markdown (`-` bullets, backticked
+  code, fenced blocks). Never reflowed: shebangs, directives (`noqa`, `fmt:`,
+  `type:`), license tag lines, `fmt: off` regions, trailing comments,
+  tab-indented comments, and docstrings with `Args:`-style sections or doctests
 - ruff enforces formatting (2-space indentation, single quotes); mypy enforces
   types — both configured globally in `~/.config/ruff/pyproject.toml` and run
   automatically on Stop

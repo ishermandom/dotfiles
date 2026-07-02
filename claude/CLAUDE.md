@@ -55,6 +55,11 @@ fresh. Never lower the quality bar because a project is small.
 - **TODOs**: write known tradeoffs as TODO comments when not addressing them
   now, so they aren't lost as mental notes. Always place a TODO on its own line
   — never append it to a line that carries other content
+- **Comment and docstring prose is markdown**: a blank comment line separates
+  paragraphs; adjacent plain lines are one paragraph and may merge under reflow,
+  so express structure as markdown (`-` bullets, backticked code, fenced
+  blocks). Auto-reflow exists where a rules/ file documents it (Python:
+  `rules/python.md`); elsewhere, fit prose to the limit by hand
 - **Named helpers**: extract repeated expressions into named constants or helper
   variables rather than repeating them inline
 - **Decompose complex regexes**: when a pattern combines two or more distinct
