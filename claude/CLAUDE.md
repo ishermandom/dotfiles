@@ -177,8 +177,13 @@ doc or config.
   with the spec. None is automatically right. When a pre-existing artifact
   contradicts the code's actual behavior, the spec, or plain sense — or when a
   fresh request departs from the spec without being an obvious improvement —
-  treat it as a candidate defect to examine, not a constraint to satisfy. Think
-  it through: if the correct reading is clear, act and state what and why; if it
+  treat it as a candidate defect to examine, not a constraint to satisfy. The
+  same skepticism covers the subtler case where an artifact's stated scope,
+  name, or category accurately describes how something is used today yet is
+  about to foreclose a cleaner design: ask whether that boundary is a real
+  invariant or a snapshot of current usage a better design may widen — an
+  accurate account of what is carries no claim about what must be. Think it
+  through: if the correct reading is clear, act and state what and why; if it
   stays genuinely unclear, surface the discrepancy to the user rather than
   silently choosing.
 - **Visibility during a long stretch**: before going heads-down for a long
