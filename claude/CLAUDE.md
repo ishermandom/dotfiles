@@ -52,6 +52,12 @@ fresh. Never lower the quality bar because a project is small.
   — never append it to a line that carries other content
 - **Named helpers**: extract repeated expressions into named constants or helper
   variables rather than repeating them inline
+- **Decompose complex regexes**: when a pattern combines two or more distinct
+  components — anchors, character classes, groups, alternation — bind each
+  logical part to a named piece so its intent is legible without decoding the
+  whole pattern. The mechanism is language-specific (see the per-language
+  rules); the goal is constant — a name says what a sub-pattern matches where a
+  bare cluster of metacharacters can't
 - **Don't name for the sake of naming**: a name earns its existence by being
   referenced in multiple places, or by communicating something the value
   doesn't. A constant used in exactly one place adds a layer of indirection with

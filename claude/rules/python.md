@@ -35,6 +35,11 @@ paths:
   known, or a `TypedDict`/`Protocol` when structure matters. If `Any` genuinely
   seems like the right call despite this rule, stop, explain the case to the
   user, and get explicit approval before proceeding.
+- **Decompose complex regexes** (general rule in CLAUDE.md): make a multi-part
+  pattern legible by naming its parts — bind each logical component to a named
+  string and compose them, and/or pass `re.VERBOSE` (`re.X`) to carry
+  per-component whitespace and `#` comments. Name capture groups `(?P<level>…)`
+  so match sites read `match.group('level')`, not positional `match.group(1)`.
 
 ## Testing
 

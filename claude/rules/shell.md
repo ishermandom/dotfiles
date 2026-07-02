@@ -27,9 +27,8 @@ paths:
   non-zero in expected situations — `grep` returns 1 when there is no match, for
   example — and `set -e` will silently exit the script in those cases. Handle
   errors explicitly instead.
-- **Prefer decomposing complex regexes into named components**: when a regex
-  contains two or more distinct components — anchors (`^`/`$`), character
-  classes (`[...]`), groups (`(...)`), or alternation (`|`) — break it into
-  named variables, one per logical part, concatenated into a `pattern` variable.
-  The names document intent without requiring inline comments on the pattern
-  itself.
+- **Decompose complex regexes** (general rule in CLAUDE.md): in shell, bind each
+  logical part — anchors (`^`/`$`), character classes (`[...]`), groups
+  (`(...)`), alternation (`|`) — to its own named variable, concatenated into a
+  `pattern` variable. The variable names carry the intent, so the assembled
+  pattern needs no inline comment.
