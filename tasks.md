@@ -2,6 +2,18 @@
 
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
 
+- [ ] **Honor a project's own line length in the prose reflow hook** —
+      `claude/hooks/reflow_prose.py` assumes 80 columns everywhere (see the TODO
+      at `LINE_WIDTH`); read the target repo's ruff `line-length` or equivalent
+      instead.
+  - Note: two accepted latency levers if the hook ever feels slow, both cheaper
+    than a rewrite: a shell shim gating on file suffix before Python starts (~37
+    ms saved per non-Python edit), and a filler-only mode dropping prettier (~75
+    ms per reflow, losing markdown-aware layout).
+  - Note: a Stop-time reflow safety net (mirroring the markdown design) was
+    deliberately omitted — files changed by Bash or scripts stay un-reflowed
+    until their next Edit. Revisit only if that gap bites in practice.
+
 - [ ] **Add a "Bash command shape" directive to guide allowlist-friendly
       commands** — distillation found prompt/correction thrash from compound or
       prefixed Bash commands recurring across ~5 sessions (compound `&&`/pipes,
