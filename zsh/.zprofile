@@ -26,9 +26,12 @@ unset _home_perms
 # one Chromium install instead of each user downloading their own copy.
 export PLAYWRIGHT_BROWSERS_PATH=/Users/Shared/playwright
 
-# Redirect Ollama model downloads to a shared path so all users share one set
-# of model weights.
-export OLLAMA_MODELS=/Users/Shared/ollama/models
+# Redirect model downloads to shared stores so all users share one set of
+# weights: Ollama-managed GGUF models and the Hugging Face hub cache holding
+# MLX checkpoints. HF_HUB_CACHE only, never HF_HOME (that would move auth
+# tokens into the shared directory). See claude/docs/shared-storage.md.
+export OLLAMA_MODELS=/Users/Shared/models/gguf
+export HF_HUB_CACHE=/Users/Shared/models/mlx
 
 # Private environment variables (not tracked in the public repo).
 # Status: deprecated; currently no private environment variables to import.

@@ -13,8 +13,10 @@ or exfiltrating actions that a CLI assistant might take — whether by accident 
 via prompt injection.
 
 Code is shared between accounts via **`/Users/Shared/code`**, which both
-accounts can read and write. Everything else in each account's home directory is
-inaccessible to the other at the OS level.
+accounts can read and write. Model weights, corpora, and LLM tooling follow the
+layout in `shared-storage.md` (owned by `ishermandom`, read-only for the
+sandbox). Everything else in each account's home directory is inaccessible to
+the other at the OS level.
 
 ## Sandbox constraints
 
