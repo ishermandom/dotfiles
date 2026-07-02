@@ -168,5 +168,6 @@
   "model": "opus",
   "remoteControlAtStartup": true,
   "showThinkingSummaries": true,
-  "theme": "dark"
+  "theme": "dark",
+  "tui": "fullscreen"
 }
