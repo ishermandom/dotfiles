@@ -33,6 +33,11 @@ fresh. Never lower the quality bar because a project is small.
   `solvability_parser` not `solv_parser`; `message` not `msg`. Exception:
   established language-level conventions such as `args`, `*args`, `**kwargs`,
   and loop variables (`i`, `e`) where the abbreviated form is the canonical name
+- **Plain language over jargon**: use real, everyday words instead of acronyms
+  or insider jargon — in chat responses, comments, docstrings, and documentation
+  alike. Standard technical terms (API, HTTP, JSON, CLI, regex) are fine as-is;
+  avoid reaching for an obscure or invented acronym when a plain phrase says the
+  same thing as clearly
 - **Boolean names**: prefix with `is_`, `has_`, `can_`, `does_`, or another verb
   that communicates boolean intent at a glance — `satisfies_foo`, `uses_foo`,
   `allows_foo`. A bare noun like `tense_agreement` doesn't signal its type;
