@@ -77,11 +77,12 @@ removed, signal-to-noise drops — so the counter-pressure is structural:
   effort-level flag was removed on exactly this evidence).
 - Persistent violators graduate to hooks rather than gaining more prose.
 
-**Maintainer notes**: HTML comments are stripped before injection from CLAUDE.md
-and from path-matched rules files — zero runtime cost, so they document a rule's
-rationale freely. Stripping is a property of the injection path, not the file
-type: docs and `SKILL.md` enter context verbatim, so comments there cost tokens
-(verified empirically 2026-06-13 with sentinel comments). Operative convention:
+**Maintainer notes**: HTML comments are stripped from path-matched rules-file
+injection only (sentinel-verified 2026-06-13 and again 2026-07-03). CLAUDE.md
+injection does _not_ strip them — observed directly 2026-07-03, correcting an
+earlier over-generalization of the rules-file result — so CLAUDE.md rationale is
+either a one-clause inline why or lives in git history / this record. Docs and
+`SKILL.md` enter context verbatim as well. Operative convention:
 `rules/claude-rules-style.md` (Maintainer rationale); skill rationale goes in a
 companion `notes.md`.
 

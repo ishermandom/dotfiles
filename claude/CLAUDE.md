@@ -98,15 +98,11 @@ fresh. Never lower the quality bar because a project is small.
   implicit shared state that can't be overridden in tests without reaching into
   the module internals. A class that accepts its dependencies through the
   constructor makes them explicit and replaceable
-- **License**: include a license block at the top of every source file. For
-  personal projects, default to MIT: a copyright line followed by an SPDX
-  identifier (e.g. `# Copyright YEAR Name` / `# SPDX-License-Identifier: MIT`,
-  using the language's comment syntax). Default name:
-  `Ilya Sherman (ishermandom@)`
-  <!-- Why license blocks in hobby projects: mostly shareability — most of
-  these repos are public, so a license removes ambiguity at zero marginal
-  cost. Applying it uniformly also keeps the professional habit fresh. -->
-
+- **License**: include a license block at the top of every source file — most
+  repos here are public, so the block removes licensing ambiguity. For personal
+  projects, default to MIT: a copyright line followed by an SPDX identifier
+  (e.g. `# Copyright YEAR Name` / `# SPDX-License-Identifier: MIT`, using the
+  language's comment syntax). Default name: `Ilya Sherman (ishermandom@)`
 - **Abstract types in API signatures**: prefer abstract collection types over
   concrete ones in function signatures — the contract should express
   constraints, not implementation details. Applies to parameters and return
@@ -130,7 +126,6 @@ fresh. Never lower the quality bar because a project is small.
   a curated string list (`permissions.allow`, `permissions.deny`), keep the list
   in ASCII sort order. Leave the `hooks` arrays as-is — their order is
   execution-significant, not alphabetical.
-  <!-- Lives here, not in settings.json: JSON can't hold a comment. -->
 
 ## Hooks
 
@@ -333,18 +328,6 @@ Every session, without being asked:
   cost, and `Edit` regenerates only the changed lines while `Write` regenerates
   the whole file. `Edit` is cheaper for focused changes; `Write` for a
   near-total rewrite or a large deletion. Pick whichever generates less.
-  <!-- Cost driver: output-token generation at call time. Taking input as the 1x
-  baseline, per-token rates are uniform across Claude models: output 5x, cache
-  write 1.25x, cache read 0.1x. The generated call later sits in context at
-  cache-read rates, equal for both, so the comparison reduces to output
-  generated — Edit ≈ Σ(old+new strings), Write ≈ final file. Crossover: Write
-  wins once touched text approaches the whole file (deleting most of a large
-  file, the edits' old_strings sum to more than Write's smaller result). Per-op
-  gap is small (a ~500-line file is a few thousand output tokens vs. ~100 for a
-  small edit — at most ~$0.30 even on Fable, the priciest model at $50/MTok
-  output, as of June 2026) — a soft default, not worth a confirmation
-  round-trip. -->
-
 - **Resolve symlinks before editing** — `Edit` and `Write` reject symlink paths,
   wasting a round-trip. Use `readlink -f <path>` to get the real path first.
   Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
@@ -360,11 +343,8 @@ Every session, without being asked:
 - **Prefer parallel tool calls** when independent.
 - **Prefer to search code with `rg`**: ripgrep for recursive searches. The
   bundled `grep` shim (backed by ugrep) handles quick literal or piped lookups,
-  and is the better pick for compressed/archived logs and fuzzy matching.
-  <!-- The `grep` shim runs ugrep in BRE mode (`-G`): `|`, `+`, `(` are
-  literal without `-E` — an easy silent misfire. rg defaults to recursive,
-  smart-case, gitignore-aware search with an ERE-ish flavor matching how
-  patterns get written. -->
+  and is the better pick for compressed/archived logs and fuzzy matching — but
+  it runs in BRE mode: `|`, `+`, `(` are literal without `-E`.
 - **Read files incrementally**: use `grep`/`find` to locate relevant sections,
   then read only those ranges with `offset`/`limit`. For edits, grep for the
   insertion point and read a small window around it — a full file read is rarely
@@ -408,10 +388,8 @@ Every session, without being asked:
   Exception: never commit the dotfiles repo without the user's explicit
   permission for the specific change — a slipped change there silently degrades
   every other protection.
-- When pushing to GitHub, always use `origin-https`, not `origin`.
-  <!-- origin-https, not origin: the sandbox authenticates with fine-grained
-  personal access tokens, which work over HTTPS; origin is SSH, and the
-  sandbox holds no SSH key for it. -->
+- When pushing to GitHub, always use `origin-https`, not `origin` — the
+  sandbox's fine-grained tokens ride HTTPS; it holds no SSH key.
 
 - After creating a new GitHub repo, run `~/.claude/scripts/gh-protect.sh` to
   verify its branch-protection ruleset; on a reported gap, ask the user to
