@@ -38,8 +38,8 @@ If autonomous execution is ever adopted, the natural site is a compliance pass
 preceding step 1's code-quality pass — the "compliance first, then quality"
 order (the Superpowers two-stage-review pattern).
 
-### First-use validation
+### Early-use watch items
 
-The skill has never run on a real production change. On its first uses, watch
-for friction in two spots: partitioning the diff into logical units (step 2),
-and invoking `/code-review --fix` from within the skill (step 1).
+Two spots remain worth watching for friction while real-change runs are still
+few: partitioning the diff into logical units (step 2), and invoking
+`/code-review --fix` from within the skill (step 1).

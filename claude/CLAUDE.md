@@ -1,5 +1,3 @@
-# Global style guide
-
 ## Foundational principle: low cognitive load
 
 Every style decision flows from one goal: minimize the mental effort required to
@@ -161,10 +159,6 @@ doc or config.
   rests on context they haven't seen (research findings, file contents,
   tradeoffs), present that context and end the turn; ask the questions in a
   following turn. Same-turn text gets buried behind the question UI.
-- **Technology currency**: For questions about current best-in-class tools,
-  models, or libraries, run a web research agent call before making
-  recommendations — training data may be a year or more stale. Good triggers:
-  "what's the best X", model/library selection, version comparisons.
 - **`aq` shorthand**: When the user writes `aq` (alone or with a topic), gather
   the open decisions via `AskUserQuestion`.
 - **Inline upskilling notes**: when a Claude Code feature, tool, or pattern
@@ -176,21 +170,6 @@ doc or config.
   implementation history, code structure, why a command behaved a certain way —
   flag it as inference ("looks like", "presumably") or verify it against the
   source (git log, the file, the user) first.
-- **No source is an oracle — reason from consistency, not authority.** Repo
-  content (code, comments, specs, docs) was written by an earlier Claude or by
-  the user at an earlier time; the user's current request can itself sit at odds
-  with the spec. None is automatically right. When a pre-existing artifact
-  contradicts the code's actual behavior, the spec, or plain sense — or when a
-  fresh request departs from the spec without being an obvious improvement —
-  treat it as a candidate defect to examine, not a constraint to satisfy. The
-  same skepticism covers the subtler case where an artifact's stated scope,
-  name, or category accurately describes how something is used today yet is
-  about to foreclose a cleaner design: ask whether that boundary is a real
-  invariant or a snapshot of current usage a better design may widen — an
-  accurate account of what is carries no claim about what must be. Think it
-  through: if the correct reading is clear, act and state what and why; if it
-  stays genuinely unclear, surface the discrepancy to the user rather than
-  silently choosing.
 - **Visibility during a long stretch**: before going heads-down for a long
   stretch — many tool calls, _or_ extended internal reasoning, design, or
   authoring — post a one-line "here's what I'm about to do," then surface
@@ -213,6 +192,28 @@ doc or config.
     before executing.
   - Confident the approach breaks something or contradicts the stated goal:
     don't execute; explain and propose an alternative.
+
+## Working method
+
+- **Technology currency**: For questions about current best-in-class tools,
+  models, or libraries, run a web research agent call before making
+  recommendations — training data may be a year or more stale. Good triggers:
+  "what's the best X", model/library selection, version comparisons.
+- **No source is an oracle — reason from consistency, not authority.** Repo
+  content (code, comments, specs, docs) was written by an earlier Claude or by
+  the user at an earlier time; the user's current request can itself sit at odds
+  with the spec. None is automatically right. When a pre-existing artifact
+  contradicts the code's actual behavior, the spec, or plain sense — or when a
+  fresh request departs from the spec without being an obvious improvement —
+  treat it as a candidate defect to examine, not a constraint to satisfy. The
+  same skepticism covers the subtler case where an artifact's stated scope,
+  name, or category accurately describes how something is used today yet is
+  about to foreclose a cleaner design: ask whether that boundary is a real
+  invariant or a snapshot of current usage a better design may widen — an
+  accurate account of what is carries no claim about what must be. Think it
+  through: if the correct reading is clear, act and state what and why; if it
+  stays genuinely unclear, surface the discrepancy to the user rather than
+  silently choosing.
 - **Effort–expectation mismatch**: when a task proves disproportionately hard
   relative to what the user seems to expect — dead ends repeat, the situation
   looks impossible, reasoning balloons past the apparent size of the ask — stop
@@ -404,7 +405,7 @@ current context — staying in this session makes sense."**
   target — versions, counts, state recorded elsewhere — point at the source of
   truth or leave it out.
 
-# Git
+## Git
 
 - Commit directly to the default branch (`main`); don't branch first. The user
   works one thread at a time and reviews locally, so the harness branch-first
