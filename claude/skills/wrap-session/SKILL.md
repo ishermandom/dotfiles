@@ -172,11 +172,14 @@ suggestion only, not the case for it.
 ## 5. Pending commits
 
 If in a git repo with uncommitted changes, attempt the commit directly for the
-active project — this overrides the CLAUDE.md "commit only when the user asks"
-guidance, which targets mid-session impulses; session end is the expected commit
-point. The permission mode gates it: silent in auto mode, a prompt in default
-mode. Never commit another repo (e.g. dotfiles) this way — surface those changes
-for the user to handle.
+active project — this overrides the harness's built-in
+commit-only-when-the-user-asks default, which targets mid-session impulses;
+session end is the expected commit point. Exception: when the pending diff is a
+durable chunk that has not been through the ownership review, offer
+`/ownership-walkthrough` instead of committing directly. The permission mode
+gates the commit: silent in auto mode, a prompt in default mode. Never commit
+another repo (e.g. dotfiles) this way — surface those changes for the user to
+handle.
 
 ## 6. Learning
 
@@ -193,7 +196,7 @@ silent — don't narrate the absence.
 If production code was written, offer:
 
 > "Consider a reviewer session: open a fresh session with the relevant files in
-> context and run `/review`."
+> context and run `/code-review`."
 
 ## 8. Clear, compact, or continue
 

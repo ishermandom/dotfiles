@@ -56,7 +56,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 - [ ] **Consider rotating `sessions.md` as part of the distillation skill** —
       `sessions.md` is the curated session log; it is deliberately _not_
       auto-rotated, since rotating fragments its searchable history.
-      `session-tokens.py` now warns (into the diagnostic log) once it passes
+      `session_tokens.py` now warns (into the diagnostic log) once it passes
       `SESSIONS_LOG_WARN_BYTES` (512 KiB). The distillation skill is the natural
       place to surface that warning visibly and decide whether to rotate or
       distill the log down.

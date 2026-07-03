@@ -4,8 +4,8 @@ This repo manages system configuration via symlinks, managed using GNU Stow.
 
 ## Structure
 
-- `claude/` — Claude Code global config (settings, agents, commands, skills,
-  etc.)
+- `claude/` — Claude Code global config (CLAUDE.md, settings, rules, skills,
+  hooks, scripts, docs)
 - `git/` — gitconfig
 - `zsh/` — zshrc, aliases
 - etc.

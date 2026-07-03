@@ -17,9 +17,10 @@ snapshot.
   code, fenced blocks). Never reflowed: shebangs, directives (`noqa`, `fmt:`,
   `type:`), license tag lines, `fmt: off` regions, trailing comments,
   tab-indented comments, and docstrings with `Args:`-style sections or doctests
-- ruff enforces formatting (2-space indentation, single quotes); mypy enforces
-  types — both configured globally in `~/.config/ruff/pyproject.toml` and run
-  automatically on Stop
+- ruff enforces formatting (2-space indentation, single quotes), configured
+  globally in `~/.config/ruff/pyproject.toml`; mypy enforces types via
+  `--strict` in `~/.claude/scripts/quiet-mypy.sh` plus each project's own
+  `pyproject.toml` — both run automatically on Stop
 - **Prefer to follow the Google Python Style Guide** unless these rules conflict
   — these rules take priority
 - **Prefer `if not foo:` over `if foo is None:`** for absent-content checks —

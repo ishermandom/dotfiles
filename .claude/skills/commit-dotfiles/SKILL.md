@@ -28,18 +28,9 @@ Work through the changes above in order. For each logical group:
 4. **Commit.** Stage only the files for this group and run `git commit` directly
    — the tool will prompt for permission. Don't ask for chat approval first.
 
-5. **Repeat** until `git status` shows no remaining tracked changes. Skip any
-   files listed below under "Do not stage."
+5. **Repeat** until `git status` shows no remaining tracked changes.
 
 6. **Push.** Run `git push origin-https main`. The tool will prompt for
    approval.
-
-## Do not stage
-
-- `.claude/handoff.md` — leave untracked. These files are intentionally neither
-  committed nor gitignored, so they surface here as a forcing function to
-  revisit the decision. TODO: decide whether session handoff logs belong in git
-  at all — they may be useful history, or they may be transient noise better
-  left out of the repo entirely.
 
 Do not batch commits. Do not skip the approval step.
