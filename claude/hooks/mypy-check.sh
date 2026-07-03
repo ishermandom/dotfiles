@@ -2,12 +2,13 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Run mypy on the current directory when Claude tries to stop. On errors,
-# halt the stop and show the output to the user; Claude sees it alongside
-# the user's next message and fixes from there. Deliberately not a
-# decision:block auto-re-invoke: a block can spin forever when Claude cannot
-# fix the failure, guarding against that is out of scope for now, and the
-# workaround is trivial — the user prods the next turn and the fix proceeds.
+# Run mypy on the repo root (or the current directory when outside a git repo)
+# when Claude tries to stop. On errors, halt the stop and show the output to
+# the user; Claude sees it alongside the user's next message and fixes from
+# there. Deliberately not a decision:block auto-re-invoke: a block can spin
+# forever when Claude cannot fix the failure, guarding against that is out of
+# scope for now, and the workaround is trivial — the user prods the next turn
+# and the fix proceeds.
 #
 # Runs on Stop (end of turn) rather than on each Edit so that multi-file
 # changes that depend on each other aren't flagged mid-edit.
@@ -18,6 +19,14 @@
 #
 # The actual mypy invocation is delegated to the quiet-mypy wrapper so the
 # canonical flags live in one place (~/.claude/scripts/quiet-mypy.sh).
+
+# The hook inherits the session's current directory, which may sit in a
+# subdirectory — where a change elsewhere in the repo is invisible, or, for an
+# excluded directory (like a scratch/ dir), where mypy treats "every file
+# excluded" as a hard error. Anchor to the repo root so the check spans the
+# whole repo.
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+[ -n "$repo_root" ] && cd "$repo_root"
 
 # -print -quit stops find after the first match, for speed.
 has_python_files=$(find . -name "*.py" -print -quit 2>/dev/null)
