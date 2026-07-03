@@ -103,6 +103,10 @@ fresh. Never lower the quality bar because a project is small.
   identifier (e.g. `# Copyright YEAR Name` / `# SPDX-License-Identifier: MIT`,
   using the language's comment syntax). Default name:
   `Ilya Sherman (ishermandom@)`
+  <!-- Why license blocks in hobby projects: mostly shareability — most of
+  these repos are public, so a license removes ambiguity at zero marginal
+  cost. Applying it uniformly also keeps the professional habit fresh. -->
+
 - **Abstract types in API signatures**: prefer abstract collection types over
   concrete ones in function signatures — the contract should express
   constraints, not implementation details. Applies to parameters and return
@@ -413,6 +417,10 @@ current context — staying in this session makes sense."**
   abandonable spike, parallel agents, or a PR-only review tool like
   `/code-review ultra`.
 - When pushing to GitHub, always use `origin-https`, not `origin`.
+  <!-- origin-https, not origin: the sandbox authenticates with fine-grained
+  personal access tokens, which work over HTTPS; origin is SSH, and the
+  sandbox holds no SSH key for it. -->
+
 - After creating a new GitHub repo, run `~/.claude/scripts/gh-protect.sh` to
   verify its branch-protection ruleset; on a reported gap, ask the user to
   create the printed ruleset in the GitHub UI.
