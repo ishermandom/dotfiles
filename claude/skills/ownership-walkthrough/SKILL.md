@@ -9,7 +9,7 @@ Work through each step in order. The aim is the user's ownership of what lands �
 by default every line maintainable by the user solo, at minimum the key
 decisions ratified — settled before anything is committed.
 
-## 1. Self-review and fix
+## 1. Self-review and fix, to convergence
 
 Clean the code before spending the user's attention on it. Run
 `/code-review --fix` over the pending changes, effort scaled to risk — `low` or
@@ -17,6 +17,15 @@ Clean the code before spending the user's attention on it. Run
 security-sensitive code. Use `/simplify` instead when there are no correctness
 concerns, only cleanup. Never use the `ultra` effort here — it runs in the cloud
 and is outside this local flow.
+
+Iterate to convergence: when a round surfaces significant findings, run another
+round after applying its fixes, and stop only when a round comes back without
+any. Each round reviews the full current files, never just the prior round's
+delta. Carry between rounds: what earlier rounds fixed, a ledger of accepted
+decisions finders must not re-flag, and directed scrutiny at the previous
+round's fix code — new fixes are where new bugs concentrate. Prefer finder
+instructions that reproduce findings against real inputs over reasoning-only
+review, and shrink the fanout as findings thin.
 
 ## 2. Partition the diff into logical units
 
