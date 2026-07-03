@@ -1,6 +1,10 @@
 ---
 paths:
+  - "**/*.bash"
   - "**/*.sh"
+  - "**/*.zsh"
+  - "**/.zprofile"
+  - "**/.zshrc"
 ---
 
 # Shell script style guide

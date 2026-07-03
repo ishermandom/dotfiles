@@ -1,13 +1,19 @@
 ---
 paths:
-  - "**/.claude/docs/*.md"
+  - "**/.claude/docs/**/*.md"
   - "**/.claude/rules/*.md"
   - "**/.claude/skills/**/*.md"
   - "**/CLAUDE.md"
-  # ~/.claude/* are symlinks into dotfiles, and edits happen at the real
-  # paths — outside the project, where rules never glob-match (verified;
-  # upstream wontfix). CLAUDE.md's Following rules section covers reading
-  # this file manually before such edits.
+  - "**/claude/docs/**/*.md"
+  - "**/claude/rules/*.md"
+  - "**/claude/skills/**/*.md"
+  # Two distinct miss cases shape these globs. (1) In dotfiles-project
+  # sessions the repo paths carry no dot (claude/rules/...), so the
+  # dot-anchored globs alone never fire there — hence the claude/-prefixed
+  # twins. (2) From any other project's session, edits happen at the real
+  # paths behind the ~/.claude symlinks — outside the project, where path
+  # rules never fire at all (verified; upstream wontfix); CLAUDE.md's
+  # Following rules section covers reading this file manually in that case.
 ---
 
 # Claude rules style guide
