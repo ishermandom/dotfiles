@@ -116,11 +116,10 @@ accomplishments. Cover:
   distillation later. One session is citation data, not a verdict: demotion and
   removal decisions belong to distillation across many sessions.
 - _Config size_: spot-check the cost side of loaded context — `wc -l` on
-  always-loaded files, flagging outliers. This line-count tripwire is the
-  routine check, since Claude can compute it directly. When something looks
-  bloated, suggest the user run `/context` (per-feature context breakdown) and
-  `/usage` (per-skill/subagent/MCP cost attribution) for an authoritative
-  breakdown — a manual deep-dive, not a recorded signal.
+  always-loaded files, flagging outliers. When something looks bloated, suggest
+  the user run `/context` (per-feature context breakdown) and `/usage`
+  (per-skill/subagent/MCP cost attribution) for an authoritative breakdown — a
+  manual deep-dive, not a recorded signal.
 
 In chat, give only each finding's conclusion — what the user might act on or
 correct. Its diagnosis and mechanism are the narrative behind that conclusion;
@@ -157,10 +156,9 @@ To append without a prompt, pipe the entry into
 EOF
 ```
 
-The script is allowlisted and does the write internally, so it never prompts — a
-raw `cat >> <log>` redirect prompts every time, because Claude Code gates writes
-to paths outside the workspace. The append needs no prior read either (unlike
-the Edit tool).
+The script is allowlisted and does the write internally, so it never prompts and
+needs no prior read — a raw `cat >>` redirect would cost a permission prompt,
+and `Edit` an extra read call first.
 
 A mechanism that generalizes beyond this session belongs in memory or the
 relevant rules file — handle that in the Learning step.
