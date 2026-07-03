@@ -2,6 +2,25 @@
 
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
 
+- [ ] **Sequence the Stop hooks through one orchestrator wrapper** — same-event
+      hooks run in parallel (verified live 2026-07-03: two probe Stop hooks
+      started 0.8 ms apart with fully overlapping 2 s sleeps; hooks-guide.md
+      documents parallel execution and recommends a wrapper for ordering), so
+      the Stop array's format-before-check layout provides no ordering and
+      mypy/pytest can read files mid-rewrite by ruff/prettier. Rare in practice
+      — edit-time hooks pre-format, so Stop-time rewrites are uncommon — but
+      structurally unsound. Build `claude/hooks/stop_checks.sh` invoking
+      prettier-format → ruff-format → mypy-check → run_tests sequentially,
+      fail-fast after mypy (ratified 2026-07-03); replace the four Stop entries
+      with one, single ~120 s timeout.
+  - Note: ride-alongs — run_tests.sh needs the repo-root anchor mypy-check.sh
+    has, and its `-f` gate should be `-x` (quiet-tests.sh demands executable);
+    drop `PYTEST_FROM_HOOK` if a cross-repo grep finds no consumer; fix
+    CLAUDE.md's "order is execution-significant" claim; add the parallel-hooks
+    why to design.md's Hooks section.
+  - Note: validate after wiring per the hooks rule — one deliberate mypy-failure
+    Stop cycle (failure surfaces to the user), then a clean pass.
+
 - [ ] **Honor a project's own line length in the prose reflow hook** —
       `claude/hooks/reflow_prose.py` assumes 80 columns everywhere (see the TODO
       at `LINE_WIDTH`); read the target repo's ruff `line-length` or equivalent
