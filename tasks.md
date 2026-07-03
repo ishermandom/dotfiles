@@ -14,6 +14,15 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     deliberately omitted — files changed by Bash or scripts stay un-reflowed
     until their next Edit. Revisit only if that gap bites in practice.
 
+- [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
+      (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring
+      prose only when that file is next edited, so files untouched since the
+      hook landed still carry pre-hook wrapping — and their first later edit
+      mixes a mechanical rewrap into a substantive diff (e.g. the stray
+      `gate_auto_tools.py` reflow diff, 2026-07-02). Rewrap each repo's Python
+      files in a dedicated pass, one commit per repo, so future diffs stay
+      clean.
+
 - [ ] **Add a "Bash command shape" directive to guide allowlist-friendly
       commands** — distillation found prompt/correction thrash from compound or
       prefixed Bash commands recurring across ~5 sessions (compound `&&`/pipes,
