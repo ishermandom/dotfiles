@@ -2,12 +2,18 @@
 description:
   Drive a post-hoc ownership review of completed work — self-review and fix,
   then present a risk-labeled map of the pending diff for the user to review
-  before committing. Run when a durable chunk of work is complete.
+  before committing. Run when a durable chunk of work is complete. Pass --fix to
+  run only the convergence review-and-fix, skipping the walkthrough.
 ---
 
 Work through each step in order. The aim is the user's ownership of what lands —
 by default every line maintainable by the user solo, at minimum the key
 decisions ratified — settled before anything is committed.
+
+When invoked with `--fix`, run only step 1 — the review-and-fix loop, to
+convergence — then report what each round found and fixed, and stop: no
+partition, map, or walkthrough, and no commit. The full walkthrough stays the
+default; `--fix` serves cleanup passes where the user reviews separately.
 
 ## 1. Self-review and fix, to convergence
 
