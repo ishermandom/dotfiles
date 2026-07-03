@@ -90,7 +90,7 @@ Reflect adversarially: assume meaningful inefficiencies occurred unless evidence
 suggests otherwise, and prioritize identifying avoidable waste over highlighting
 accomplishments. Cover:
 
-- _Token efficiency_: run `~/.claude/hooks/session-tokens.py --print` for the
+- _Token efficiency_: run `~/.claude/hooks/session_tokens.py --print` for the
   session's token counts so far (provisional — the SessionEnd hook writes the
   final figures). Run it and any other gathering command bare: a redirect to an
   out-of-workspace path (`2>/dev/null`, `>`) trips Claude Code's write-scope

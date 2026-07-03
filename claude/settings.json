@@ -18,7 +18,7 @@
       "Bash(tail:*)",
       "Bash(wc:*)",
       "Bash(which:*)",
-      "Bash(~/.claude/hooks/session-tokens.py:*)",
+      "Bash(~/.claude/hooks/session_tokens.py:*)",
       "Bash(~/.claude/scripts/append-session-log.py:*)",
       "Bash(~/.claude/scripts/distillation_backlog.py:*)",
       "Bash(~/.claude/scripts/quiet-mypy.sh:*)",
@@ -125,7 +125,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "~/.claude/hooks/session-tokens.py",
+            "command": "~/.claude/hooks/session_tokens.py",
             "timeout": 15
           }
         ]

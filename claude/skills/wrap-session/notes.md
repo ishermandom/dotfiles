@@ -78,7 +78,7 @@ design decisions:
 
 The system-level efficiency model lives in `docs/design.md` (Token and context
 health). The measurement machinery — how the session log records token cost — is
-wrap-session-scoped and lives here. The hook `hooks/session-tokens.py` (whose
+wrap-session-scoped and lives here. The hook `hooks/session_tokens.py` (whose
 read-only `--print` mode feeds the wrap-time reflection) and `SKILL.md` are the
 operative sources for the formats.
 
