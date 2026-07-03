@@ -40,6 +40,19 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: drop `git -C` as an always-bad example (may be allowlisted now) and
     `2>/dev/null` (already covered by CLAUDE.md "don't fail silently").
 
+- [ ] **Test `session_tokens.py`'s transcript-summing path** — `summed_usage`
+      reads files directly, so testing it per the I/O-boundary rule
+      (`rules/testing.md`) means restructuring it to accept streams, with a thin
+      path-opening wrapper. Deferred from the 2026-07 config close-out, which
+      excluded Python code changes.
+
+- [ ] **Reconcile `gate_auto_tools_test.py` with the no-loop testing rule** —
+      its two tests loop over case tuples, which `rules/testing.md` prohibits in
+      favor of `parametrize`; the loops exist to support a no-pytest `main()`.
+      Either parametrize and drop the direct-run mode, or keep it and record the
+      exception as a maintainer comment. Deferred from the 2026-07 config
+      close-out.
+
 - [ ] **Consider rotating `sessions.md` as part of the distillation skill** —
       `sessions.md` is the curated session log; it is deliberately _not_
       auto-rotated, since rotating fragments its searchable history.
