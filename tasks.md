@@ -56,6 +56,14 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     redirect write-scope) may be partly obsolete or unvalidated — re-validate
     live against the current Claude Code version, then word the directive to
     rest only on confirmed, version-independent behavior.
+  - Note: the write-scope-gate claim currently lives in three operative homes —
+    the `claude-code-write-scope-gating` memory, wrap-session SKILL.md step 4
+    (run gathering commands bare), and the `append-session-log.py` header — a
+    drift setup flagged by the 2026-07 adversarial review. After the
+    re-validation lands, consolidate: the memory becomes the single factual
+    record; the skill and the script header state only the behavior and point at
+    it. Deliberately not consolidated before re-validation, to avoid enshrining
+    possibly-stale facts (user-ratified 2026-07-03).
   - Note: drop `git -C` as an always-bad example (may be allowlisted now) and
     `2>/dev/null` (already covered by CLAUDE.md "don't fail silently").
 
