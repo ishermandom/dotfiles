@@ -2,7 +2,6 @@
 description:
   Interview-led drafting or revision of a project spec. Run before queueing
   tasks for non-trivial work, or when the design changes.
-allowed-tools: Read, Edit, Write
 ---
 
 Work through each step in order.

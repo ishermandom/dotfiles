@@ -6,12 +6,6 @@ runs, so this companion file costs zero runtime context.
 
 ## Design decisions
 
-### `allowed-tools` is left unrestricted
-
-The skill's frontmatter sets no `allowed-tools` allowlist: the walkthrough
-invokes `/code-review` and `/simplify` as sub-skills and runs git and edits, so
-a tight allowlist risks silently breaking the self-review step.
-
 ### Skill name
 
 Chosen for collision-free tab completion so that either word ("ownership" or

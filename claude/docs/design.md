@@ -152,12 +152,14 @@ for workflow docs, not standing constraints.
 **Skill frontmatter defaults**: `description` is the one field every skill needs
 — always in context (shared budget ≈1% of the window) and what enables proactive
 suggestion, so write it with trigger phrasing; skip `when_to_use` (same budget,
-little gain). `allowed-tools`: the narrow set the skill needs, so routine runs
-don't prompt. `model`/`effort`: omit — inherit the session's.
-`disable-model-invocation`: only for skills the user must trigger.
-`context: fork`: never for introspective or interactive skills — wrap-session
-reflects on the live session and distill runs an approval conversation, so both
-run inline.
+little gain). `allowed-tools`: omit — unenforced in inline skills (verified
+2026-07-03: no restriction and no permission pre-approval; a slash-command-era
+pre-approval intent that never functioned — Claude Code issues #18837, #14956);
+`disallowed-tools` is the enforced mechanism if a skill must shed tools.
+`model`/`effort`: omit — inherit the session's. `disable-model-invocation`: only
+for skills the user must trigger. `context: fork`: never for introspective or
+interactive skills — wrap-session reflects on the live session and distill runs
+an approval conversation, so both run inline.
 
 ### Linters vs. rules
 

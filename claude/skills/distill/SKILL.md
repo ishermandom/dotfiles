@@ -2,7 +2,6 @@
 description:
   Distill recurring patterns from the session log into durable rules and docs.
   Run when wrap-session suggests it, or on demand.
-allowed-tools: Read, Edit, Write, Bash
 ---
 
 Work through each step in order.
