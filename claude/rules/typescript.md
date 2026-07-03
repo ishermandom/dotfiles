@@ -1,7 +1,11 @@
 ---
 paths:
+  - "**/*.cjs"
   - "**/*.js"
+  - "**/*.jsx"
+  - "**/*.mjs"
   - "**/*.ts"
+  - "**/*.tsx"
 ---
 
 # TypeScript and JavaScript style guide
@@ -21,3 +25,7 @@ paths:
   leave a promise unhandled.
 - **Minimize mutation scope**: prefer `const` by default; keep mutable state
   narrowly scoped; avoid shared mutable module state unless clearly justified.
+- **Decompose complex regexes** (general rule in CLAUDE.md): bind each logical
+  part to a named `const` string and compose via template literals in
+  `new RegExp(...)`; name capture groups `(?<level>…)` so match sites read
+  `match.groups.level`, not positional indices.

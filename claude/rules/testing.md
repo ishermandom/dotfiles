@@ -14,14 +14,13 @@ paths:
   when the exact value is genuinely irrelevant to the test's meaning. Before
   finalizing a test helper, verify that every value the test asserts on is
   visible in the test body, not inside the helper.
-- **I/O boundary testability**: before writing a test that uses `tmp_path` or a
-  real filesystem path, restructure the entry point to accept a stream instead —
-  keep the entry point as a thin wrapper that opens the file and delegates, then
-  test the inner function directly with in-memory streams. No temp files, no
-  monkeypatching. For CLI entry points with file-input flags, use `-` as a
-  sentinel (Unix convention) that redirects to an injectable `stdin` parameter —
-  `main()` accepts `stdin: TextIO = sys.stdin`, and `-` routes to it. Tests pass
-  `io.StringIO(...)` directly; argument parsing is exercised without temp files.
+- **I/O boundary testability**: before writing a test that touches a real
+  filesystem path, restructure the entry point to accept a stream instead — keep
+  the entry point as a thin wrapper that opens the file and delegates, then test
+  the inner function directly with in-memory streams. No temp files, no
+  monkeypatching. For CLI entry points with file-input flags, `-` is the
+  Unix-convention sentinel routing to injectable standard input (per-language
+  mechanics in the sections below).
 - **Test via public APIs**: exercise internal behaviors by constructing inputs
   that expose them at the public level, not by calling internals directly.
 - **One behavior per test**
@@ -44,10 +43,16 @@ paths:
   implementation detail).
 - **`run_tests.sh`**: every project includes an executable `run_tests.sh` at the
   root. Resolve paths relative to the script (`$(dirname "$0")`), don't `cd`.
+  The Stop hook runs it automatically at the end of each turn; for a deliberate
+  mid-turn check, use `~/.claude/scripts/quiet-tests.sh` instead of invoking it
+  directly.
 
 ## Python
 
 - **Test runner**: pytest; use `io.StringIO` for in-memory stream fakes
+- **Stream-injection mechanics**: `main()` accepts `stdin: TextIO = sys.stdin`
+  and routes the `-` sentinel to it; tests pass `io.StringIO(...)` directly, so
+  argument parsing is exercised without temp files
 - **Test file naming**: name a module's tests `<module>_test.py` in the same
   directory — so a test sorts alphabetically beside the code it covers
   (`notation.py` / `notation_test.py`), not off under a separate `tests/` tree
@@ -80,6 +85,8 @@ paths:
 
 ## JavaScript
 
+- **Test file naming**: `<module>.test.js` beside the code — the JS-ecosystem
+  dot convention, not Python's `_test` suffix
 - **Test runner**: default to `node:test` + `node:assert/strict` — built-in, no
   dependencies — for pure logic and non-DOM code. Use **vitest + jsdom** instead
   when the code under test manipulates the DOM: vitest supplies a per-file DOM
