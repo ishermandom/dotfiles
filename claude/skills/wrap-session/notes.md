@@ -31,10 +31,12 @@ decisions behind them:
   by _when to act_ — block now / fix before closing / later task / accept — not
   by severity, so the class maps onto the next action; the same axis is meant to
   shape the close-out config review's output.
-- The effort-level mismatch flag is the retrospective complement to the
-  in-session effort calibration in the global CLAUDE.md: a session run at a
-  clearly mismatched effort (high on a trivial task, or the reverse) is surfaced
-  at wrap as an upskilling note, where the remedy is a setting the user adjusts.
+- The effort-level mismatch flag lives here, and only here, because a mismatch
+  is clearest in retrospect: a session run at a clearly mismatched effort (high
+  on a trivial task, or the reverse) is surfaced at wrap as an upskilling note,
+  where the remedy is a setting the user adjusts. An always-on CLAUDE.md
+  counterpart (flag the mismatch as the task arrives) was tried and dropped as
+  never firing — don't re-add one without evidence it would fire.
 - A structure scan reviews the areas changed this session for how easy the file
   structure is for an agent to work in: for the next likely edit there, how much
   must an agent read, infer, edit, and validate, and how much is hidden. The

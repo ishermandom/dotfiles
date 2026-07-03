@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Tests for the auto-tools gate. Run from the hooks directory, or with it on
-# PYTHONPATH:
-#   PYTHONPATH=~/.claude/hooks python3 ~/.claude/hooks/gate_auto_tools_test.py
+# PYTHONPATH: PYTHONPATH=~/.claude/hooks python3
+# ~/.claude/hooks/gate_auto_tools_test.py
 
 from gate_auto_tools import runs_gated_tool
 
@@ -14,13 +14,14 @@ GATED: tuple[str, ...] = (
   'ruff check .',
   'pytest -q',
   'python -m pytest',
+  'python3 -m pytest',
   'cd /repo && mypy',  # after && separator
   'echo hi | ruff check -',  # after | separator
   'ruff check .\nmypy src/',  # tool at the start of a later line
 )
 
-# Commands that must pass: the wrappers, data (quoted args, heredoc bodies),
-# and tool names appearing as path fragments rather than commands.
+# Commands that must pass: the wrappers, data (quoted args, heredoc bodies), and
+# tool names appearing as path fragments rather than commands.
 ALLOWED: tuple[str, ...] = (
   '~/.claude/scripts/quiet-ruff.sh .',
   '~/.claude/scripts/quiet-mypy.sh',

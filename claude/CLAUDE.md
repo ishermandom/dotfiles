@@ -136,7 +136,7 @@ fresh. Never lower the quality bar because a project is small.
   rule above — hooks go in `~/.claude/settings.json` and `~/.claude/hooks/`
   unless there's a concrete project-specific reason.
 - Inlined hook commands should be trivial to understand at a glance. Any
-  nontrivial logic belongs in an external script at `.claude/hooks/<name>` —
+  nontrivial logic belongs in an external script at `~/.claude/hooks/<name>` —
   shell or Python, whichever fits the logic; prefer Python once it outgrows
   string-mangling. External scripts are readable, auditable, and testable
   without running the hook.
@@ -383,12 +383,6 @@ starting a fresh session."**
 
 When the request **does depend on current context**, say: **"This needs the
 current context — staying in this session makes sense."**
-
-### Effort level
-
-When a task arrives, assess complexity and flag in one sentence if the effort
-level seems mismatched. Sonnet 4.6 defaults to `high`; `medium` is recommended
-for most workloads. Only flag when the mismatch is clear — not on every task.
 
 ## Documentation
 

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright 2026 Ilya Sherman (ishermandom@)
+# SPDX-License-Identifier: MIT
+#
 # Run mypy on the current directory and block Claude's stop turn if errors
 # are found, feeding the output back as context.
 #

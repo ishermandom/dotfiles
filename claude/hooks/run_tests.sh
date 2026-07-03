@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright 2026 Ilya Sherman (ishermandom@)
+# SPDX-License-Identifier: MIT
+#
 # Run the project test suite at the end of every turn.
 #
 # Runs on Stop rather than PostToolUse (Write|Edit) so that multi-file edits

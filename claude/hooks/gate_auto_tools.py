@@ -66,7 +66,7 @@ COMMAND_POSITION = re.compile(
   \s*                        # optional whitespace before the command word
   (?:
       pytest
-    | python \s+ -m \s+ pytest  # the `python -m pytest` invocation form
+    | python3? \s+ -m \s+ pytest  # `python -m pytest` / `python3 -m pytest`
     | ruff
     | mypy
     | prettier

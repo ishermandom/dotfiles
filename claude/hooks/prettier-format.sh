@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+# Copyright 2026 Ilya Sherman (ishermandom@)
+# SPDX-License-Identifier: MIT
+#
 # Format all Markdown, JavaScript, and TypeScript files in the current directory.
 #
 # Runs on Stop (end of turn) rather than on each Edit so that all edits

@@ -59,7 +59,9 @@ through symlinks):
 | `settings.json`    | `/Users/Shared/code/dotfiles/claude/settings.json` |
 | `CLAUDE.md`        | `/Users/Shared/code/dotfiles/claude/CLAUDE.md`     |
 | `docs/`            | `/Users/Shared/code/dotfiles/claude/docs/`         |
+| `hooks/`           | `/Users/Shared/code/dotfiles/claude/hooks/`        |
 | `rules/`           | `/Users/Shared/code/dotfiles/claude/rules/`        |
+| `scripts/`         | `/Users/Shared/code/dotfiles/claude/scripts/`      |
 | `skills/`          | `/Users/Shared/code/dotfiles/claude/skills/`       |
 
 Everything else in `~/.claude/` (sessions, history, projects, plugins, cache,
