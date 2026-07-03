@@ -14,8 +14,9 @@ paths:
 
 CLAUDE.md, rules/, docs/, and skills/ files are read by Claude Code, not a
 human. The goal is rules that fire at the right moment — precise enough that
-Claude recognizes when they apply. Keep them brief: rules compete with other
-context for attention, and their token cost accumulates across a session.
+Claude recognizes when they apply. Spend attention deliberately: rules compete
+with other context, so cut lines that don't change behavior — and keep lines
+that make a rule fire (trigger phrasing, stakes), even when they are longer.
 Optimize for utility first, brevity second. This guide is itself a rules file —
 its own rules apply when editing it.
 
@@ -76,6 +77,11 @@ sends only the diff". Not: "…because `Write` re-sends the entire file content,
 increasing token usage and making diffs harder to review." If the rationale
 can't fit in one clause, surface the rule to the user for scoping rather than
 expanding inline.
+
+**When a rule under-fires**: strengthen its trigger or its stakes instead of
+compressing it — for an under-firing rule, the rationale and concrete match
+targets are the firing mechanism, and cutting them lowers the firing rate
+further.
 
 **Maintainer rationale**: When the "why" informs future editing but Claude
 doesn't need it to apply the rule, record it as an HTML comment in CLAUDE.md or
