@@ -7,8 +7,13 @@
 # Runs on Stop rather than PostToolUse (Write|Edit) so that multi-file edits
 # that depend on each other aren't flagged mid-turn.
 #
-# Expects a ./run_tests.sh script at the project root; exits silently if absent.
-# When tests fail, blocks the stop turn and feeds the output back as context.
+# Expects a ./run_tests.sh script at the project root; exits silently if
+# absent. When tests fail, halts the stop and shows the output to the user;
+# Claude sees it alongside the user's next message and fixes from there.
+# Deliberately not a decision:block auto-re-invoke: a block can spin forever
+# when Claude cannot fix the failure, guarding against that is out of scope
+# for now, and the workaround is trivial — the user prods the next turn and
+# the fix proceeds.
 #
 # The actual invocation is delegated to the quiet-tests wrapper so the
 # canonical flags live in one place (~/.claude/scripts/quiet-tests.sh); its
