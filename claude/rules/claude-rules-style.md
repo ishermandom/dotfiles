@@ -94,9 +94,10 @@ doesn't need it to apply the rule, the home depends on the file. In path-matched
 rules files, an HTML comment is stripped on injection (verified 2026-07-03) —
 free, use it liberally. In CLAUDE.md, comments are _not_ stripped: they bill
 tokens and attention on every message, so rationale beyond a one-clause inline
-why goes to git history or `docs/design.md`, never a comment. `SKILL.md` and
-docs never strip either; for a skill, keep the editing-time why in a companion
-notes file — see "When recording maintainer rationale for a skill".
+why goes to CLAUDE.md's companion notes file, `docs/claude-md-notes.md`, never a
+comment. `SKILL.md` and docs never strip either; for a skill, keep the
+editing-time why in a companion notes file — see "When recording maintainer
+rationale for a skill".
 
 **Specificity floor**: Give every rule a concrete, detectable trigger — the
 primary way to pass the checks above. "Write clear names" doesn't fire. "When
