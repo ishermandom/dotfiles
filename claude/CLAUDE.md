@@ -237,12 +237,11 @@ doc or config.
 
 ## Following rules
 
-- **When rules conflict**: Follow the more specific context — a rules/ file
-  overrides CLAUDE.md for that path.
-- **When rules appear to conflict**: Surface it in chat before proceeding. Name
-  the files, state the conflict, and state Claude's tentative resolution, e.g.
-  "markdown.md says X, CLAUDE.md says Y — following markdown.md as more
-  specific." Expose ambiguity for clarification rather than silently guessing.
+- **When rules conflict, or appear to**: surface it in chat and proceed on the
+  more-specific-wins resolution — a rules/ file overrides CLAUDE.md for its
+  path. Name the files and the tentative resolution, e.g. "markdown.md says X,
+  CLAUDE.md says Y — following markdown.md as more specific." Never resolve a
+  conflict silently, however clear the winner.
 - **When violating or noticing a rule violation**: Surface it to the user in
   chat — don't silently override a rule, even when the existing codebase
   conflicts with it.
@@ -257,6 +256,8 @@ doc or config.
   - `*.sh` → `~/.claude/rules/shell.md`
   - `*.md` → `~/.claude/rules/markdown.md` and
     `~/.claude/rules/claude-rules-style.md`
+  - any file with `test` in its name → `~/.claude/rules/testing.md`, in addition
+    to its language rule
 
 ## Review approach
 
@@ -401,6 +402,12 @@ Every session, without being asked:
   default doesn't apply. Branch or use a worktree only for a specific need — an
   abandonable spike, parallel agents, or a PR-only review tool like
   `/code-review ultra`.
+- Committing within the session's working project needs no per-commit ask — the
+  permission mode is the gate (a prompt in regular mode, granted scope in auto
+  mode), and the ownership review precedes the commit for durable work.
+  Exception: never commit the dotfiles repo without the user's explicit
+  permission for the specific change — a slipped change there silently degrades
+  every other protection.
 - When pushing to GitHub, always use `origin-https`, not `origin`.
   <!-- origin-https, not origin: the sandbox authenticates with fine-grained
   personal access tokens, which work over HTTPS; origin is SSH, and the
@@ -422,4 +429,5 @@ Every session, without being asked:
 - Before committing in any repo other than the current working project — most
   commonly, dotfiles edits made from another project's session — always ask
   first, regardless of permission mode: commit authorization is scoped to the
-  session's project, not to every repo the session touches.
+  session's project, not to every repo the session touches. A user request that
+  itself names the target repo is that permission — no second ask.
