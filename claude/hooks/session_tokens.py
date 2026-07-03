@@ -3,19 +3,20 @@
 # SPDX-License-Identifier: MIT
 """Record per-session token counts in the global session log.
 
-As a SessionEnd hook (JSON payload on stdin), sums the four API usage
-counters across the session's transcript and subagent transcripts, then
-writes a `tokens:` line into the session log: into the entry whose
-session-id marker matches (the wrap-session skill stamps the marker),
-or as a new counts-only "stats-only" entry when no marker exists.
+As a SessionEnd hook (JSON payload on stdin), sums the four API usage counters
+across the session's transcript and subagent transcripts, then writes a
+`tokens:` line into the session log: into the entry whose session-id marker
+matches (the wrap-session skill stamps the marker), or as a new counts-only
+"stats-only" entry when no marker exists.
 
-With `--print`, reports the live session's marker line and provisional
-counts without writing — reflection input for the wrap-session skill;
-the SessionEnd hook writes the final, complete line.
+With `--print`, reports the live session's marker line and provisional counts
+without writing — reflection input for the wrap-session skill; the SessionEnd
+hook writes the final, complete line.
 """
 
 import argparse
 import json
+import os
 import re
 import sys
 from collections.abc import Iterable, Mapping, Sequence
@@ -38,9 +39,9 @@ DIAGNOSTIC_LOG_TOTAL_BUDGET_BYTES = 256 * 1024
 # can be distilled or rotated deliberately.
 SESSIONS_LOG_WARN_BYTES = 512 * 1024
 
-# Counter fields summed into the log, plus the non-counter fields
-# current transcript records carry. A field outside this set means the
-# usage schema changed and the counters may be silently wrong.
+# Counter fields summed into the log, plus the non-counter fields current
+# transcript records carry. A field outside this set means the usage schema
+# changed and the counters may be silently wrong.
 EXPECTED_USAGE_FIELD_NAMES = frozenset(
   {
     'input_tokens',
@@ -61,8 +62,8 @@ EXPECTED_USAGE_FIELD_NAMES = frozenset(
 def log_diagnostic(message: str) -> None:
   """Report a problem to stderr and the diagnostic log file.
 
-  stderr alone would vanish: SessionEnd hook output is shown only in
-  debug mode, and the session is already over when this hook runs.
+  stderr alone would vanish: SessionEnd hook output is shown only in debug mode,
+  and the session is already over when this hook runs.
   """
   print(f'session-tokens: {message}', file=sys.stderr)
   DIAGNOSTIC_LOG_PATH.parent.mkdir(parents=True, exist_ok=True)
@@ -106,16 +107,25 @@ def summed_usage(transcript_paths: Iterable[Path]) -> UsageTotals:
     'cache_read_input_tokens': 0,
   }
   malformed_line_count = 0
-  # Each distinct schema oddity is logged once after the sweep, not per
-  # record — a drifted schema would otherwise flood the diagnostic log.
+  missing_paths: list[Path] = []
+  # Each distinct schema oddity is logged once after the sweep, not per record —
+  # a drifted schema would otherwise flood the diagnostic log.
   oddities: set[str] = set()
   for path in transcript_paths:
-    for line in path.read_text().splitlines():
+    try:
+      transcript_text = path.read_text()
+    except FileNotFoundError:
+      # SessionEnd can fire with a transcript that was never written (e.g. a
+      # session cleared before its first write); sum what exists rather than
+      # losing the whole session from the log.
+      missing_paths.append(path)
+      continue
+    for line in transcript_text.splitlines():
       try:
         record: object = json.loads(line)
       except json.JSONDecodeError:
-        # A crash mid-write can truncate the final line; count and
-        # continue rather than losing the whole transcript's totals.
+        # A crash mid-write can truncate the final line; count and continue
+        # rather than losing the whole transcript's totals.
         malformed_line_count += 1
         continue
       usage = _usage_of(record)
@@ -133,6 +143,11 @@ def summed_usage(transcript_paths: Iterable[Path]) -> UsageTotals:
     log_diagnostic(
       f'skipped {malformed_line_count} malformed transcript line(s)'
     )
+  if missing_paths:
+    log_diagnostic(
+      f'{len(missing_paths)} transcript file(s) missing, summed the rest: '
+      f'{", ".join(path.name for path in missing_paths)}'
+    )
   for oddity in sorted(oddities):
     log_diagnostic(oddity)
   return UsageTotals(
@@ -146,8 +161,8 @@ def summed_usage(transcript_paths: Iterable[Path]) -> UsageTotals:
 def session_transcript_paths(transcript_path: Path) -> Sequence[Path]:
   """The main transcript plus the session's subagent transcripts.
 
-  Subagent transcripts live in a `<session-id>/subagents/` directory
-  alongside the main `<session-id>.jsonl` file.
+  Subagent transcripts live in a `<session-id>/subagents/` directory alongside
+  the main `<session-id>.jsonl` file.
   """
   subagent_directory = (
     transcript_path.parent / transcript_path.stem / 'subagents'
@@ -185,10 +200,10 @@ def updated_log_text(
 ) -> str | None:
   """log_text with new_line inserted after the session's marker.
 
-  Returns None when the marker is absent. When several entries carry
-  the marker (wrap-session ran more than once), the last one wins.
-  Returns the text unchanged when a tokens line already follows the
-  marker, so a duplicate hook firing is a no-op.
+  Returns None when the marker is absent. When several entries carry the marker
+  (wrap-session ran more than once), the last one wins. Returns the text
+  unchanged when a tokens line already follows the marker, so a duplicate hook
+  firing is a no-op.
   """
   marker = marker_line(session_id)
   lines = log_text.splitlines()
@@ -215,11 +230,24 @@ def stats_only_entry(
 
 
 def write_log(log_path: Path, text: str) -> None:
-  """Replace the log atomically so a failure can't truncate it."""
+  """Replace the log atomically so a failure can't truncate it.
+
+  The temporary file is pid-unique so two sessions ending together never write
+  through the same intermediate path.
+  """
   log_path.parent.mkdir(parents=True, exist_ok=True)
-  temporary_path = log_path.parent / (log_path.name + '.tmp')
+  temporary_path = log_path.parent / f'{log_path.name}.{os.getpid()}.tmp'
   temporary_path.write_text(text)
   temporary_path.replace(log_path)
+
+
+def _stat_signature(path: Path) -> tuple[int, int] | None:
+  """A cheap change detector for the log: (size, mtime_ns); None if absent."""
+  try:
+    file_stat = path.stat()
+  except FileNotFoundError:
+    return None
+  return (file_stat.st_size, file_stat.st_mtime_ns)
 
 
 def record_session_end(payload: Mapping[str, object], log_path: Path) -> None:
@@ -235,17 +263,27 @@ def record_session_end(payload: Mapping[str, object], log_path: Path) -> None:
 
   totals = summed_usage(session_transcript_paths(transcript_path))
   new_line = tokens_line(totals)
-  log_text = log_path.read_text() if log_path.exists() else ''
+  cwd_value = payload.get('cwd')
+  project = Path(cwd_value).name if isinstance(cwd_value, str) else 'unknown'
 
-  updated_text = updated_log_text(log_text, session_id, new_line)
-  if updated_text is None:
-    cwd_value = payload.get('cwd')
-    project = Path(cwd_value).name if isinstance(cwd_value, str) else 'unknown'
-    entry = stats_only_entry(
-      project, session_id, new_line, date.today().isoformat()
-    )
-    updated_text = log_text + entry
-  write_log(log_path, updated_text)
+  # Optimistic concurrency, deliberately lock-free: when another writer (a
+  # concurrent SessionEnd, a wrap-time append) lands between our read and our
+  # replace, recompute from a fresh read. Stateless, so nothing can wedge; after
+  # the retries, last-writer-wins matches the old behavior.
+  for is_final_attempt in (False, False, True):
+    signature_before = _stat_signature(log_path)
+    log_text = log_path.read_text() if log_path.exists() else ''
+    updated_text = updated_log_text(log_text, session_id, new_line)
+    if updated_text is None:
+      entry = stats_only_entry(
+        project, session_id, new_line, date.today().isoformat()
+      )
+      updated_text = log_text + entry
+    if _stat_signature(log_path) == signature_before or is_final_attempt:
+      if is_final_attempt and _stat_signature(log_path) != signature_before:
+        log_diagnostic('concurrent sessions.md writers; last writer wins')
+      write_log(log_path, updated_text)
+      break
 
   # sessions.md isn't rotated; flag it for deliberate cleanup once it's large.
   size = log_path.stat().st_size
@@ -257,10 +295,26 @@ def record_session_end(payload: Mapping[str, object], log_path: Path) -> None:
     )
 
 
-def live_transcript_path(cwd: Path) -> Path:
-  """The newest transcript in cwd's project directory — the live session."""
+# Transcripts modified this close together mean concurrently live sessions,
+# where a newest-mtime guess may pick another session's transcript.
+AMBIGUITY_WINDOW_SECONDS = 600
+
+
+def live_transcript_path(
+  cwd: Path, session_id: str | None
+) -> tuple[Path, str | None]:
+  """The live session's transcript, plus a warning when the pick is a guess.
+
+  A session id resolves the transcript exactly. Without one, fall back to the
+  newest-mtime transcript in cwd's project directory — right for a lone session,
+  a guess under concurrency, hence the returned warning.
+  """
   slug = re.sub(r'[^A-Za-z0-9-]', '-', str(cwd))
   project_directory = Path.home() / '.claude' / 'projects' / slug
+  if session_id:
+    exact_path = project_directory / f'{session_id}.jsonl'
+    if exact_path.exists():
+      return exact_path, None
   transcript_paths = sorted(
     project_directory.glob('*.jsonl'),
     key=lambda path: path.stat().st_mtime,
@@ -268,15 +322,35 @@ def live_transcript_path(cwd: Path) -> Path:
   )
   if not transcript_paths:
     raise FileNotFoundError(f'no transcripts under {project_directory}')
-  return transcript_paths[0]
+  newest_path = transcript_paths[0]
+  if session_id:
+    return newest_path, (
+      f'--session-id {session_id} has no transcript; fell back to the '
+      f'newest, {newest_path.stem}'
+    )
+  newest_mtime = newest_path.stat().st_mtime
+  concurrent_count = sum(
+    1
+    for path in transcript_paths
+    if newest_mtime - path.stat().st_mtime < AMBIGUITY_WINDOW_SECONDS
+  )
+  if concurrent_count > 1:
+    return newest_path, (
+      f'{concurrent_count} transcripts changed within '
+      f'{AMBIGUITY_WINDOW_SECONDS // 60} minutes — this marker may belong to '
+      f'another session; pass --session-id'
+    )
+  return newest_path, None
 
 
-def print_live_counts() -> None:
+def print_live_counts(session_id: str | None) -> None:
   """Print the live session's marker line and provisional tokens line."""
-  transcript_path = live_transcript_path(Path.cwd())
+  transcript_path, warning = live_transcript_path(Path.cwd(), session_id)
   totals = summed_usage(session_transcript_paths(transcript_path))
   print(marker_line(transcript_path.stem))
   print(tokens_line(totals))
+  if warning:
+    print(f'warning: {warning}')
 
 
 def main() -> int:
@@ -289,6 +363,11 @@ def main() -> int:
     help='print the live session marker and counts; write nothing',
   )
   parser.add_argument(
+    '--session-id',
+    help='the live session id; --print then resolves its transcript exactly '
+    'instead of guessing by newest mtime',
+  )
+  parser.add_argument(
     '--log',
     type=Path,
     default=DEFAULT_LOG_PATH,
@@ -298,7 +377,7 @@ def main() -> int:
 
   try:
     if arguments.print_only:
-      print_live_counts()
+      print_live_counts(arguments.session_id)
     else:
       payload: object = json.loads(sys.stdin.read())
       if not isinstance(payload, Mapping):

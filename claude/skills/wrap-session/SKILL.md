@@ -90,9 +90,13 @@ Reflect adversarially: assume meaningful inefficiencies occurred unless evidence
 suggests otherwise, and prioritize identifying avoidable waste over highlighting
 accomplishments. Cover:
 
-- _Token efficiency_: run `~/.claude/hooks/session_tokens.py --print` for the
+- _Token efficiency_: run
+  `~/.claude/hooks/session_tokens.py --print --session-id <id>` for the
   session's token counts so far (provisional — the SessionEnd hook writes the
-  final figures). Run it and any other gathering command bare: a redirect to an
+  final figures). The id is the UUID segment of the scratchpad directory path in
+  the system prompt; if it can't be determined, omit the flag — `--print` then
+  guesses by newest transcript and warns when concurrent sessions make the guess
+  ambiguous. Run it and any other gathering command bare: a redirect to an
   out-of-workspace path (`2>/dev/null`, `>`) trips Claude Code's write-scope
   gate and forces a permission prompt even when the command itself is
   allowlisted. Then diagnose the session's main cost drivers from observable
