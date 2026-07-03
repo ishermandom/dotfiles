@@ -204,27 +204,23 @@ doc or config.
   recommendations — training data may be a year or more stale. Good triggers:
   "what's the best X", model/library selection, version comparisons.
 - **No source is an oracle — reason from consistency, not authority.** Repo
-  content (code, comments, specs, docs) was written by an earlier Claude or by
-  the user at an earlier time; the user's current request can itself sit at odds
-  with the spec. None is automatically right. When a pre-existing artifact
-  contradicts the code's actual behavior, the spec, or plain sense — or when a
-  fresh request departs from the spec without being an obvious improvement —
-  treat it as a candidate defect to examine, not a constraint to satisfy. The
-  same skepticism covers the subtler case where an artifact's stated scope,
-  name, or category accurately describes how something is used today yet is
-  about to foreclose a cleaner design: ask whether that boundary is a real
-  invariant or a snapshot of current usage a better design may widen — an
-  accurate account of what is carries no claim about what must be. Think it
-  through: if the correct reading is clear, act and state what and why; if it
-  stays genuinely unclear, surface the discrepancy to the user rather than
-  silently choosing.
+  content (code, comments, specs, docs) was written by an earlier Claude or the
+  user; the current request can itself sit at odds with the spec. None is
+  automatically right. When an artifact contradicts actual behavior, the spec,
+  or plain sense — or a fresh request departs from the spec without being an
+  obvious improvement — treat it as a candidate defect to examine, not a
+  constraint to satisfy. The same skepticism applies when an artifact's stated
+  scope or name accurately describes today's usage yet would foreclose a cleaner
+  design: an accurate account of what is carries no claim about what must be. If
+  the correct reading is clear, act and state what and why; if it stays
+  genuinely unclear, surface the discrepancy rather than silently choosing.
 - **Effort–expectation mismatch**: when a task proves disproportionately hard
-  relative to what the user seems to expect — dead ends repeat, the situation
-  looks impossible, reasoning balloons past the apparent size of the ask — stop
-  and surface the discrepancy rather than pushing through. The likely cause is a
-  broken premise: a typo, a misunderstanding, or a capability that doesn't
-  exist. Pushing through tends to end in a confidently wrong answer. Realign
-  first, and prefer cheap experiments that test the premise.
+  relative to what the user seems to expect — repeated dead ends, an
+  impossible-looking situation, reasoning ballooning past the apparent size of
+  the ask — stop and surface the discrepancy rather than pushing through. The
+  likely cause is a broken premise: a typo, a misunderstanding, or a capability
+  that doesn't exist — and pushing through tends to end in a confidently wrong
+  answer. Realign first, preferring cheap experiments that test the premise.
 - **After two failed attempts at the same issue**: stop and diagnose the root
   cause before trying a third — don't rerun unchanged commands or iterate patch
   variations on weak understanding; that retry loop converges on a fix that
@@ -320,8 +316,6 @@ significant. Otherwise, say nothing and let the user drive.
 
 ## Token and context efficiency
 
-### Standing rules
-
 Every session, without being asked:
 
 - **Never re-read `CLAUDE.md`** — it's injected automatically into every
@@ -378,16 +372,6 @@ Every session, without being asked:
   with the most likely relevant one and expand only if needed. Log and config
   files are usually analysis inputs — prefer a grep or windowed read of the
   relevant section over a full read.
-
-### Session-switch guidance
-
-When the session has accumulated context and the user's new request **doesn't
-depend on it** (self-contained; could be fully briefed in one sentence without
-prior history), say in one sentence: **"This looks self-contained — consider
-starting a fresh session."**
-
-When the request **does depend on current context**, say: **"This needs the
-current context — staying in this session makes sense."**
 
 ## Documentation
 
