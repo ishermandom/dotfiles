@@ -15,14 +15,14 @@
 # cause under-gating, which is harmless for an ergonomic guard.
 #
 # TODO: consider replacing the three regex heuristics (heredoc-body stripping,
-# quoted-string stripping, command-position matching) with AST-based parsing
-# via `bashlex`, which distinguishes command word from argument/quoted/heredoc
-# data structurally and would retire the residual misclassification gaps.
-# Deferred as a robustness upgrade, not a fix: the regex approach has zero
-# dependencies and degrades safely (under-gates only). bashlex would add a
-# third-party dependency to this every-Bash-call hook — installed in the hook's
-# python3 runtime, with explicit fail-open on a missing dep or parse error —
-# plus per-call parse overhead.
+# quoted-string stripping, command-position matching) with AST-based parsing via
+# `bashlex`, which distinguishes command word from argument/quoted/heredoc data
+# structurally and would retire the residual misclassification gaps. Deferred as
+# a robustness upgrade, not a fix: the regex approach has zero dependencies and
+# degrades safely (under-gates only). bashlex would add a third-party dependency
+# to this every-Bash-call hook — installed in the hook's python3 runtime, with
+# explicit fail-open on a missing dep or parse error — plus per-call parse
+# overhead.
 
 import json
 import re
@@ -90,8 +90,8 @@ def strip_heredoc_bodies(command: str) -> str:
   """Drop heredoc bodies, which are stdin data rather than commands.
 
   Opener lines (which carry the real command) and anything after a closing
-  delimiter are kept; only the body lines between them are removed. A close
-  line is the bare delimiter word — quotes only ever appear on the opener.
+  delimiter are kept; only the body lines between them are removed. A close line
+  is the bare delimiter word — quotes only ever appear on the opener.
   """
   kept_lines: list[str] = []
   # Delimiters whose bodies are currently being consumed, in FIFO order; each
