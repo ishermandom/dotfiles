@@ -128,7 +128,10 @@ loaded — either define the concept inline or include enough that the rule is
 actionable on its own.
 
 **No historical commentary**: Describe what is, not what changed. History
-belongs in git.
+belongs in git. Exception — keep a date (or better, a version marker) inline
+only when it feeds a future decision: the staleness of an empirical claim about
+a moving target, or a lookup key into a dated log. A date that merely records
+when text was written or a decision made duplicates git.
 
 **Before finalizing rule text**: Scan for common slip patterns: prohibited
 pronouns ('I', 'you', 'a reader'); passive constructions ('should be used', 'is
@@ -177,6 +180,12 @@ runs, so an aside placed there costs tokens on every run.
 the test is where the line is needed — to run the skill it stays in `SKILL.md`,
 to edit the skill later it moves to `notes.md`.
 
+**Organize rationale by topic, not by decision event**: fold a new decision into
+the bullet that owns its topic and state the why — a per-decision log ("decided
+<date>: …") forces a future editor to replay history to reconstruct current
+intent. Dates stay under the historical-commentary exception: inline only when
+they feed a future decision.
+
 **Never reference `notes.md` from the skill body**: only `SKILL.md` is injected
 at runtime, so an unreferenced companion costs zero context — a reference would
 pull it in and defeat the purpose.
@@ -184,3 +193,16 @@ pull it in and defeat the purpose.
 **When rationale spans multiple skills**: keep it in the most foundational
 skill's `notes.md` and cross-reference it from the other skills' notes — one
 home, no drift.
+
+## Gotchas
+
+Mechanical traps whose failure is silent. Check the matching entry before
+finalizing; add new ones here as they are hit.
+
+- **`SKILL.md` frontmatter value containing `: `**: quote it or use a `>-` block
+  scalar — a `: ` inside a plain (unquoted) YAML scalar is a parse error that
+  voids the skill's entire frontmatter block. Claude Code then falls back to the
+  body's first line as the description and silently drops every other field,
+  including `disable-model-invocation`, making a user-only skill
+  model-invocable. The description is the usual carrier, since prose is where a
+  `: ` lands naturally.
