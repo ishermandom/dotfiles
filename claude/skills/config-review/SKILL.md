@@ -46,8 +46,8 @@ The default scope; anything the user says at invocation overrides it:
 
 Launch one cold subagent per angle, in parallel.
 
-- **Dead-rule audit**: read the session logs (`~/.claude/logs/sessions.md`, the
-  permission-prompts log) and tally which always-loaded rules the entries
+- **Dead-rule audit**: read the session logs (`~/.claude/logs/sessions.md`,
+  `~/.claude/logs/permission-prompts.log`) and tally which rules the entries
   actually cite; flag rules never cited within the log window.
 - **Cold comprehension**: read the entire target surface, then judge each file
   against its runtime loadout — CLAUDE.md alone (every session); a rules file or
@@ -60,19 +60,24 @@ Launch one cold subagent per angle, in parallel.
   are followed in practice.
 - **Contradiction hunt**: find cross-file disagreements — claims that conflict
   between files, stale references to renamed or deleted items, docs asserting
-  behavior the config does not implement.
-- **Always-loaded burden audit**: for each line injected into every session, ask
-  what behavior it changes; flag demotion candidates (to `rules/`, `docs/`, or a
-  skill) and restatements of what the harness already enforces.
+  behavior the config does not implement, and claims presented as verified fact
+  that nothing on the surface substantiates.
+- **Attention burden audit**: for each line of always-loaded and path-matched
+  config, weigh the behavior it changes against its load class's rent —
+  `CLAUDE.md` lines pay most, but a `rules/` or skill line that changes nothing
+  still dilutes its loadout. Flag demotion candidates (one load class down, or
+  to `docs/`), restatements of what the harness already enforces, and maintainer
+  rationale billing at runtime when a notes file is its designated home.
 - **Mechanism red-team**: assume documented mechanisms are broken until the
   evidence says otherwise — hook wiring and ordering, glob matching, permission
-  allow/deny floors, script behavior. Hunt for gaps and silent failure paths.
+  allow/deny floors, frontmatter field semantics, script behavior. Hunt for gaps
+  and silent failure paths.
 
-Include in every agent prompt: the lens from step 1; the file paths and nothing
-else about the session; work read-only and propose no fixes; report each
-suspected defect as a claim with evidence (`file:line`), a severity, and the
-cheapest check that would confirm or refute it; absence of findings is a valid
-result — do not pad.
+Include in every agent prompt: the lens and the out-of-scope boundary from step
+1; the paths its angle names, and nothing else about the session; work read-only
+and propose no fixes; report each suspected defect as a claim with evidence
+(`file:line`), a severity, and the cheapest check that would confirm or refute
+it; absence of findings is a valid result — do not pad.
 
 ## 3. Verify
 
@@ -98,11 +103,13 @@ Present one cluster per turn, at a digestible pace: the verified findings, then
 a proposed direction. The user ratifies the direction before any edit; ratifying
 a direction is not commit approval — the user reviews the applied diff, then
 says commit. Dotfiles commits always need explicit permission for the specific
-change. Record accepted non-fixes in the ledger so future runs do not re-flag
-them.
+change. A cluster may also resolve as deferred — the user ratifies queuing the
+work instead of landing it; record the deferral for step 6. Record accepted
+non-fixes in the ledger so future runs do not re-flag them.
 
 ## 6. Close
 
-After the last cluster: move findings too large to land now into the target
-repo's `tasks.md`, note the run's outcome in the ledger, and remind the user of
-anything left pending ratification.
+After the last cluster: move deferred findings into the `tasks.md` of the repo
+that owns the reviewed config (the dotfiles repo, for the default surface), note
+the run's outcome in the ledger, and remind the user of anything left pending
+ratification.
