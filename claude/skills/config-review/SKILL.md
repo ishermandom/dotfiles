@@ -85,17 +85,22 @@ Treat every agent claim as a hypothesis, not a finding. Reproduce each with the
 cheapest sufficient check — a grep, a windowed read, official docs, or a live
 probe. Probes carry standing authorization only when verifiably non-destructive
 — read-only commands, throwaway scratch projects, sentinel files; anything else
-needs the user's sign-off first. Assign a verdict: CONFIRMED, CALIBRATED (real,
-but a different size or shape than claimed), or REFUTED. Only verified claims go
-forward; record refutations so the evidence is not re-litigated.
+needs the user's sign-off first. Before verifying anything, check
+`accepted-tradeoffs.md` beside this skill — a claim already accepted there needs
+an acknowledgment, not re-litigation. Assign a verdict: CONFIRMED, CALIBRATED
+(real, but a different size or shape than claimed), or REFUTED. Only verified
+claims go forward; record refutations in the ledger so the evidence is not
+re-argued within the run.
 
 ## 4. Cluster
 
-Write the verified findings to a ledger file in the working project (e.g.
-`findings.md`) — the ledger is Claude's working scratchpad, not something the
-user reads. Group findings by the decision they imply into clusters sized for
-one review turn each; when in doubt, split more. Order clusters so broken
-mechanics land before restructuring proposals.
+Write the verified findings to the run ledger, `ledger.md` beside this skill —
+Claude's working scratchpad for the run, not something the user reads. It exists
+so the walkthrough survives compaction and session breaks; a ledger already
+present at the start of a run is an unfinished run — resume it. Group findings
+by the decision they imply into clusters sized for one review turn each; when in
+doubt, split more. Order clusters so broken mechanics land before restructuring
+proposals.
 
 ## 5. Walk through and land
 
@@ -104,12 +109,14 @@ a proposed direction. The user ratifies the direction before any edit; ratifying
 a direction is not commit approval — the user reviews the applied diff, then
 says commit. Dotfiles commits always need explicit permission for the specific
 change. A cluster may also resolve as deferred — the user ratifies queuing the
-work instead of landing it; record the deferral for step 6. Record accepted
-non-fixes in the ledger so future runs do not re-flag them.
+work instead of landing it; record the deferral for step 6. Record each defect
+the user accepts as-is in `accepted-tradeoffs.md` beside this skill so future
+runs do not re-flag it.
 
 ## 6. Close
 
 After the last cluster: move deferred findings into the `tasks.md` of the repo
-that owns the reviewed config (the dotfiles repo, for the default surface), note
-the run's outcome in the ledger, and remind the user of anything left pending
-ratification.
+that owns the reviewed config (the dotfiles repo, for the default surface),
+remind the user of anything left pending ratification, and delete the ledger —
+landed work lives in git, deferrals in `tasks.md`, acceptances in
+`accepted-tradeoffs.md`.

@@ -36,6 +36,14 @@ behavior. Sympathetic review graded prose; cold agents found wiring.
   non-authoritative background, but its observed effect is close to
   authoritative — recalled memories are followed like instructions. Validation
   stakes follow observed weight, not nominal status.
+- **Run state and cross-run memory live beside the skill, split by lifetime**:
+  `ledger.md` is the run-scoped scratchpad — walkthrough state must survive
+  compaction and session breaks, which the first run's ledger did — deleted at
+  close and gitignored. `accepted-tradeoffs.md` is the durable list of defects
+  accepted as-is, consulted by the verify pass so runs never re-litigate them.
+  Storing either in the working project would strand it: the next run may start
+  from a different project (the first run's ledger sits in a repo slated for
+  deletion), while files beside the skill are findable from anywhere.
 - **Verify pass is mandatory, not optional polish**: in the first run the
   orchestrator refuted 2 agent claims outright (one via a live probe that beat
   the agent's static forensics) and cut a third down to size. Agent reports are
@@ -108,10 +116,6 @@ Ideas considered but not built — most want a second run's evidence first:
   move it into files beside `SKILL.md` (loaded by the fan-out step, not injected
   at skill start) so runs stay comparable and the skill body stays lean. After
   one run, wording is not yet stable.
-- **Prior-ledger suppression**: feed the previous run's accepted-non-fix list
-  into the verify pass so known, deliberately-unfixed items (e.g. the
-  `git diff --ext-diff` gate gap) are auto-acknowledged rather than re-argued.
-  The ledger already records them; the skill just doesn't consume them yet.
 - **Per-angle precision tracking**: log confirmed/calibrated/refuted counts per
   angle across runs; an angle whose claims keep getting refuted is spending
   verification budget without paying — retire or reshape it.
