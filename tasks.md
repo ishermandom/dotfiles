@@ -89,3 +89,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       distill the log down.
   - Note: the shared `log_rotation.py` helper already supports this — pass
     `sessions.md` its own caps if rotation is chosen.
+
+- [ ] **Build a license-header Stop lint** — a Stop-hook check flagging source
+      files that lack the license block (copyright line + SPDX identifier, per
+      CLAUDE.md's License rule). Once it exists and holds, shrink the CLAUDE.md
+      License rule to a pointer, per the graduation policy. Queued from the
+      2026-07 adversarial review (cluster F2, ratified 2026-07-04).

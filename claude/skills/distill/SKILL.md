@@ -28,7 +28,13 @@ for:
   harden a persistent violator gradually via the thin-slice trial: it lives in
   CLAUDE.md first and graduates to a hook only after 3–5 sessions show it won't
   hold there. Rules never cited across many sessions are candidates for demotion
-  to an on-demand doc or removal.
+  to an on-demand doc or removal. For the systematic citation tally across the
+  whole config, remind the user to run `/config-review` — its dead-rule angle
+  audits this same log plus the permission-prompts log, and only the user can
+  invoke it.
+- **Config-size complaints**: when two or more in-scope entries flag the
+  config's size or always-loaded weight, escalate — make "run `/config-review`
+  to trim dead weight" one of the step 4 proposal items, not just a mention.
 
 ## 3. Review pending hypotheses
 
