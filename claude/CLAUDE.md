@@ -340,7 +340,6 @@ Every session, without being asked:
   confirming an intermediate state lets more work land now), and then via the
   wrappers `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier}.sh [paths]` —
   terse output, auto-surfaced to the user.
-- **Prefer parallel tool calls** when independent.
 - **Prefer to search code with `rg`**: ripgrep for recursive searches. The
   bundled `grep` shim (backed by ugrep) handles quick literal or piped lookups,
   and is the better pick for compressed/archived logs and fuzzy matching — but
