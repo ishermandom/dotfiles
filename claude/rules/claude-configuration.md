@@ -226,9 +226,9 @@ home, no drift.
 
 ## When cross-referencing a heading externally
 
-**When citing a section from another file**: add a short descriptive slug to
-the heading: `## Heading {#slug}`. Use this slug as a stable reference. Add
-slugs lazily — only when actively needed for cross-links.
+**When citing a section from another file**: add a short descriptive slug to the
+heading: `## Heading {#slug}`. Use this slug as a stable reference. Add slugs
+lazily — only when actively needed for cross-links.
 
 **When renaming a slug**: check for stale references and update them to match.
 
