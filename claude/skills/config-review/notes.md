@@ -42,8 +42,8 @@ behavior. Sympathetic review graded prose; cold agents found wiring.
   close and gitignored. `accepted-tradeoffs.md` is the durable list of defects
   accepted as-is, consulted by the verify pass so runs never re-litigate them.
   Storing either in the working project would strand it: the next run may start
-  from a different project (the first run's ledger sits in a repo slated for
-  deletion), while files beside the skill are findable from anywhere.
+  from a different project (the first run's ledger sits in a repo since
+  archived), while files beside the skill are findable from anywhere.
 - **Verify pass is mandatory, not optional polish**: in the first run the
   orchestrator refuted 2 agent claims outright (one via a live probe that beat
   the agent's static forensics) and cut a third down to size. Agent reports are

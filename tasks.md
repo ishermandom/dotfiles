@@ -2,17 +2,18 @@
 
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
 
-- [ ] **Sequence the Stop hooks through one orchestrator wrapper** — same-event
-      hooks run in parallel (verified live 2026-07-03: two probe Stop hooks
-      started 0.8 ms apart with fully overlapping 2 s sleeps; hooks-guide.md
-      documents parallel execution and recommends a wrapper for ordering), so
-      the Stop array's format-before-check layout provides no ordering and
-      mypy/pytest can read files mid-rewrite by ruff/prettier. Rare in practice
-      — edit-time hooks pre-format, so Stop-time rewrites are uncommon — but
-      structurally unsound. Build `claude/hooks/stop_checks.sh` invoking
-      prettier-format → ruff-format → mypy-check → run_tests sequentially,
-      fail-fast after mypy (ratified 2026-07-03); replace the four Stop entries
-      with one, single ~120 s timeout.
+- [ ] **Sequence the Stop hooks through one orchestrator wrapper**
+      #stop-orchestrator — same-event hooks run in parallel (verified live
+      2026-07-03: two probe Stop hooks started 0.8 ms apart with fully
+      overlapping 2 s sleeps; hooks-guide.md documents parallel execution and
+      recommends a wrapper for ordering), so the Stop array's
+      format-before-check layout provides no ordering and mypy/pytest can read
+      files mid-rewrite by ruff/prettier. Rare in practice — edit-time hooks
+      pre-format, so Stop-time rewrites are uncommon — but structurally unsound.
+      Build `claude/hooks/stop_checks.sh` invoking prettier-format → ruff-format
+      → mypy-check → run_tests sequentially, fail-fast after mypy (ratified
+      2026-07-03); replace the four Stop entries with one, single ~120 s
+      timeout.
   - Note: ride-alongs — run_tests.sh needs the repo-root anchor mypy-check.sh
     has, and its `-f` gate should be `-x` (quiet-tests.sh demands executable);
     drop `PYTEST_FROM_HOOK` if a cross-repo grep finds no consumer; add the
@@ -41,6 +42,26 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       files in a dedicated pass, one commit per repo, so future diffs stay
       clean.
 
+- [ ] **Build a license-header Stop lint** — a Stop-hook check flagging source
+      files that lack the license block (copyright line + SPDX identifier, per
+      CLAUDE.md's License rule). Once it exists and holds, shrink the CLAUDE.md
+      License rule to a pointer, per the graduation policy. Queued from the
+      2026-07 adversarial review (cluster F2, ratified 2026-07-04).
+  - Note: depends on #stop-orchestrator — build the check as a step in
+    `stop_checks.sh`, not as another parallel Stop entry.
+
+- [ ] **Reconcile `gate_auto_tools_test.py` with the no-loop testing rule** —
+      its two tests loop over case tuples, which `rules/testing.md` prohibits in
+      favor of `parametrize`; the loops exist to support a no-pytest `main()`.
+      Either parametrize and drop the direct-run mode, or keep it and record the
+      exception as a maintainer comment. Deferred from the 2026-07 config
+      close-out.
+
+- [ ] **Test `session_tokens.py`'s transcript-summing path** — `summed_usage`
+      reads files directly, so testing it per the I/O-boundary rule
+      (`rules/testing.md`) means restructuring it to accept streams, with a thin
+      path-opening wrapper. Deferred from the 2026-07 config close-out.
+
 - [ ] **Add a "Bash command shape" directive to guide allowlist-friendly
       commands** — distillation found prompt/correction thrash from compound or
       prefixed Bash commands recurring across ~5 sessions (compound `&&`/pipes,
@@ -66,19 +87,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: drop `git -C` as an always-bad example (may be allowlisted now) and
     `2>/dev/null` (already covered by CLAUDE.md "don't fail silently").
 
-- [ ] **Test `session_tokens.py`'s transcript-summing path** — `summed_usage`
-      reads files directly, so testing it per the I/O-boundary rule
-      (`rules/testing.md`) means restructuring it to accept streams, with a thin
-      path-opening wrapper. Deferred from the 2026-07 config close-out, which
-      excluded Python code changes.
-
-- [ ] **Reconcile `gate_auto_tools_test.py` with the no-loop testing rule** —
-      its two tests loop over case tuples, which `rules/testing.md` prohibits in
-      favor of `parametrize`; the loops exist to support a no-pytest `main()`.
-      Either parametrize and drop the direct-run mode, or keep it and record the
-      exception as a maintainer comment. Deferred from the 2026-07 config
-      close-out.
-
 - [ ] **Consider rotating `sessions.md` as part of the distillation skill** —
       `sessions.md` is the curated session log; it is deliberately _not_
       auto-rotated, since rotating fragments its searchable history.
@@ -86,18 +94,23 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `SESSIONS_LOG_WARN_BYTES` (512 KiB). The distillation skill is the natural
       place to surface that warning visibly and decide whether to rotate or
       distill the log down.
+  - Note: work this as part of a distill run, not standalone — the decision
+    needs the log's contents in front of the user anyway.
   - Note: the shared `log_rotation.py` helper already supports this — pass
     `sessions.md` its own caps if rotation is chosen.
 
-- [ ] **Build a license-header Stop lint** — a Stop-hook check flagging source
-      files that lack the license block (copyright line + SPDX identifier, per
-      CLAUDE.md's License rule). Once it exists and holds, shrink the CLAUDE.md
-      License rule to a pointer, per the graduation policy. Queued from the
-      2026-07 adversarial review (cluster F2, ratified 2026-07-04).
+- [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities**
+      #consolidation-recheck — the 2026-07 close-out's consolidation sweep was
+      an inline self-review by the session that wrote several of the candidate
+      rules, and it found no folds; sympathetic review under-finds, so
+      cross-check with a cold agent hunting overlapping or foldable rules across
+      the always-loaded surface. Independently schedulable — run it as a
+      standalone cold-agent probe, or fold it into a config-review run if one is
+      imminent.
 
-- [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities** — the
-      2026-07 close-out's consolidation sweep was an inline self-review by the
-      session that wrote several of the candidate rules, and it found no folds;
-      sympathetic review under-finds, so cross-check with a cold agent hunting
-      overlapping or foldable rules across the always-loaded surface. Natural
-      home: the attention-burden angle of the next `/config-review` run.
+- [ ] **Reorganize CLAUDE.md intentionally** — the current section order is
+      mostly historical accident. Design a deliberate order (e.g.
+      most-load-bearing first, related sections adjacent) and restructure in one
+      pass.
+  - Note: sequence after #consolidation-recheck — landing folds first keeps them
+    from churning a fresh ordering.
