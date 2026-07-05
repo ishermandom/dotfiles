@@ -91,7 +91,8 @@ a companion `notes.md`.
 a path-scoped `code-style.md`): in a coding session a path-scoped file loads
 anyway, so scoping reduces nothing where constraint load is highest — and it
 would extend the Write gap (path-matched rules load only when a matching file is
-read) to all style rules.
+read) to all style rules. The residual gain — a lighter CLAUDE.md in docs- or
+config-only sessions — stays small, because most sessions are coding sessions.
 
 ### Path-scoped rules
 

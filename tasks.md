@@ -94,3 +94,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       CLAUDE.md's License rule). Once it exists and holds, shrink the CLAUDE.md
       License rule to a pointer, per the graduation policy. Queued from the
       2026-07 adversarial review (cluster F2, ratified 2026-07-04).
+
+- [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities** — the
+      2026-07 close-out's consolidation sweep was an inline self-review by the
+      session that wrote several of the candidate rules, and it found no folds;
+      sympathetic review under-finds, so cross-check with a cold agent hunting
+      overlapping or foldable rules across the always-loaded surface. Natural
+      home: the attention-burden angle of the next `/config-review` run.
