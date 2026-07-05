@@ -137,3 +137,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       where a rule is tempting to violate.
   - Rationale: queued 2026-07-04 when the legibility rule's own rationale bumped
     against the cap and had to be compressed to fit.
+  - Note: recurred 2026-07-05 — drafting the new `session-context-routing.md`
+    rules (necessity-test, concrete-over-abstraction) again ran long on
+    rationale before trimming; second independent data point.
