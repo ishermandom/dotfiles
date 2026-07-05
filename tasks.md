@@ -127,6 +127,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       applying the make-each-idea-separately-legible rule
       (rules/claude-configuration.md), so config prose stays legible as it lands
       rather than waiting for another sweep.
+  - Note: the pass also self-applies — run it on any rule text the review itself
+    adds or rewrites. Self-application caught four refinements in one pass
+    during the legibility rule's own drafting (2026-07-04).
 
 - [ ] **Reconsider the "inline rationale: at most one clause" cap** — the cap in
       rules/claude-configuration.md served an earlier token-limiting goal; the
