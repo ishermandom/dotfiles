@@ -114,3 +114,23 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       pass.
   - Note: sequence after #consolidation-recheck — landing folds first keeps them
     from churning a fresh ordering.
+
+- [ ] **Legibility sweep of config prose** — apply the
+      make-each-idea-separately-legible rule (rules/claude-configuration.md)
+      across CLAUDE.md, rules/, docs/, and skills/. First assess all files and
+      rank the worst offenders; then fix them in reviewable chunks sized to the
+      user's attention budget, one chunk per review round.
+  - Note: restructure only — never trim trigger phrasing or stakes while
+    splitting; those are a rule's firing mechanism.
+
+- [ ] **Add a legibility pass to the config-review skill** — a consistent pass
+      applying the make-each-idea-separately-legible rule
+      (rules/claude-configuration.md), so config prose stays legible as it lands
+      rather than waiting for another sweep.
+
+- [ ] **Reconsider the "inline rationale: at most one clause" cap** — the cap in
+      rules/claude-configuration.md served an earlier token-limiting goal; the
+      current goal is focusing attention, which may warrant fuller rationale
+      where a rule is tempting to violate.
+  - Rationale: queued 2026-07-04 when the legibility rule's own rationale bumped
+    against the cap and had to be compressed to fit.

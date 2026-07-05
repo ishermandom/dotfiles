@@ -91,6 +91,15 @@ increasing token usage and making diffs harder to review." If the rationale
 can't fit in one clause, surface the rule to the user for scoping rather than
 expanding inline.
 
+**Make each idea separately legible**: a rule often carries several ideas — a
+directive, a rationale, an exception, an example. Keep each idea's extent, role,
+and referents clear on first read. Warning signs: a qualifier that could attach
+to either of two ideas; a "this" or "it" whose antecedent takes searching; an
+aside with no visible end. Any mechanism that restores clarity is fine — a
+sentence break, a role label such as "Exception:", parentheses that bound an
+aside, naming the referent outright. Fusing ideas into one clause saves no
+tokens; it only raises the effort to read. To genuinely shorten, drop an idea.
+
 **When a rule under-fires**: strengthen its trigger or its stakes instead of
 compressing it — for an under-firing rule, the rationale and concrete match
 targets are the firing mechanism, and cutting them lowers the firing rate
