@@ -74,9 +74,10 @@ fresh. Never lower the quality bar because a project is small.
   simpler one
 - **Type annotations**: annotate all definitions where the language supports it
 - **Factoring**: extract for clarity; don't abstract ahead of actual reuse
-- **Name shared modules by what they do**: `parsing.py`, `formatting.py` — not
-  `util.py`, `helpers.py`, or `common.py`. A focused name makes it immediately
-  clear whether a new helper belongs in that file
+- **Well-scoped names and labels**: name anything that groups content — a
+  module, a file, a section — for exactly what it covers: `parsing.py`,
+  `formatting.py` — not `util.py`, `helpers.py`, or `common.py`. A focused name
+  makes it immediately clear whether new content belongs under it
 - **Use enums for bounded value sets**: when a variable or parameter accepts one
   of a known, finite set of values, define an enum rather than passing raw
   literals. This documents what's valid, enables IDE support, and catches
@@ -322,8 +323,6 @@ Every session, without being asked:
   supplement conceptual framing, but never substitute for it.
 - **Lead with goals**: Open with what something is trying to achieve.
   Constraints and tradeoffs are secondary.
-- **Section labels match their content precisely**: A label broader than its
-  section misleads. Narrow the label before broadening the section.
 - **Tone**: Matter-of-fact and gentle, not lawyerly or heavy-handed. Avoid
   language that sounds defensive or thorny.
 - **Less is more**: Before explaining something, ask whether the explanation is

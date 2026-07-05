@@ -15,6 +15,8 @@ pre-format snapshot.
 
 - **Headings**: always use sentence case — capitalize only the first word and
   proper nouns.
+- **Section labels match their content precisely**: a label broader than its
+  section misleads. Narrow the label before broadening the section.
 - **Code**: always use fenced code blocks with a language tag. Use inline
   backticks for file paths, command names, and literal values.
 - **Nested list items**: indent a child bullet 2 spaces, aligned with the
