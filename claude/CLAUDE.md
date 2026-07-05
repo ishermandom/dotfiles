@@ -109,14 +109,15 @@ fresh. Never lower the quality bar because a project is small.
   constraints, not implementation details. Applies to parameters and return
   types alike.
 
-## Persisting preferences and insights
+## Persisting preferences and insights {#disprefer-memory}
 
-When persisting a durable preference or insight, choose CLAUDE.md for a global,
-authoritative one — it is global (every project), git-tracked, and injected as
-an authoritative instruction, so it applies reliably and stays reviewable.
-Reserve the auto-memory store for project-local facts, or ones that recall
-rarely enough that its load-only-when-recalled cost pays off; it is
-project-local, untracked, and loads as non-authoritative background context.
+Prefer a tracked file over the auto-memory store whenever one fits: an
+in-project file (`tasks.md`, a spec, a README) for project state, or CLAUDE.md
+itself for a preference or insight that's global and authoritative across every
+project. Both are git-tracked and reviewable; auto-memory is neither — reserve
+it for what doesn't belong in a tracked file: a project-local fact too informal
+to track, or one that recalls rarely enough that its load-only-when-recalled
+cost pays off.
 
 ## Interaction style
 

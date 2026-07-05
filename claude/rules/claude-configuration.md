@@ -99,6 +99,19 @@ aside with no visible end. Any mechanism that restores clarity is fine — a
 sentence break, a role label such as "Exception:", parentheses that bound an
 aside, naming the referent outright. Fusing ideas into one clause saves no
 tokens; it only raises the effort to read. To genuinely shorten, drop an idea.
+Do not shorten via denser or more abstract phrasing, which cuts words but raises
+decode cost.
+
+**Legible isn't the same as necessary**: an idea can be perfectly clear on its
+own and still not earn its place. Independent of whether ideas are fused, test
+each one in the passage: would removing it change what Claude does when the rule
+fires? Cut the ones that don't.
+
+**Prefer a concrete instance over a named abstraction**: when a rule could
+either point at an existing example or coin a new abstract term, point at the
+example. A new abstraction has to be learned and held before it's useful, and
+that cost resets every session; an existing instance rides on pattern-matching
+that's already cheap.
 
 **When a rule under-fires**: strengthen its trigger or its stakes instead of
 compressing it — for an under-firing rule, the rationale and concrete match
@@ -151,7 +164,8 @@ when text was written or a decision made duplicates git.
 
 **Before finalizing rule text**: Scan for common slip patterns: prohibited
 pronouns ('I', 'you', 'a reader'); passive constructions ('should be used', 'is
-preferred'); historical commentary ('previously', 'used to be').
+preferred'); historical commentary ('previously', 'used to be'); bloat that
+fails the necessity test above.
 
 ## When structuring a rules file
 
@@ -209,6 +223,14 @@ pull it in and defeat the purpose.
 **When rationale spans multiple skills**: keep it in the most foundational
 skill's `notes.md` and cross-reference it from the other skills' notes — one
 home, no drift.
+
+## When cross-referencing a heading externally
+
+**When citing a section from another file**: add a short descriptive slug to
+the heading: `## Heading {#slug}`. Use this slug as a stable reference. Add
+slugs lazily — only when actively needed for cross-links.
+
+**When renaming a slug**: check for stale references and update them to match.
 
 ## When editing `settings.json` or wiring hooks
 

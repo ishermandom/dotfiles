@@ -44,26 +44,17 @@ Skip if nothing stands out.
 
 ## 3. Durable context routing
 
-Identify what a future session would need from this one, and write each piece
-into the durable file where that session would look for it. Do not write
-narrative session reports into project files: narrative belongs in git history
-and chat, and a project-local log entry is where context goes to get stale.
-(Efficiency reflection goes to the global session log — step 4.)
+Read `skills/session-context-routing.md` and run it in full. (Efficiency
+reflection goes to the global session log — step 4, not a project file.) In
+addition to the shared routing:
 
-- **Pending work, next steps, and decisions about them** → the project's
-  `tasks.md` (or plan doc): update statuses, add tasks, and attach
-  `Rationale:`/`Note:` annotations per the plan-document rules.
-- **Approaches tried and abandoned** → a `Note:` on the relevant task, or a
-  `[-]` dropped task, so the dead end isn't retried.
-- **Findings or constraints that outlive any one task** → the project file a
-  reader would consult for that topic (e.g. a Findings section, README, spec).
 - **Accomplished work and files modified** → nowhere: commit messages and git
   history already record these.
+- If a `~/.claude/docs/` file needs updating, flag it and ask before editing.
 
-**Debt scan**: before closing, look over the session's changes for shortcuts
-taken, cleanups skipped, `TODO`s left, and concerns deferred — "nothing comes to
-mind" is not a pass; look at what actually changed. Classify each finding by
-when to act, not by severity:
+Sharpen the `#debt-scan` for session close — "nothing comes to mind" is not a
+pass; look at what actually changed. Classify each finding by when to act, not
+by severity:
 
 - **Block now** — leaves the work broken or wrong; fix before closing.
 - **Fix before closing** — cleanup that should land as part of this wrap-up.
@@ -72,17 +63,15 @@ when to act, not by severity:
 - **Accept** — not worth fixing; drop it, noting the reason only if it isn't
   obvious.
 
-Log deferrals synchronously — a debt item not written down this turn is lost.
-
 **Structure scan**: for the areas this session changed, evaluate how easy the
 file structure is for an agent to work in — for the next likely edit there, how
 much must it read, infer, edit, and validate, and how much is hidden. Where the
 structure makes that needlessly hard, propose a structural change. Route
 findings by the same timing axis as the debt scan.
 
-If a piece of durable context fits none of the project's existing durable files,
-propose a new file — name and scope — and confirm both with the user before
-creating it.
+Don't stop at writing the `Open question:` note down — surface it in chat too.
+The user may not expect a fork to still be open, or may want to resolve it now
+rather than leave it queued for whoever picks up the task next.
 
 ## 4. Reflection and session log
 
@@ -165,7 +154,7 @@ needs no prior read — a raw `cat >>` redirect would cost a permission prompt,
 and `Edit` an extra read call first.
 
 A mechanism that generalizes beyond this session belongs in memory or the
-relevant rules file — handle that in the Learning step.
+relevant rules file — handle that in step 3's memory routing.
 
 Run `~/.claude/scripts/distillation_backlog.py` for the count of reflection
 entries since the log's last distillation marker — the entries distillation
@@ -185,24 +174,14 @@ gates the commit: silent in auto mode, a prompt in default mode. Never commit
 another repo (e.g. dotfiles) this way — surface those changes for the user to
 handle.
 
-## 6. Learning
-
-Update memory files with anything worth persisting: corrections, preferences,
-project facts. If a `~/.claude/docs/` file needs updating, flag it and ask
-before editing.
-
-This step acts on files, not chat: report nothing unless a change needs the
-user's approval (e.g. a `docs/` edit). When nothing needs persisting, stay
-silent — don't narrate the absence.
-
-## 7. Reviewer session
+## 6. Reviewer session
 
 If production code was written, offer:
 
 > "Consider a reviewer session: open a fresh session with the relevant files in
 > context and run `/code-review`."
 
-## 8. Clear, compact, or continue
+## 7. Clear, compact, or continue
 
 Close with a genuine judgment on what to do with this session next. Weigh what
 is in context now, what the next task needs, and the cheapest path to it:
