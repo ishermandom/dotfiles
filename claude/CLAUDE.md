@@ -225,9 +225,9 @@ doc or config.
   against the loaded rules, and `Edit` if there are gaps.
 - **Before reading or editing files in the dotfiles repo**: edits happen at the
   real paths behind the `~/.claude` symlinks — outside the project, where
-  path-matched rules never fire. Exception: in a session whose working project
+  path-matched rules never fire. (Exception: in a session whose working project
   is the dotfiles repo itself, skip this — reading a file at its repo path loads
-  the matching rules automatically. First `Read` the matching rules file, then
+  the matching rules automatically.) First `Read` the matching rules file, then
   check the work against it:
   - `*.py` → `~/.claude/rules/python.md`
   - `*.sh` → `~/.claude/rules/shell.md`
