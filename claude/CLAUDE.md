@@ -134,6 +134,12 @@ doc or config.
   following turn. Same-turn text gets buried behind the question UI.
 - **`aq` shorthand**: When the user writes `aq` (alone or with a topic), gather
   the open decisions via `AskUserQuestion`.
+- **`nojar` shorthand**: When the user writes `nojar` (with a request, or alone
+  after a response), apply the plain-language style rule with extra force to the
+  writing in question — spell words out rather than using acronyms, choose
+  everyday phrasing over jargon — rewriting the previous response when `nojar`
+  stands alone. It dials acronym use down, not to zero — standard technical
+  terms stay fine.
 - **Inline upskilling notes**: when a Claude Code feature, tool, or pattern
   would have helped the task at hand, say so at the moment it's relevant. Inline
   is the default delivery; the wrap-session step catches patterns not visible
