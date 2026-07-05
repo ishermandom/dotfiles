@@ -54,8 +54,8 @@ first. For each item: the change (add / sharpen / demote / remove, and where —
 CLAUDE.md, `rules/*.md`, `docs/`, or a hook), the evidence (which log entries),
 and the expected effect. Gather decisions via `AskUserQuestion`.
 
-Before adding any rule, apply the checks in the Claude rules style guide
-(`~/.claude/rules/claude-rules-style.md`) — grounding, recognizability, scope,
+Before adding any rule, apply the checks in the Claude configuration guide
+(`~/.claude/rules/claude-configuration.md`) — grounding, recognizability, scope,
 necessity.
 
 ## 5. Apply and mark

@@ -12,11 +12,6 @@ why lands here, keyed by rule.
 Beyond the inline shareability clause: applying the block uniformly — not just
 to files likely to be shared — also keeps the professional habit fresh.
 
-## Keep settings.json lists alphabetized (Configuration)
-
-The rule lives in CLAUDE.md rather than in settings.json itself because JSON
-can't hold a comment.
-
 ## Prefer Edit over Write (Token and context efficiency)
 
 Cost driver: output-token generation at call time. Taking input as the 1x

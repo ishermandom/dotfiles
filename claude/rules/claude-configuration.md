@@ -1,11 +1,15 @@
 ---
 paths:
   - "**/.claude/docs/**/*.md"
+  - "**/.claude/hooks/**"
   - "**/.claude/rules/*.md"
+  - "**/.claude/settings*.json"
   - "**/.claude/skills/**/*.md"
   - "**/CLAUDE.md"
   - "**/claude/docs/**/*.md"
+  - "**/claude/hooks/**"
   - "**/claude/rules/*.md"
+  - "**/claude/settings*.json"
   - "**/claude/skills/**/*.md"
   # Two distinct miss cases shape these globs. (1) In dotfiles-project
   # sessions the repo paths carry no dot (claude/rules/...), so the
@@ -16,7 +20,10 @@ paths:
   # Following rules section covers reading this file manually in that case.
 ---
 
-# Claude rules style guide
+# Claude configuration guide
+
+How to edit Claude Code's own configuration: the prose surfaces (CLAUDE.md,
+rules/, docs/, skills/) and the wiring (`settings.json`, hooks).
 
 CLAUDE.md, rules/, docs/, and skills/ files are read by Claude Code, not a
 human. The goal is rules that fire at the right moment — precise enough that
@@ -193,6 +200,33 @@ pull it in and defeat the purpose.
 **When rationale spans multiple skills**: keep it in the most foundational
 skill's `notes.md` and cross-reference it from the other skills' notes — one
 home, no drift.
+
+## When editing `settings.json` or wiring hooks
+
+- **Global by default**: put hooks, settings, and scripts in `~/.claude/` unless
+  the behavior is genuinely project-specific. Project-scoped config
+  (`.claude/settings.json`, `.claude/hooks/`) is for things tied to one repo — a
+  project-specific toolchain, permissions, or environment variable. When in
+  doubt, ask: would this rule apply in a different project? If yes, it's global.
+- **Keep `settings.json` lists alphabetized**: when adding or editing entries in
+  a list (`permissions.allow`, `permissions.deny`, the `hooks` arrays), keep it
+  in ASCII sort order.
+  <!-- The rule lives here rather than in settings.json itself because JSON
+  can't hold a comment. -->
+- **Same-event hooks run in parallel**: array position never affects execution
+  order. When one hook must run after another, sequence them inside a wrapper
+  script registered as a single hook.
+- **Inlined hook commands stay trivial**: a command inlined in `settings.json`
+  must be understandable at a glance. Any nontrivial logic belongs in an
+  external script at `~/.claude/hooks/<name>` — shell or Python, whichever fits
+  the logic; prefer Python once it outgrows string-mangling. External scripts
+  are readable, auditable, and testable without running the hook.
+- **Test hooks run on Stop**: a single turn often has multiple interdependent
+  edits; running tests after each edit produces false failures mid-turn. Wire
+  test hooks to `Stop` so they run once, after all edits have landed.
+- **Validate after adding**: after wiring up a new hook, trigger the expected
+  behavior and confirm the hook fires correctly — e.g. introduce a deliberate
+  failure to verify a test hook catches it, then restore.
 
 ## Gotchas
 

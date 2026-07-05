@@ -15,9 +15,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       with one, single ~120 s timeout.
   - Note: ride-alongs — run_tests.sh needs the repo-root anchor mypy-check.sh
     has, and its `-f` gate should be `-x` (quiet-tests.sh demands executable);
-    drop `PYTEST_FROM_HOOK` if a cross-repo grep finds no consumer; fix
-    CLAUDE.md's "order is execution-significant" claim; add the parallel-hooks
-    why to design.md's Hooks section.
+    drop `PYTEST_FROM_HOOK` if a cross-repo grep finds no consumer; add the
+    parallel-hooks why to design.md's Hooks section.
   - Note: validate after wiring per the hooks rule — one deliberate mypy-failure
     Stop cycle (failure surfaces to the user), then a clean pass.
 

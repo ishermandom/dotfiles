@@ -102,7 +102,8 @@ behavior. Sympathetic review graded prose; cold agents found wiring.
 
 The description contains `config: cold`, which is a silent frontmatter-voiding
 parse error as a plain scalar — the rule lives in the Gotchas section of
-`claude-rules-style.md`, and this skill is where it was hit live. Keep the `>-`.
+`claude-configuration.md`, and this skill is where it was hit live. Keep the
+`>-`.
 
 ## Refinement brainstorm
 

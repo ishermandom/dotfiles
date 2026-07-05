@@ -108,41 +108,14 @@ fresh. Never lower the quality bar because a project is small.
   constraints, not implementation details. Applies to parameters and return
   types alike.
 
-## Configuration
+## Persisting preferences and insights
 
-- **Global by default**: put hooks, settings, and scripts in `~/.claude/` unless
-  the behavior is genuinely project-specific. Project-scoped config
-  (`.claude/settings.json`, `.claude/hooks/`) is for things tied to one repo — a
-  project-specific toolchain, permissions, or environment variable. When in
-  doubt, ask: would this rule apply in a different project? If yes, it's global.
-- **When persisting a durable preference or insight**: choose CLAUDE.md for a
-  global, authoritative one — it is global (every project), git-tracked, and
-  injected as an authoritative instruction, so it applies reliably and stays
-  reviewable. Reserve the auto-memory store for project-local facts, or ones
-  that recall rarely enough that its load-only-when-recalled cost pays off; it
-  is project-local, untracked, and loads as non-authoritative background
-  context.
-- **Keep `settings.json` lists alphabetized**: when adding or editing entries in
-  a curated string list (`permissions.allow`, `permissions.deny`), keep the list
-  in ASCII sort order. Leave the `hooks` arrays as-is — their order is
-  execution-significant, not alphabetical.
-
-## Hooks
-
-- **Scope check first**: before wiring a new hook, apply the global-by-default
-  rule above — hooks go in `~/.claude/settings.json` and `~/.claude/hooks/`
-  unless there's a concrete project-specific reason.
-- Inlined hook commands should be trivial to understand at a glance. Any
-  nontrivial logic belongs in an external script at `~/.claude/hooks/<name>` —
-  shell or Python, whichever fits the logic; prefer Python once it outgrows
-  string-mangling. External scripts are readable, auditable, and testable
-  without running the hook.
-- **Test hooks run on Stop**: a single turn often has multiple interdependent
-  edits; running tests after each edit produces false failures mid-turn. Wire
-  test hooks to `Stop` so they run once, after all edits have landed.
-- **Validate after adding**: after wiring up a new hook, trigger the expected
-  behavior and confirm the hook fires correctly — e.g. introduce a deliberate
-  failure to verify a test hook catches it, then restore.
+When persisting a durable preference or insight, choose CLAUDE.md for a global,
+authoritative one — it is global (every project), git-tracked, and injected as
+an authoritative instruction, so it applies reliably and stays reviewable.
+Reserve the auto-memory store for project-local facts, or ones that recall
+rarely enough that its load-only-when-recalled cost pays off; it is
+project-local, untracked, and loads as non-authoritative background context.
 
 ## Interaction style
 
@@ -250,7 +223,10 @@ doc or config.
   - `*.py` → `~/.claude/rules/python.md`
   - `*.sh` → `~/.claude/rules/shell.md`
   - `*.md` → `~/.claude/rules/markdown.md` and
-    `~/.claude/rules/claude-rules-style.md`
+    `~/.claude/rules/claude-configuration.md`
+  - `settings.json` or files under `hooks/` →
+    `~/.claude/rules/claude-configuration.md`, in addition to a hook script's
+    language rule
   - any file with `test` in its name → `~/.claude/rules/testing.md`, in addition
     to its language rule
 

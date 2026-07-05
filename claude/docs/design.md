@@ -84,8 +84,8 @@ earlier over-generalization of the rules-file result — so CLAUDE.md rationale 
 either a one-clause inline why or lives in CLAUDE.md's companion notes file
 (`docs/claude-md-notes.md`, mirroring the skills pattern). Docs and `SKILL.md`
 enter context verbatim as well. Operative convention:
-`rules/claude-rules-style.md` (Maintainer rationale); skill rationale goes in a
-companion `notes.md`.
+`rules/claude-configuration.md` (Maintainer rationale); skill rationale goes in
+a companion `notes.md`.
 
 **Cross-language style stays in CLAUDE.md** (evaluated and rejected moving it to
 a path-scoped `code-style.md`): in a coding session a path-scoped file loads
