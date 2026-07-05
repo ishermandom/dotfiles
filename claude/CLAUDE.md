@@ -223,11 +223,12 @@ doc or config.
 - **After `Write` on a new file**: path-matched rules don't load until a
   matching file is Read. `Read` a short excerpt (line 1 suffices), self-review
   against the loaded rules, and `Edit` if there are gaps.
-- **Before reading or editing dotfiles-repo files from a session in another
-  project**: those edits happen at the real paths behind the `~/.claude`
-  symlinks — outside the project, where path-matched rules never fire (within a
-  dotfiles-repo session they fire on their own). First `Read` the matching rules
-  file, then check the work against it:
+- **Before reading or editing files in the dotfiles repo**: edits happen at the
+  real paths behind the `~/.claude` symlinks — outside the project, where
+  path-matched rules never fire. Exception: in a session whose working project
+  is the dotfiles repo itself, skip this — reading a file at its repo path loads
+  the matching rules automatically. First `Read` the matching rules file, then
+  check the work against it:
   - `*.py` → `~/.claude/rules/python.md`
   - `*.sh` → `~/.claude/rules/shell.md`
   - `*.md` → `~/.claude/rules/markdown.md` and
