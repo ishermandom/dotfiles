@@ -140,3 +140,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: recurred 2026-07-05 — drafting the new `session-context-routing.md`
     rules (necessity-test, concrete-over-abstraction) again ran long on
     rationale before trimming; second independent data point.
+
+- [ ] **Align skill review-gating with the review-is-a-separate-axis rule** —
+      `ownership-walkthrough` (frames review as settled before anything is
+      committed) and `wrap-session` step 5 (withholds a durable chunk's commit
+      pending the walkthrough) are now stricter than CLAUDE.md's Committing
+      rule: committing never waits on review; production code is reviewed before
+      push.
+  - Rationale: queued 2026-07-07 when the Git-section edit decoupled review from
+    committing. Pre-commit review remains a valid ordering, so the mismatch is
+    posture, not breakage.
