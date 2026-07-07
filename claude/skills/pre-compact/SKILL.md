@@ -16,7 +16,7 @@ file the next turn would consult — is what's at risk.
 
 ## 1. Durably record ambient context
 
-Read `skills/session-context-routing.md` and run it in full.
+Read `~/.claude/skills/session-context-routing.md` and run it in full.
 
 A note on open questions specifically: a summary tends to flatten "still
 deciding between A and B" into whichever side sounded more like a conclusion —

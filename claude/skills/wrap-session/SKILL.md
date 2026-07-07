@@ -44,9 +44,9 @@ Skip if nothing stands out.
 
 ## 3. Durable context routing
 
-Read `skills/session-context-routing.md` and run it in full. (Efficiency
-reflection goes to the global session log — step 4, not a project file.) In
-addition to the shared routing:
+Read `~/.claude/skills/session-context-routing.md` and run it in full.
+(Efficiency reflection goes to the global session log — step 4, not a project
+file.) In addition to the shared routing:
 
 - **Accomplished work and files modified** → nowhere: commit messages and git
   history already record these.
