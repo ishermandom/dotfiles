@@ -243,11 +243,11 @@ doc or config.
 ## Review approach
 
 **When a durable chunk of work is complete** — a feature, a refactor, a new file
-or skill, anything meant to last — work it end-to-end, then review before
-committing rather than gating each increment mid-construction. The aim is the
-user's ownership of what lands — maintainable by the user solo by default, key
-decisions ratified at minimum. Drive the review with the
-`/ownership-walkthrough` skill.
+or skill, anything meant to last — work it end-to-end, then review (before or
+after committing, but before any push) rather than gating each increment
+mid-construction. The aim is the user's ownership of what lands — maintainable
+by the user solo by default, key decisions ratified at minimum. Drive the review
+with the `/ownership-walkthrough` skill.
 
 Before presenting any code, check it against all loaded style guides —
 explicitly, as a checklist pass, not by passive recall. This applies to every
@@ -344,65 +344,73 @@ Every session, without being asked:
 
 ## Git
 
-- Commit directly to the default branch (`main`); don't branch first. The user
-  works one thread at a time and reviews locally, so the harness branch-first
-  default doesn't apply. Branch or use a worktree only for a specific need — an
+- **Default**: commit directly to `main`; don't branch first. The user works one
+  thread at a time and reviews locally, so the harness branch-first default
+  doesn't apply. Branch or use a worktree only for a specific need — an
   abandonable spike, parallel agents, etc.
 
 ### Committing
 
-- Committing within the session's working project needs no per-commit ask — the
-  permission mode is the gate (a prompt in regular mode, granted scope in auto
-  mode), and the ownership review precedes the commit for durable work.
-  Exception: never commit the dotfiles repo without the user's explicit
-  permission for the specific change — a slipped change there can silently
-  degrade every other protection.
-- Before committing in any repo other than the current working project — most
-  commonly, dotfiles edits made from another project's session — always ask
-  first, regardless of permission mode: commit authorization is scoped to the
-  session's project, not to every repo the session touches. A user request that
-  itself names the target repo is that permission — no second ask.
-- For commit descriptions: keep the subject line to <= 72 chars, and wrap to
-  80-col for the remaining lines.
-- For a multi-line commit message, pass it through a heredoc
-  (`git commit -F - <<'EOF'`) rather than stacked `-m` flags — the heredoc shows
-  the line breaks literally, so the 72/80-col wrapping is verifiable in the
-  command itself.
-- Before amending a commit: amend only when the intermediate state has no
+- **Never commit the dotfiles repo without the user's explicit permission** for
+  the specific change — a slipped change there can silently degrade every other
+  protection.
+- **Otherwise, commit freely within the session's working project**: no
+  per-commit ask — the permission mode is the gate (a prompt in regular mode,
+  granted scope in auto mode).
+- **Before committing outside the session's working project** — most commonly,
+  dotfiles edits made from another project's session — always ask first,
+  regardless of permission mode: commit authorization is scoped to the session's
+  project, not to every repo the session touches. A request that explicitly asks
+  to commit ("commit the dotfiles change") is that permission — no second ask; a
+  request to make a change does not itself grant permission to commit it.
+- **Message format**: subject line <= 72 chars; wrap the remaining lines at 80
+  columns.
+- **Multi-line messages**: always pass through a heredoc
+  (`git commit -F - <<'EOF'`), never stacked `-m` flags — the heredoc shows the
+  line breaks literally, so the 72/80-col wrapping is verifiable in the command
+  itself.
+- **Before amending a commit**: amend only when the intermediate state has no
   standalone value (typo fixes, immediate fix-ups); otherwise — and whenever
   uncertain — stack a new commit. Lost history costs more than extra commits.
-  Never amend pushed commits.
+  Never amend a pushed commit.
+- **Never rewrite history on `main`, and keep it fully linear**: no rebases, no
+  merge commits, no restructuring. Exception: amending the unpushed tip is fine
+  when the amend rule allows it — an amend keeps history linear.
+- **Review is a separate axis from committing**: committing never waits on
+  review, but all production code must be user-reviewed — before or after the
+  commit, and always before it's pushed; `scratch/` code needs no review.
 
-### Working on a branch
+### Working on a branch (typically a worktree)
 
-- On a branch (typically a worktree): never push the branch to a remote — only
-  `main` pushes. Hold branch commits to the same bar as commits on main —
-  quality, message standards, `scratch/` for relaxed rigor — because they land
-  on main verbatim. Rebase the branch onto `main` periodically to stay current.
-- Commit a correction to a not-yet-landed branch commit with
-  `git commit --fixup <commit>` rather than a fresh "fix the previous commit"
-  message — the landing rebase runs `--autosquash`, folding each fixup into its
-  target; `--amend` works equally well when the correction targets the branch
-  tip. On `main`, `--fixup` is useless — nothing ever rebases main to fold it —
-  so correct the unpushed tip per the amend rule, or stack a plain commit.
-- Rewrite branch history freely when it clarifies — fixups, reordering,
-  splitting, squashing — without asking the user first; ask only when the
-  rewrite genuinely needs their input. Never rebase or restructure `main`'s
-  history — on main, history editing stops at the amend rule.
-- Sync a branch into `main` at any point with `git land`
-  (`~/.claude/scripts/git-land.sh`): it rebases the branch onto `main` and
+- **Branch commit quality**: hold every branch commit to main's bar — code
+  quality, message standards, `scratch/` for relaxed rigor — because it lands on
+  main verbatim.
+- **Keep the branch current**: rebase it onto `main` periodically.
+- **To correct a not-yet-landed branch commit**: `git commit --fixup <commit>`
+  rather than a fresh "fix the previous commit" message — the landing rebase
+  runs `--autosquash`, folding each fixup into its target; `--amend` works
+  equally well when the correction targets the branch tip.
+  - On `main`, never use `--fixup` — nothing ever rebases main to fold it;
+    correct the unpushed tip per the amend rule, or stack a plain commit.
+- **Rewriting branch history** (fixups, reordering, splitting, squashing): on
+  branches other than `main`, rewrite history freely when it clarifies, without
+  asking the user first; ask only when the rewrite genuinely needs their input.
+- **To sync a branch into `main`**, at any point: run `git land`
+  (`~/.claude/scripts/git-land.sh`) — it rebases the branch onto `main` and
   fast-forwards `main`, so main stays linear and every branch commit lands
-  individually — landing never squashes. Sync from a stable branch state —
+  individually; landing never squashes. Sync from a stable branch state —
   there's no point landing a broken one.
-- Before `git land`: production code must be user-reviewed — either as the
+- **Before `git land`**: production code must be user-reviewed — either as the
   branch evolved or as part of landing; `scratch/`-only changes need no review.
   When unsure whether something was reviewed, err toward suggesting a review —
-  and only ever suggest one, never initiate it.
+  and only ever suggest one, never initiate it. Also give the branch history a
+  final look — a rewrite may leave main's log clearer.
 
 ### GitHub
 
-- When pushing to GitHub, always use `origin-https`, not `origin` — the
-  sandbox's fine-grained tokens ride HTTPS; it holds no SSH key.
-- After creating a new GitHub repo, run `~/.claude/scripts/gh-protect.sh` to
-  verify its branch-protection ruleset; on a reported gap, ask the user to
-  create the printed ruleset in the GitHub UI.
+- **Never push a branch to a remote** — only `main` pushes.
+- **When pushing**: always use `origin-https`, never `origin` — the sandbox's
+  fine-grained tokens ride HTTPS; it holds no SSH key.
+- **After creating a new repo**: run `~/.claude/scripts/gh-protect.sh` to verify
+  its branch-protection ruleset; on a reported gap, ask the user to create the
+  printed ruleset in the GitHub UI.
