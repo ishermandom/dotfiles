@@ -13,6 +13,10 @@
   pager = true
 [safe]
 	directory = /Users/Shared/code/*
+[alias]
+	# Lands the current branch onto main with linear history; the script
+	# documents the full workflow.
+	land = !~/.claude/scripts/git-land.sh
 
 # Account-specific configuration is layered in per account via stow overlays
 # under accounts/<account>/ in the dotfiles repo. Credential handling lives

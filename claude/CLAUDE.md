@@ -349,12 +349,35 @@ Every session, without being asked:
   default doesn't apply. Branch or use a worktree only for a specific need — an
   abandonable spike, parallel agents, or a PR-only review tool like
   `/code-review ultra`.
+- On a branch (typically a worktree): never push the branch to a remote — only
+  `main` pushes. Hold branch commits to the same bar as commits on main —
+  quality, message standards, `scratch/` for relaxed rigor — because they land
+  on main verbatim. Rebase the branch onto `main` periodically to stay current.
+- Sync a branch into `main` at any point with `git land`
+  (`~/.claude/scripts/git-land.sh`): it rebases the branch onto `main` and
+  fast-forwards `main`, so main stays linear and every branch commit lands
+  individually — landing never squashes. Sync from a stable branch state —
+  there's no point landing a broken one.
+- Commit a correction to a not-yet-landed branch commit with
+  `git commit --fixup <commit>` rather than a fresh "fix the previous commit"
+  message — the landing rebase runs `--autosquash`, folding each fixup into its
+  target; `--amend` works equally well when the correction targets the branch
+  tip. On `main`, `--fixup` is useless — nothing ever rebases main to fold it —
+  so correct the unpushed tip per the amend rule, or stack a plain commit.
+- Rewrite branch history freely when it clarifies — fixups, reordering,
+  splitting, squashing — without asking the user first; ask only when the
+  rewrite genuinely needs their input. Never rebase or restructure `main`'s
+  history — on main, history editing stops at the amend rule.
+- Before `git land`: production code must be user-reviewed — either as the
+  branch evolved or as part of landing; `scratch/`-only changes need no review.
+  When unsure whether something was reviewed, err toward suggesting a review —
+  and only ever suggest one, never initiate it.
 - Committing within the session's working project needs no per-commit ask — the
   permission mode is the gate (a prompt in regular mode, granted scope in auto
   mode), and the ownership review precedes the commit for durable work.
   Exception: never commit the dotfiles repo without the user's explicit
-  permission for the specific change — a slipped change there silently degrades
-  every other protection.
+  permission for the specific change — a slipped change there can silently
+  degrade every other protection.
 - When pushing to GitHub, always use `origin-https`, not `origin` — the
   sandbox's fine-grained tokens ride HTTPS; it holds no SSH key.
 
