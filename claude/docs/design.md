@@ -215,6 +215,30 @@ function that active rulesets block force-pushes and deletion and require linear
 history — read-only by design, since a token that could write rulesets could
 also remove them; creating rulesets stays a user action in the GitHub UI.
 
+**Rejected: archive-ref preservation system.** An earlier iteration (crosswords,
+2026-07-03) designed a fuller model for agent-heavy repos: long-lived branches
+updated via merge-in rather than rebase (to avoid a force-push per update),
+landed by rebase-and-reset onto `main`, with every rewritten-away or deleted ref
+auto-archived to `refs/archive/<branch>/<timestamp>` by a GitHub Action, so
+nothing superseded ever loses a discoverable name. Rejected for the simpler
+model actually adopted, which sidesteps the problem rather than solving it:
+branches are never pushed (only `main` pushes), so a rebased branch only ever
+rewrites a local ref, recoverable from the local reflog like any local rebase;
+`main` itself is only ever fast-forwarded, never rewritten. The archive
+machinery was disproportionate infrastructure once that constraint removed its
+reason to exist. Revisit if rebase-branch friction (repeated conflict
+re-resolution on a long-lived branch) turns out to bite in practice, or if
+branches ever need to be pushed for shared/parallel work.
+
+**Rejected: first-parent-linear `main`.** Same iteration: landing branches as
+merge commits on `main` (kernel-style), reading the clean line via
+`git log --first-parent` instead of enforcing linearity structurally. Removes
+all rebase/replay/archive machinery at the cost of losing GitHub's
+linear-history enforcement and putting merge knots in the raw log. Passed over
+on familiarity grounds — strict linearity matches the user's Chromium/Piper-
+trained instincts — not because it's structurally worse; the explicit fallback
+if strict linearity's per-landing friction proves higher than expected.
+
 ### Scope, disagreement, ambiguity
 
 Operative rules live in CLAUDE.md (Scope in Review approach; Disagreement and
