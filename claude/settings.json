@@ -43,8 +43,7 @@
       "Bash(git reset --hard:*)",
       "Bash(git stash clear:*)",
       "Bash(git stash drop:*)",
-      "Edit(**/inputs/**)",
-      "Write(**/inputs/**)"
+      "Edit(**/inputs/**)"
     ]
   },
   "hooks": {
