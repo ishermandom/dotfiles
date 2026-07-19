@@ -125,11 +125,20 @@ cross-phase references are needed.
 delete it instead if its detail is preserved elsewhere (the commit, the code, or
 a follow-up task) and it no longer informs remaining work. Keep an `[x]` entry
 only when its done-state still informs _in-progress_ work this session — e.g. an
-unfinished task depends on it. Don't let completed checkboxes accumulate for a
-later cleanup pass.
+unfinished task depends on it. The same test applies to what you write, not just
+what you keep: a fiddly implementation detail (what was tried and rejected, a
+workaround's specifics) already lives in the code or commit message, so skip
+writing a task note for it rather than pruning one later. Reserve `spec.md` for
+a genuine architecture or design decision — write it there once, not into a task
+note. Don't let completed checkboxes accumulate for a later cleanup pass.
 
 Completed and dropped tasks, and whole completed phases, can be summarized or
 deleted once they stop informing the remaining work — git preserves the detail.
-The `[-]` rule above governs drop time, not pruning. When in doubt, keep a
-dropped task's rationale, a discovered constraint, or anything another task
-cites. A file whose work is all done can simply be deleted.
+Default to **deleting**, not summarizing: reach for a summary only when
+something concrete would otherwise be lost with no other record (not recoverable
+from the code, the commit, or `spec.md`). A summary that just restates what
+`spec.md` already carries, or a note that references a "plan" no longer stated
+anywhere in the file, is worth less than deleting it. The `[-]` rule above
+governs drop time, not pruning. When in doubt, keep a dropped task's rationale,
+a discovered constraint, or anything another task cites. A file whose work is
+all done can simply be deleted.

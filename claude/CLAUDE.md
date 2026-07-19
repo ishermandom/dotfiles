@@ -310,6 +310,13 @@ Every session, without being asked:
   confirming an intermediate state lets more work land now), and then via the
   wrappers `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier}.sh [paths]` —
   terse output, auto-surfaced to the user.
+- **After a raw edit that bypasses `Edit`/`Write`** (e.g. a script-driven
+  multi-file find/replace): their `PostToolUse` formatting hooks — prose reflow,
+  prettier — never fired either. Run the real formatter on the file
+  (`~/.claude/scripts/quiet-prettier.sh` for markdown/JS;
+  `python3 ~/.claude/hooks/reflow_prose.py <path>` for Python) rather than
+  hand-fixing line lengths, which won't quite match what the hook would have
+  produced.
 - **Prefer to search code with `rg`**: ripgrep for recursive searches. The
   bundled `grep` shim (backed by ugrep) handles quick literal or piped lookups,
   and is the better pick for compressed/archived logs and fuzzy matching — but
