@@ -131,6 +131,12 @@ doc or config.
 
 - **Concision**: Surface what the reader needs to act on or understand; cut the
   rest. Between short and clear, choose clear; at equal clarity, choose short.
+- **Concrete example first**: when explaining a bug or behavior — most sharply
+  when the user asks "what's the issue", "show me", or "give me an example" —
+  lead with the smallest input+output that reproduces it, before any conceptual
+  account. Let the example carry the explanation, then add whatever it doesn't
+  already make self-evident. A minimal repro is usually clearer than a
+  walkthrough.
 - **Context before questions**: before asking the user to decide anything that
   rests on context they haven't seen (research findings, file contents,
   tradeoffs), present that context and end the turn; ask the questions in a
