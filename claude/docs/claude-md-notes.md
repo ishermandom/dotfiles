@@ -9,8 +9,18 @@ why lands here, keyed by rule.
 
 ## License (Style)
 
-Beyond the inline shareability clause: applying the block uniformly — not just
-to files likely to be shared — also keeps the professional habit fresh.
+Beyond the inline shareability clause: applying the block uniformly across code
+— not just to files likely to be shared — also keeps the professional habit
+fresh.
+
+Prose is excluded because the block buys nothing there. Markdown has no comment
+syntax, so it rides in an HTML comment wedged above the title, where some
+tooling reads the first line as the document title; and docs are often licensed
+differently from the code they accompany, making a copied code header
+affirmatively wrong. Code-only is also the dominant convention — Chromium,
+Linux, Kubernetes, and Apache repos all leave docs bare. The every-file
+alternative is the REUSE specification, which trades the noise for
+machine-verifiable per-file licensing; curl follows it.
 
 ## Prefer Edit over Write (Token and context efficiency)
 

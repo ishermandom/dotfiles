@@ -103,7 +103,9 @@ fresh. Never lower the quality bar because a project is small.
   repos here are public, so the block removes licensing ambiguity. For personal
   projects, default to MIT: a copyright line followed by an SPDX identifier
   (e.g. `# Copyright YEAR Name` / `# SPDX-License-Identifier: MIT`, using the
-  language's comment syntax). Default name: `Ilya Sherman (ishermandom@)`
+  language's comment syntax). Default name: `Ilya Sherman (ishermandom@)`. Never
+  add the block to markdown or other prose files — the repo's `LICENSE` covers
+  them
 - **Abstract types in API signatures**: prefer abstract collection types over
   concrete ones in function signatures — the contract should express
   constraints, not implementation details. Applies to parameters and return
