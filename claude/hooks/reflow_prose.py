@@ -36,21 +36,21 @@
 #   spaces-only math, so touching them would rewrite a tab file's indentation.
 #
 # Docstrings reflow only in the common shape: plain triple quotes with the
-# summary starting right after them. Anything with doctests or Args:-style
-# section headers is left for hand formatting. Docstrings always use the plain
-# filler, never prettier: their prose is dense with code symbols (`*args`,
-# private `_names`, `>=`), and a survey of real repos showed prettier rewriting
-# characters in a meaningful share of them — including a filename turned into
-# `eval*panel.py` by emphasis pairing. Under the filler the word-preservation
-# check is an invariant, not a coverage leak.
+# summary starting right after them. A docstring carrying a doctest or an
+# Args:-style section reflows only its prose head; the structured tail stays
+# verbatim. Docstrings always use the plain filler, never prettier: their prose
+# is dense with code symbols (`*args`, private `_names`, `>=`), and a survey of
+# real repos showed prettier rewriting characters in a meaningful share of them
+# — including a filename turned into `eval*panel.py` by emphasis pairing. Under
+# the filler the word-preservation check is an invariant, not a coverage leak.
 #
 # docformatter (the ecosystem's dedicated docstring wrapper) is no substitute
 # for the filler: it rewrites characters by design (adding summary periods,
 # say), so it cannot sit under the word-preservation check; it refuses to wrap
-# list items at all; and on Args:/doctest shapes it bails whole-docstring
-# exactly as this tool does, while its --force-wrap override collapses a section
-# into one filled paragraph. Its distinct value — PEP 257 normalization — is a
-# linting concern, not reflow.
+# list items at all; and on Args:/doctest shapes it either bails on the whole
+# docstring or, with --force-wrap, collapses the section into one filled
+# paragraph — where this tool reflows just the head. Its distinct value — PEP
+# 257 normalization — is a linting concern, not reflow.
 #
 # Invoke with file paths to reflow them directly, or with no arguments to read a
 # hook payload (JSON with .tool_input.file_path) from stdin. A syntactically
@@ -112,13 +112,12 @@ _LICENSE_TAG_NAMES = r'Copyright\b|SPDX-License-Identifier:'
 _LICENSE_TAG_PATTERN = re.compile(rf'\s*(?:{_LICENSE_TAG_NAMES})')
 
 # Google-style docstring section headers introduce indented structure that
-# markdown reflow would merge, so such docstrings stay hand-formatted.
+# markdown reflow would merge, so a header marks where a docstring's verbatim
+# tail begins.
 _SECTION_NAMES = (
   r'Args|Arguments|Attributes|Examples?|Notes?|Raises|Returns|Yields'
 )
-_SECTION_HEADER_PATTERN = re.compile(
-  rf'^\s*(?:{_SECTION_NAMES}):\s*$', re.MULTILINE
-)
+_SECTION_HEADER_PATTERN = re.compile(rf'^\s*(?:{_SECTION_NAMES}):\s*$')
 
 _DOCSTRING_OWNER_TYPES = (
   ast.Module,
@@ -177,6 +176,11 @@ class ProseChunk:
   last_line: int
   indent: int
   markdown: str
+
+  # A docstring chunk covering only the prose head above a structured section
+  # stops before the closing triple-quote, which stays with the untouched tail;
+  # `_render` then omits it. Always True for comments and whole docstrings.
+  closes_docstring: bool = True
 
   def reflow_width(self) -> int:
     """Print width for the markdown text, net of indent and prefix."""
@@ -505,6 +509,30 @@ def _docstring_chunks(
   return chunks
 
 
+def _structured_tail_start(content_lines: Sequence[str]) -> int | None:
+  """Index of the first content line that begins a structured tail, or None.
+
+  A Google-style section header (`Args:`, `Returns:`, …) or a doctest prompt
+  (`>>>`) begins a tail whose indentation markdown reflow would merge. Index 0
+  means the docstring opens directly on the tail, with no prose head above; None
+  means it is prose all the way down. A header or prompt inside a fenced code
+  block is example content, not a boundary, so fenced regions are skipped — the
+  same fence-awareness the reflow filler applies.
+  """
+  # TODO: an indented (non-fenced) code block still isn't recognized, so a
+  # header- or prompt-shaped line inside one is misread as the tail start.
+  is_in_fence = False
+  for index, line in enumerate(content_lines):
+    stripped = line.lstrip()
+    if stripped.startswith(_FENCE_PREFIXES):
+      is_in_fence = not is_in_fence
+    elif not is_in_fence and (
+      _SECTION_HEADER_PATTERN.match(line) or stripped.startswith('>>>')
+    ):
+      return index
+  return None
+
+
 def _docstring_chunk(
   source: str, source_lines: Sequence[str], literal: ast.Constant
 ) -> ProseChunk | None:
@@ -512,9 +540,10 @@ def _docstring_chunk(
 
   The reflowable shape, in full: the literal sits alone on its lines (space
   indentation only), uses plain unprefixed triple quotes, opens with the summary
-  hugging the quotes, indents every continuation line uniformly, and contains no
-  Args:-style section headers or doctests. Each guard below enforces one clause
-  of that contract.
+  hugging the quotes, and indents every continuation line uniformly. An
+  Args:-style section or doctest doesn't disqualify it — only the prose head
+  above such a tail is reflowed, and the tail itself stays verbatim. Each guard
+  below enforces one clause of that contract.
   """
   first_line = literal.lineno
   last_line = literal.end_lineno
@@ -553,16 +582,31 @@ def _docstring_chunk(
   # docstring, or one opening with whitespace, stays manual.
   if not content or content[0].isspace():
     return None
-  if _SECTION_HEADER_PATTERN.search(content) or '>>>' in content:
-    return None
+
+  # Reflow only the prose head above any structured tail; a tail-less docstring
+  # reflows whole.
+  content_lines = content.split('\n')
+  tail_start = _structured_tail_start(content_lines)
+  if tail_start is None:
+    head_lines = content_lines
+    last_reflowed_line = last_line
+    closes = True
+  else:
+    head_lines = content_lines[:tail_start]
+    while head_lines and not head_lines[-1].strip():
+      head_lines.pop()
+    # No prose head above the tail — nothing to reflow — so leave it manual.
+    if not head_lines:
+      return None
+    last_reflowed_line = first_line + len(head_lines) - 1
+    closes = False
 
   # Continuation lines carry the docstring's indent; strip it so markdown
   # doesn't read indented prose as a code block, and restore it on reinsertion.
   # The first line follows the quotes, so it never carries the indent. Irregular
   # indentation is a shape we don't rewrite.
-  summary, _, remainder = content.partition('\n')
-  dedented = [summary]
-  for line in remainder.split('\n') if remainder else []:
+  dedented = [head_lines[0]]
+  for line in head_lines[1:]:
     if not line.strip():
       dedented.append('')
     elif line.startswith(' ' * indent):
@@ -574,7 +618,12 @@ def _docstring_chunk(
   # line; they ride along as ordinary text.
   markdown = (quote + '\n'.join(dedented)).rstrip()
   return ProseChunk(
-    ChunkKind.DOCSTRING, first_line, last_line, indent, markdown
+    ChunkKind.DOCSTRING,
+    first_line,
+    last_reflowed_line,
+    indent,
+    markdown,
+    closes_docstring=closes,
   )
 
 
@@ -684,11 +733,16 @@ def _render(chunk: ProseChunk, markdown: str) -> Sequence[str]:
   if chunk.kind is ChunkKind.COMMENT:
     return [prefix + ('# ' + line if line else '#') for line in lines]
 
+  rendered = [prefix + line if line else '' for line in lines]
+
+  # Head-only chunk: emit just the prose; the closing quotes ride with the tail.
+  if not chunk.closes_docstring:
+    return rendered
+
   quote = markdown[:3]
   closing_inline = f'{prefix}{lines[0]}{quote}'
   if len(lines) == 1 and len(closing_inline) <= LINE_WIDTH:
     return [closing_inline]
-  rendered = [prefix + line if line else '' for line in lines]
   return [*rendered, prefix + quote]
 
 

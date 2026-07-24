@@ -16,7 +16,8 @@ snapshot.
   merge into one, so express structure as markdown (`-` bullets, backticked
   code, fenced blocks). Never reflowed: shebangs, directives (`noqa`, `fmt:`,
   `type:`), license tag lines, `fmt: off` regions, trailing comments,
-  tab-indented comments, and docstrings with `Args:`-style sections or doctests
+  tab-indented comments, and a docstring's `Args:`-style section or doctest tail
+  (the prose head above it still reflows)
 - ruff enforces formatting (2-space indentation, single quotes), configured
   globally in `~/.config/ruff/pyproject.toml`; mypy enforces types via
   `--strict` in `~/.claude/scripts/quiet-mypy.sh` plus each project's own

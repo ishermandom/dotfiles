@@ -277,8 +277,8 @@ def test_indented_docstring_reflows_and_keeps_its_indent() -> None:
   )
 
 
-def test_docstring_with_section_headers_is_left_alone() -> None:
-  """Args:-style sections are structure markdown reflow would destroy."""
+def test_section_docstring_with_a_short_head_is_unchanged() -> None:
+  """A summary that already fits leaves an Args: docstring untouched."""
   source = (
     'def f(x: int) -> None:\n'
     '  """Summary.\n'
@@ -292,11 +292,132 @@ def test_docstring_with_section_headers_is_left_alone() -> None:
   assert reflow_source(source, fill_markdown) == source
 
 
-def test_docstring_with_doctest_is_left_alone() -> None:
-  """A >>> prompt marks executable content, not prose."""
+def test_doctest_docstring_with_a_short_head_is_unchanged() -> None:
+  """A summary that already fits leaves a doctest docstring untouched."""
   source = 'def f() -> None:\n  """Summary.\n\n  >>> f()\n  """\n  return\n'
 
   assert reflow_source(source, fill_markdown) == source
+
+
+def test_prose_head_wraps_while_section_stays_verbatim() -> None:
+  """A long body paragraph above Args: wraps; the section is verbatim."""
+  section = (
+    '  Args:\n'
+    '    x: a description left deliberately past the eighty column limit so the'
+    ' test can prove the section is never touched.\n'
+    '  """\n'
+  )
+  source = (
+    'def f(x: int) -> None:\n'
+    '  """Summary.\n'
+    '\n'
+    '  This body paragraph is written long enough to run past the eighty'
+    ' column limit, so the reflow must wrap it.\n'
+    '\n' + section + '  return\n'
+  )
+
+  result = reflow_source(source, fill_markdown)
+
+  # The section — its header and its over-long entry — survived verbatim...
+  assert section in result
+  # ...while every line outside it, the wrapped body included, is within width.
+  tail_lines = set(section.split('\n'))
+  assert all(
+    len(line) <= 80 for line in result.split('\n') if line not in tail_lines
+  )
+
+
+def test_prose_head_wraps_while_doctest_stays_verbatim() -> None:
+  """A long paragraph above a doctest wraps; the doctest is verbatim."""
+  doctest = (
+    '  >>> f(1234567890123456789012345678901234567890'
+    '1234567890123456789012345678901234567890)\n'
+    '  """\n'
+  )
+  source = (
+    'def f() -> None:\n'
+    '  """Summary.\n'
+    '\n'
+    '  This body paragraph runs past the eighty column limit so the reflow'
+    ' has to wrap it before the doctest below.\n'
+    '\n' + doctest + '  return\n'
+  )
+
+  result = reflow_source(source, fill_markdown)
+
+  # The over-long doctest line is executable content, not prose: left
+  # verbatim...
+  assert doctest in result
+  # ...and every line outside it, the wrapped body included, is within width.
+  tail_lines = set(doctest.split('\n'))
+  assert all(
+    len(line) <= 80 for line in result.split('\n') if line not in tail_lines
+  )
+
+
+def test_docstring_opening_on_a_section_header_stays_manual() -> None:
+  """A docstring whose first line is a section header has no prose head."""
+  source = (
+    'def f(x: int) -> None:\n'
+    '  """Args:\n'
+    '    x: the value to store.\n'
+    '  """\n'
+    '  return\n'
+  )
+
+  # No prose head above the section, so the whole literal is left untouched.
+  assert reflow_source(source, fill_markdown) == source
+
+
+def test_docstring_opening_on_a_doctest_stays_manual() -> None:
+  """A docstring whose first line is a doctest prompt has no prose head."""
+  source = 'def f() -> None:\n  """>>> f()\n  """\n  return\n'
+
+  # No prose head above the doctest, so the whole literal is left untouched.
+  assert reflow_source(source, fill_markdown) == source
+
+
+def test_midline_shift_operator_is_not_a_doctest() -> None:
+  """A `>>>` mid-sentence is prose, not a doctest prompt, so it reflows."""
+  source = (
+    'def f() -> None:\n'
+    '  """True when a >>> b holds, a summary made deliberately long enough to'
+    ' run past the eighty column limit so the reflow has to wrap it."""\n'
+    '  return\n'
+  )
+
+  result = reflow_source(source, fill_markdown)
+
+  # Only a line-leading >>> marks a doctest; mid-line it is ordinary prose, so
+  # the over-long summary wraps rather than the docstring being skipped whole.
+  lines = result.split('\n')
+  assert all(len(line) <= 80 for line in lines)
+  assert (
+    result.replace('"""', ' ').split() == source.replace('"""', ' ').split()
+  )
+
+
+def test_fenced_doctest_in_head_does_not_start_the_tail() -> None:
+  """A `>>>` inside a fenced block is example content, not the tail boundary."""
+  fence = '  ```\n  >>> encode(42)\n  b"42"\n  ```\n'
+  tail = '  Args:\n    value: the scalar to encode.\n  """\n'
+  source = (
+    'def encode(value) -> bytes:\n'
+    '  """Encode a value to its wire form.\n'
+    '\n' + fence + '\n'
+    '  The encoder is deliberately lenient about its input and coerces most'
+    ' scalar types before serializing, which keeps call sites simpler.\n'
+    '\n' + tail + '  return repr(value).encode()\n'
+  )
+
+  result = reflow_source(source, fill_markdown)
+
+  # The fenced example and the Args: tail survive verbatim...
+  assert fence in result
+  assert tail in result
+  # ...and the prose paragraph below the fence still wraps to width, rather than
+  # being frozen into the tail by the fenced >>>.
+  assert all(len(line) <= 80 for line in result.split('\n'))
 
 
 def test_docstring_with_bare_code_symbols_reflows() -> None:
