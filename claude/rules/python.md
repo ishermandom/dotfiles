@@ -71,3 +71,24 @@ snapshot.
 - **When defining a custom exception**: never inherit from a built-in solely to
   piggyback on existing catch clauses — the type hierarchy should reflect what
   each error means.
+
+## Logging
+
+- **Standard library `logging`, one logger per module**:
+  `logger = logging.getLogger(__name__)` at module level. It is the idiomatic
+  form, and pytest's `caplog` captures it in tests without reaching into module
+  internals — so it avoids the untestable-global cost a hand-rolled module
+  global would carry.
+- **Never configure logging in library or module code** — no `basicConfig`, no
+  handlers, no level-setting. Configuring output is the application's (or the
+  test's) job; a module that configures it fights whatever imports it.
+- **Level by intent**: `warning` for a recoverable anomaly worth a human's
+  eventual attention (the input or environment looks changed); `error` when
+  about to fail or abandon work; `info` for milestones a running operator would
+  want; `debug` for tracing. Torn between two, pick the quieter.
+- **Log the context, not just the event**: include the offending value — an id,
+  a path, an excerpt — so a line diagnoses without reproducing. Inline it per
+  the f-string rule above; a log argument is already computed.
+- **Routine "nothing here" needs no log**: a sentinel return for an expected
+  empty case is not a failure. Reserve `warning` and above for the genuinely
+  unexpected, so the log stays signal rather than noise.
