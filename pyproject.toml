@@ -27,12 +27,18 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["claude/hooks", "claude/scripts"]
-# Neither test directory is a package, so put both on sys.path for the test
-# modules' sibling imports (`from gate_git import ...`,
-# `from distillation_backlog import ...`); this replaces a manual PYTHONPATH in
-# run_tests.sh.
-pythonpath = ["claude/hooks", "claude/scripts"]
+# The repo root holds one tested script rather than a test directory, so name
+# its test file instead of the root itself — collecting "." would re-scan the
+# directories below and gather every test twice.
+testpaths = [
+  "claude/hooks",
+  "claude/scripts",
+  "configure_account_remotes_test.py",
+]
+# None of these are packages, so put each on sys.path for the test modules'
+# sibling imports (`from gate_git import ...`, `from distillation_backlog
+# import ...`); this replaces a manual PYTHONPATH in run_tests.sh.
+pythonpath = ["claude/hooks", "claude/scripts", "."]
 
 [tool.mypy]
 # bashlex ships no type stubs (no py.typed marker). Treat its imports as

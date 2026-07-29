@@ -2,6 +2,14 @@
 
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
 
+- [ ] **Review `configure_account_remotes.py` by hand** — it wires each shared
+      repo's `.git/config` to the per-account remote and repairs missing or
+      mis-pointed remotes. It writes to repos outside this one, which is a wider
+      blast radius than anything else here, and it was written across one
+      session without an independent pass.
+  - Note: `plan_remotes` and `github_path_of` carry unit tests; the git-facing
+    layer around them was checked only by hand against throwaway repos.
+
 - [ ] **Sequence the Stop hooks through one orchestrator wrapper**
       #stop-orchestrator — same-event hooks run in parallel (verified live
       2026-07-03: two probe Stop hooks started 0.8 ms apart with fully

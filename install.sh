@@ -3,9 +3,14 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# install.sh — symlinks dotfile packages into their target directories via stow.
+# install.sh — installs this machine's configuration for the current account.
 #
-# Each entry in PACKAGES maps a subdirectory of this repo (a "stow package")
+# Symlinks dotfile packages into their target directories via stow, then runs
+# configure_account_remotes.py to point each shared repo at the Git remote this
+# account can reach. That second step writes to other repos' .git/config, not
+# just to $HOME.
+#
+# Each entry in `packages` maps a subdirectory of this repo (a "stow package")
 # to the directory where its contents should appear as symlinks. For example,
 # a package directory claude/ containing settings.json will produce a symlink
 # at $HOME/.claude/settings.json pointing back into this repo.
@@ -24,9 +29,10 @@ SCRIPT_NAME="$(basename "$SCRIPT_PATH")"
 
 # -n: no-op (simulate only); -v: verbose (print each link created/removed).
 STOW_FLAGS=""
+is_dry_run=""
 while getopts ":n" opt; do
   case "$opt" in
-    n) STOW_FLAGS="-n -v" ;;
+    n) STOW_FLAGS="-n -v"; is_dry_run="yes" ;;
     *) echo "Usage: $SCRIPT_NAME [-n]" >&2; exit 1 ;;
   esac
 done
@@ -111,3 +117,10 @@ if [ -n "$failed_packages" ]; then
   echo "$SCRIPT_NAME: not linked (see errors above):$failed_packages" >&2
   exit 1
 fi
+
+# Pointing the shared repos at this account's remote needs the account-remote
+# file the stow run just placed, so it goes last — and only once stowing has
+# succeeded. An empty flag variable expands to no argument at all.
+dry_run_flag=""
+[ -n "$is_dry_run" ] && dry_run_flag="-n"
+"$DOTFILES_DIR/configure_account_remotes.py" $dry_run_flag
