@@ -1,0 +1,82 @@
+// Zed settings
+//
+// For information on how to configure Zed, see the Zed
+// documentation: https://zed.dev/docs/configuring-zed
+//
+// To see all of Zed's default settings without changing your
+// custom settings, run `zed: open default settings` from the
+// command palette (cmd-shift-p / ctrl-shift-p)
+{
+  "title_bar": {
+    "show_branch_status_icon": true,
+    "show_sign_in": false,
+  },
+  "toolbar": {
+    "breadcrumbs": false,
+    "quick_actions": false,
+    "selections_menu": false,
+    "agent_review": false,
+    "code_actions": false
+  },
+  "project_panel": {
+    "dock": "right"
+  },
+  "outline_panel": {
+    "dock": "right"
+  },
+  "collaboration_panel": {
+    "dock": "right"
+  },
+  "agent": {
+    "dock": "left",
+    "favorite_models": [],
+    "model_parameters": []
+  },
+  "git_panel": {
+    "dock": "right"
+  },
+  "cli_default_open_behavior": "new_window",
+  "gutter": {
+    "min_line_number_digits": 2,
+    "folds": false,
+    "bookmarks": false,
+    "breakpoints": false,
+    "runnables": false
+  },
+  "buffer_font_weight": 400.0,
+  "buffer_font_family": "Monaco",
+  "line_ending": "prefer_lf",
+  "soft_wrap": "prefer_line",
+  "tab_size": 2,
+  "telemetry": {
+    "diagnostics": true,
+    "metrics": true,
+    "anthropic_retention": true
+  },
+  "base_keymap": "Emacs",
+  "icon_theme": "Zed (Default)",
+  "ui_font_size": 16,
+  "buffer_font_size": 18.0,
+  "theme": {
+    "mode": "dark",
+    "light": "One Light",
+    "dark": "Soda Dark 3 (Sunburst)",
+  },
+  "theme_overrides": {
+    "Soda Dark 3 (Sunburst)": {
+      "warning": "#feb454ff",
+      "warning.background": "#572815ff",
+      "warning.border": "#754221ff",
+      "scrollbar.thumb.background": "#bfbdb64c",
+      "scrollbar.thumb.hover_background": "#2d2f34ff",
+      "scrollbar.thumb.border": "#2d2f34ff",
+    }
+  },
+  "wrap_guides": [80],
+  "inline_code_actions": false,
+  "git": {
+    "inline_blame": {
+      "enabled": false
+    }
+  }
+}

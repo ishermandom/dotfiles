@@ -7,6 +7,7 @@ This repo manages system configuration via symlinks, managed using GNU Stow.
 - `claude/` — Claude Code global config (CLAUDE.md, settings, rules, skills,
   hooks, scripts, docs)
 - `git/` — gitconfig
+- `zed/` — Zed editor settings, keymap, custom themes
 - `zsh/` — zshrc, aliases
 - etc.
 

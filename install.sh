@@ -38,11 +38,17 @@ stow_package() {
   # --restow removes stale symlinks then recreates all links for this package,
   # which handles renames and deletions cleanly.
   # --no-folding keeps config dirs as real directories; most tools expect this.
-  # claude omits it because all its subdirectories are hand-authored content
-  # (docs, skills, rules, …), so directory folding lets stow automatically
-  # pick up new ones without manual curation.
-  no_folding="--no-folding"
-  [ "$package" = "claude" ] && no_folding=""
+  # Two packages want folding instead, for different reasons:
+  #   claude — every subdirectory is hand-authored content (docs, skills,
+  #     rules, …), so folding lets stow pick up new ones without curation.
+  #   zed — Zed saves settings by writing a temp file and renaming it over the
+  #     target, which replaces a per-file symlink with a plain file and quietly
+  #     detaches the config from this repo. Folding links ~/.config/zed as a
+  #     single directory symlink, so those renames land inside the repo.
+  case "$package" in
+    claude|zed) no_folding="" ;;
+    *) no_folding="--no-folding" ;;
+  esac
   stow $STOW_FLAGS $no_folding --dir "$source_dir" --target "$target" --restow "$package"
 }
 
@@ -50,11 +56,17 @@ stow_package() {
 # pairing is the single source of truth, iterated for both the common packages
 # and any per-account overlay. No package name or target contains a space, so a
 # plain word-split loop is safe. To add a package, add a pair below.
+#
+# zed targets ~/.config rather than ~/.config/zed, and nests its own zed/
+# directory inside the package, so that stow links that directory as a whole
+# instead of linking its contents one file at a time — see the folding note
+# above for why Zed needs it that way.
 packages="
   claude:$HOME/.claude
   git:$HOME
   prettier:$HOME
   ruff:$HOME/.config/ruff
+  zed:$HOME/.config
   zsh:$HOME
 "
 

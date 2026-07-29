@@ -1,0 +1,154 @@
+{
+  "name": "Soda Dark 3 (Sunburst)",
+  "author": "odiroot",
+  "themes": [
+    {
+      "name": "Soda Dark 3 (Sunburst)",
+      "appearance": "dark",
+      "style": {
+        "background": "#000000",
+        "editor.background": "#000000",
+        "editor.foreground": "#F8F8F8",
+        "text": "#F8F8F8",
+        "syntax": {
+          "keyword": {
+            "color": "#E28964"
+          },
+          "keyword.control": {
+            "color": "#E28964"
+          },
+          "operator": {
+            "color": "#F8F8F8"
+          },
+          "punctuation": {
+            "color": "#F8F8F8"
+          },
+          "punctuation.bracket": {
+            "color": "#F8F8F8"
+          },
+          "punctuation.delimiter": {
+            "color": "#F8F8F8"
+          },
+          "punctuation.accessor": {
+            "color": "#F8F8F8"
+          },
+          "function": {
+            "color": "#89BDFF"
+          },
+          "function.definition": {
+            "color": "#89BDFF"
+          },
+          "function.method": {
+            "color": "#89BDFF"
+          },
+          "function.method.definition": {
+            "color": "#89BDFF"
+          },
+          "support.function": {
+            "color": "#DAD085"
+          },
+          "constructor": {
+            "color": "#89BDFF"
+          },
+          "type": {
+            "color": "#89BDFF"
+          },
+          "type.builtin": {
+            "color": "#89BDFF"
+          },
+          "variable": {
+            "color": "#F8F8F8"
+          },
+          "variable.special": {
+            "color": "#3E87E3",
+            "font_style": "italic"
+          },
+          "variable.parameter": {
+            "color": "#F8F8F8"
+          },
+          "string": {
+            "color": "#65B042"
+          },
+          "string.doc": {
+            "color": "#AEAEAE",
+            "font_style": "italic"
+          },
+          "string.escape": {
+            "color": "#E9C062"
+          },
+          "comment": {
+            "color": "#AEAEAE",
+            "font_style": "italic"
+          },
+          "comment.doc": {
+            "color": "#AEAEAE",
+            "font_style": "italic"
+          },
+          "constant": {
+            "color": "#3387CC"
+          },
+          "boolean": {
+            "color": "#3387CC"
+          },
+          "number": {
+            "color": "#3387CC"
+          },
+          "property": {
+            "color": "#F8F8F8"
+          },
+          "attribute": {
+            "color": "#F8F8F8"
+          },
+          "tag": {
+            "color": "#89BDFF"
+          }
+        },
+        "players": [
+          {
+            "background": "#cfcfc2",
+            "cursor": "#A7A7A7",
+            "selection": "#FFFFFF40"
+          }
+        ],
+        "error": "#f92a72",
+        "warning": "#fd971f",
+        "info": "#3387CC",
+        "hint": "#AEAEAE",
+        "terminal.background": "#191919",
+        "terminal.foreground": "#F8F8F8",
+        "terminal.ansi.black": "#191919",
+        "terminal.ansi.red": "#f92a72",
+        "terminal.ansi.green": "#a6e22e",
+        "terminal.ansi.yellow": "#fd971f",
+        "terminal.ansi.blue": "#AE81FF",
+        "terminal.ansi.magenta": "#f92a72",
+        "terminal.ansi.cyan": "#66d9ef",
+        "terminal.ansi.white": "#cfcfc2",
+        "terminal.ansi.bright_black": "#444444",
+        "terminal.ansi.bright_red": "#f92a72",
+        "terminal.ansi.bright_green": "#a6e22e",
+        "terminal.ansi.bright_yellow": "#fd971f",
+        "terminal.ansi.bright_blue": "#AE81FF",
+        "terminal.ansi.bright_magenta": "#f92a72",
+        "terminal.ansi.bright_cyan": "#66d9ef",
+        "terminal.ansi.bright_white": "#cfcfc2",
+        "editor.gutter.background": "#191919",
+        "editor.line_number": "#555555",
+        "editor.active_line_number": "#F8F8F8",
+        "editor.active_line.background": "#FFFFFF1A",
+        "editor.wrap_guide": "#333333",
+        "panel.background": "#191919",
+        "panel.focused_border": "#191919",
+        "status_bar.background": "#222222",
+        "tab_bar.background": "#191919",
+        "tab.inactive_background": "#191919",
+        "tab.active_background": "#414141",
+        "toolbar.background": "#191919",
+        "title_bar.background": "#191919",
+        "border": "#444444",
+        "scrollbar_thumb.background": "#44444444"
+      }
+    }
+  ],
+  "id": "8raip_1vQfDgXOaYwx3Ol"
+}
