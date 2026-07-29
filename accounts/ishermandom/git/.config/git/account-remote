@@ -1,7 +1,7 @@
 # Selects the Git remote this account uses in repos shared between the two
 # accounts on this machine. Included from each such repo's .git/config by a
 # ~/-relative path, so it resolves to the running account's own copy, stowed
-# from accounts/<account>/. configure-account-remotes.sh wires the includes.
+# from accounts/<account>/. configure_account_remotes.py wires the includes.
 #
 # It has to be included from .git/config rather than from ~/.gitconfig: a
 # repo's own config outranks global config, and `git clone` writes

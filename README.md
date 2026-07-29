@@ -48,6 +48,12 @@ carries the owner and repo, so its counterpart follows mechanically. Repos owned
 by anyone else are left alone, as is an https URL that already works, since
 `credential.useHttpPath` keys stored credentials on the exact path.
 
+Selecting a remote does not create its tracking refs — those arrive on the first
+successful fetch, so until then `git status` shows no upstream. The script
+deliberately does not report that: an account may have no credentials stored for
+a repo it never fetches, and for that repo the state can be permanent and
+correct, not a pending chore.
+
 Wiring is a script rather than another stow package because `.git/config` is
 per-clone state: Git creates it and writes that clone's own remotes and branches
 into it, so it can't be a shared file linked from here.

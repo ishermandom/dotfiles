@@ -27,15 +27,23 @@ SCRIPT_PATH="$(realpath "$0")"
 DOTFILES_DIR="$(dirname "$SCRIPT_PATH")"
 SCRIPT_NAME="$(basename "$SCRIPT_PATH")"
 
-# -n: no-op (simulate only); -v: verbose (print each link created/removed).
-STOW_FLAGS=""
 is_dry_run=""
 while getopts ":n" opt; do
   case "$opt" in
-    n) STOW_FLAGS="-n -v"; is_dry_run="yes" ;;
+    n) is_dry_run="yes" ;;
     *) echo "Usage: $SCRIPT_NAME [-n]" >&2; exit 1 ;;
   esac
 done
+
+# Both tools take their preview mode from the one flag above, so the two can
+# never disagree about whether this run writes anything.
+# stow -n: no-op (simulate only); -v: verbose (print each link created/removed).
+STOW_FLAGS=""
+DRY_RUN_FLAG=""
+if [ -n "$is_dry_run" ]; then
+  STOW_FLAGS="-n -v"
+  DRY_RUN_FLAG="-n"
+fi
 
 # command -v reports whether a command exists without running it. Checking once
 # up front keeps a missing stow from failing every package in turn.
@@ -121,6 +129,4 @@ fi
 # Pointing the shared repos at this account's remote needs the account-remote
 # file the stow run just placed, so it goes last — and only once stowing has
 # succeeded. An empty flag variable expands to no argument at all.
-dry_run_flag=""
-[ -n "$is_dry_run" ] && dry_run_flag="-n"
-"$DOTFILES_DIR/configure_account_remotes.py" $dry_run_flag
+"$DOTFILES_DIR/configure_account_remotes.py" $DRY_RUN_FLAG
