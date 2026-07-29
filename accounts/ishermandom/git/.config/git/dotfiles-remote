@@ -1,0 +1,13 @@
+# Selects the remote this account uses for the dotfiles repo. Included from
+# that repo's .git/config, which both accounts share; the include path is
+# ~/-relative, so it resolves to each account's own copy of this file, stowed
+# from accounts/<account>/.
+#
+# It has to be included from .git/config rather than from ~/.gitconfig.local: a
+# repo's own config outranks global config, so a global branch.main.remote
+# would lose to the value .git/config already sets.
+#
+# This account authenticates over ssh, so it uses the ssh remote for both fetch
+# and push.
+[branch "main"]
+	remote = origin
