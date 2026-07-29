@@ -16,8 +16,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       timeout.
   - Note: ride-alongs — run_tests.sh needs the repo-root anchor mypy-check.sh
     has, and its `-f` gate should be `-x` (quiet-tests.sh demands executable);
-    drop `PYTEST_FROM_HOOK` if a cross-repo grep finds no consumer; add the
-    parallel-hooks why to design.md's Hooks section.
+    add the parallel-hooks why to design.md's Hooks section. `PYTEST_FROM_HOOK`
+    stays — the crosswords repos' `cluegen/{cloud,local}/run_tests.sh` read it.
   - Note: validate after wiring per the hooks rule — one deliberate mypy-failure
     Stop cycle (failure surfaces to the user), then a clean pass.
 
@@ -49,6 +49,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       2026-07 adversarial review (cluster F2, ratified 2026-07-04).
   - Note: depends on #stop-orchestrator — build the check as a step in
     `stop_checks.sh`, not as another parallel Stop entry.
+
+- [ ] **Stow the zed package on this account** — `~/.config/zed` does not exist,
+      so the tracked Zed config is committed but not linked; every other package
+      is stowed. Running `./install.sh` links it.
 
 - [ ] **Reconcile `gate_auto_tools_test.py` with the no-loop testing rule** —
       its two tests loop over case tuples, which `rules/testing.md` prohibits in
