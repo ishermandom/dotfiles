@@ -150,3 +150,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Rationale: queued 2026-07-07 when the Git-section edit decoupled review from
     committing. Pre-commit review remains a valid ordering, so the mismatch is
     posture, not breakage.
+
+- [ ] **Replace `install.sh`'s `set -eu` with explicit error handling** —
+      `rules/shell.md` says never use `set -e`: commands that return non-zero in
+      expected situations exit the script silently, and a partial stow run is
+      exactly the failure worth reporting rather than swallowing.
+  - Rationale: queued 2026-07-28 while adding the zed package. Pre-existing and
+    not currently misfiring, so this is cleanup, not a defect.
