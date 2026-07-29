@@ -10,6 +10,23 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: `plan_remotes` and `github_path_of` carry unit tests; the git-facing
     layer around them was checked only by hand against throwaway repos.
 
+- [ ] **Remove the duplicated test-path list** — `pyproject.toml`'s
+      `[tool.pytest.ini_options] testpaths` and the explicit path arguments in
+      `run_tests.sh` name the same locations. Command-line paths override
+      `testpaths`, so the `pyproject.toml` value applies only to a bare
+      `pytest`; the two must be edited together. Updating only `pyproject.toml`
+      leaves the Stop hook — which runs `run_tests.sh` — silently not covering a
+      new test file.
+  - Note: the candidate fix is for `run_tests.sh` to pass no paths and pin the
+    config instead (`pytest --rootdir="$root" -c "$root/pyproject.toml"`), so
+    `testpaths` becomes the single source of truth. It passes paths today
+    because it resolves them against the script's own location, letting the
+    suite behave the same from any working directory without ever `cd`-ing.
+  - Note: verify rather than assume — `testpaths` and `pythonpath` both resolve
+    relative to rootdir, and a wrong rootdir would collect nothing while still
+    exiting 0. Run from a subdirectory and confirm the collected count matches a
+    run from the repo root.
+
 - [ ] **Sequence the Stop hooks through one orchestrator wrapper**
       #stop-orchestrator — same-event hooks run in parallel (verified live
       2026-07-03: two probe Stop hooks started 0.8 ms apart with fully
