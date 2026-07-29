@@ -50,10 +50,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: depends on #stop-orchestrator — build the check as a step in
     `stop_checks.sh`, not as another parallel Stop entry.
 
-- [ ] **Stow the zed package on this account** — `~/.config/zed` does not exist,
-      so the tracked Zed config is committed but not linked; every other package
-      is stowed. Running `./install.sh` links it.
-
 - [ ] **Reconcile `gate_auto_tools_test.py` with the no-loop testing rule** —
       its two tests loop over case tuples, which `rules/testing.md` prohibits in
       favor of `parametrize`; the loops exist to support a no-pytest `main()`.
