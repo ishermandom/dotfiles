@@ -70,6 +70,32 @@
       "scrollbar.thumb.background": "#bfbdb64c",
       "scrollbar.thumb.hover_background": "#2d2f34ff",
       "scrollbar.thumb.border": "#2d2f34ff",
+      "syntax": {
+        "title": {
+          "color": "#E28964",
+          "font_weight": 700
+        },
+        "emphasis.strong": {
+          "color": "#F8F8F8",
+          "font_weight": 700
+        },
+        "emphasis": {
+          "color": "#E9C062",
+          "font_style": "italic"
+        },
+        "text.literal": {
+          "color": "#65B042"
+        },
+        "link_uri": {
+          "color": "#3387CC",
+        },
+        "string.special.symbol": {
+          "color": "#89BD20"
+        },
+        "punctuation.list_marker": {
+          "color": "#E28964"
+        },
+      },
     }
   },
   "wrap_guides": [80],
