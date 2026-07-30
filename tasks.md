@@ -7,7 +7,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       the other account cannot read. Nothing in the repo root points an editor
       at it, and neither `/usr/bin/python3` nor `/opt/homebrew/bin/python3` has
       pytest, so Zed's language server reports `import pytest` as unresolved in
-      `configure_account_remotes_test.py` (observed 2026-07-29).
+      the repo's test files (observed 2026-07-29).
   - Note: a `.venv` at the repo root is the one location both accounts and any
     editor find without per-account configuration. It needs gitignoring, and
     `pyproject.toml`'s header ("Provision the venv directly") then describes the

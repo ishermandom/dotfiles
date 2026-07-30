@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 # Test suite for the dotfiles repo — the unit tests under claude/hooks and
-# claude/scripts, plus the root-level setup scripts' own tests.
+# claude/scripts.
 # Run directly, or via ~/.claude/scripts/quiet-tests.sh (which the Stop test
 # hook invokes). Honors PYTEST_ADDOPTS, which the quiet wrapper sets to
 # --tb=short. pytest discovery config (testpaths, pythonpath) lives in the root
@@ -13,5 +13,4 @@
 # runs identically regardless of the caller's working directory; per the
 # testing convention we never cd.
 root="$(dirname "$0")"
-exec python3 -m pytest "$root/claude/hooks" "$root/claude/scripts" \
-  "$root/configure_account_remotes_test.py" "$@"
+exec python3 -m pytest "$root/claude/hooks" "$root/claude/scripts" "$@"

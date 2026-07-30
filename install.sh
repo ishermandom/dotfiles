@@ -5,10 +5,7 @@
 #
 # install.sh — installs this machine's configuration for the current account.
 #
-# Symlinks dotfile packages into their target directories via stow, then runs
-# configure_account_remotes.py to point each shared repo at the Git remote this
-# account can reach. That second step writes to other repos' .git/config, not
-# just to $HOME.
+# Symlinks dotfile packages into their target directories via stow.
 #
 # Each entry in `packages` maps a subdirectory of this repo (a "stow package")
 # to the directory where its contents should appear as symlinks. For example,
@@ -35,14 +32,10 @@ while getopts ":n" opt; do
   esac
 done
 
-# Both tools take their preview mode from the one flag above, so the two can
-# never disagree about whether this run writes anything.
 # stow -n: no-op (simulate only); -v: verbose (print each link created/removed).
 STOW_FLAGS=""
-DRY_RUN_FLAG=""
 if [ -n "$is_dry_run" ]; then
   STOW_FLAGS="-n -v"
-  DRY_RUN_FLAG="-n"
 fi
 
 # command -v reports whether a command exists without running it. Checking once
@@ -125,8 +118,3 @@ if [ -n "$failed_packages" ]; then
   echo "$SCRIPT_NAME: not linked (see errors above):$failed_packages" >&2
   exit 1
 fi
-
-# Pointing the shared repos at this account's remote needs the account-remote
-# file the stow run just placed, so it goes last — and only once stowing has
-# succeeded. An empty flag variable expands to no argument at all.
-"$DOTFILES_DIR/configure_account_remotes.py" $DRY_RUN_FLAG

@@ -23,38 +23,30 @@ when `install.sh` runs as that account, layering over the shared packages.
 
 ### Git remotes
 
-The two accounts reach GitHub over different transports, so every shared repo
-carries both: `origin` over ssh and `origin-https` over https. Which one an
-account uses lives in `accounts/<account>/git/.config/git/account-remote`,
-stowed to `~/.config/git/account-remote`.
+The two accounts reach GitHub over different transports: `ishermandom` over ssh,
+`claude-sandbox` over https, holding no ssh key. The intended mechanism is
+per-account URL rewriting — `url.<base>.insteadOf` in each account's
+`~/.gitconfig.local`, rewriting a GitHub URL to the transport that account can
+reach. A shared repo then needs no per-account configuration of its own, and a
+fresh clone works with no post-clone step.
 
-Each repo's own config includes that file, and `configure_account_remotes.py` is
-what puts the include there and keeps the remotes themselves in line. Its
-docstring covers the rest, including why the selection can't live in
-`~/.gitconfig`. `install.sh` runs it after stowing, so account setup stays one
-command; it also runs on its own, which is what you want after cloning a repo:
-
-```bash
-./configure_account_remotes.py        # -n to preview
-```
-
-Wiring is a script rather than another stow package because `.git/config` is
-per-clone state: Git creates it and writes that clone's own remotes and branches
-into it, so it can't be a shared file linked from here.
+That rewriting is not wired up yet, and the approach it replaces has been
+removed, so nothing currently selects a transport per account.
 
 #### Discarded: two remotes selected by an include
 
-The approach above is discarded in favour of per-account URL rewriting —
-`url.<base>.insteadOf` in each account's `~/.gitconfig.local`, rewriting GitHub
-URLs to the transport that account can actually reach. That needs no per-repo
-configuration at all: a fresh clone works with no post-clone step, and nothing
-in a shared repo's config has to differ between accounts. The switch has not
-landed yet, so the mechanism described above is still what runs today.
+Every shared repo used to carry both remotes — `origin` over ssh and
+`origin-https` over https — and to include a per-account
+`~/.config/git/account-remote` naming which one to use. Keeping that include and
+those remotes in line took a dedicated script, `configure_account_remotes.py`,
+run by `install.sh` after stowing and again by hand after each clone, because
+`.git/config` is per-clone state that can't be a shared file linked from here.
+URL rewriting reaches the same result with none of that machinery.
 
-The two-remote mechanism was last seen in full at commit `2bdfdf5`. Reviving it
-would need a full re-review first: much of it changed after its last review, and
-the state at that commit carried one automated review round and no line-by-line
-human review.
+The mechanism was last seen in full at commit `2bdfdf5`. Reviving it would need
+a full re-review first: much of it changed after its last review, and the state
+at that commit carried one automated review round and no line-by-line human
+review.
 
 TODO: remove this subsection after 2027-01-01 — going that long without needing
 it is good evidence that the simpler approach is sufficient and no change is
