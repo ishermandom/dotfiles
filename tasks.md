@@ -2,17 +2,6 @@
 
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
 
-- [x] **Review `configure_account_remotes.py` by hand** — it wires each shared
-      repo's `.git/config` to the per-account remote and repairs missing or
-      mis-pointed remotes. It writes to repos outside this one, which is a wider
-      blast radius than anything else here, and it was written across one
-      session without an independent pass.
-  - Outcome: reviewed 2026-07-29, every finding addressed. The substantive ones:
-    a GitHub URL now parses once into a `GitHubRepository` rather than being
-    re-derived through the planner; a missing shared directory or an unreadable
-    checkout now exits non-zero instead of reporting success; and the paired URL
-    parameters are keyword-only, since in either order they type-check the same.
-
 - [ ] **Give the repo a project-local `.venv`** — the dev tools live in
       `/Users/claude-sandbox/.venvs/default`, inside one account's home, which
       the other account cannot read. Nothing in the repo root points an editor
