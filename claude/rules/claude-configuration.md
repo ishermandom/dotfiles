@@ -224,11 +224,14 @@ pull it in and defeat the purpose.
 skill's `notes.md` and cross-reference it from the other skills' notes — one
 home, no drift.
 
-## When cross-referencing a heading externally
+## When cross-referencing a section externally
 
 **When citing a section from another file**: add a short descriptive slug to the
-heading: `## Heading {#slug}`. Use this slug as a stable reference. Add slugs
-lazily — only when actively needed for cross-links.
+heading — `## Heading {#slug}` — or, when the target is one bullet in a list, to
+its bold label: `- **Label** {#slug}: …`. Cite it as the filename plus the
+backticked slug, never the heading text: CLAUDE.md `#disprefer-memory`. A slug
+survives rewording; a quoted heading goes stale silently. Add slugs lazily —
+only when actively needed for cross-links.
 
 **When renaming a slug**: check for stale references and update them to match.
 

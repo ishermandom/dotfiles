@@ -41,10 +41,9 @@ never the reverse.
   lives in `tasks.md`.
 - **Write for re-derivation**: capture enough that the design could be rebuilt
   or reviewed from the document alone.
-- **Reference sources of truth**: when an operative detail lives and evolves
-  elsewhere (code, configs, another doc), record the decision and its rationale
-  and reference the source rather than mirroring its text — a mirror goes stale
-  the moment the source changes.
+- **Record decisions, not operative details**: a spec records the decision and
+  its rationale; the operative detail stays wherever it lives and evolves. See
+  CLAUDE.md `#canonical-location` for the split and why mirroring drifts.
 - **Create the file** when design decisions need a durable record; otherwise
   keep the spec inline in conversation.
 

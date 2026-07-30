@@ -357,6 +357,20 @@ Every session, without being asked:
 - **Don't write predictably stale content**: When a statement tracks a moving
   target — versions, counts, state recorded elsewhere — point at the source of
   truth or leave it out.
+- **One canonical location per fact** {#canonical-location}: never state the
+  same thing in two files. Mirrored prose drifts the moment either copy is
+  edited, and a reader then cannot tell which is current. Pick the narrowest
+  location that can hold the fact, put it there, and from elsewhere reference it
+  — or say nothing. Between code and a design doc:
+  - **Code** — docstrings and comments — carries what a thing _is_ and _does_:
+    the contract, what each value and each absent value means, the mechanism a
+    reader must understand to use it correctly.
+  - **The design doc** carries what the code cannot say about itself: why the
+    design is this shape rather than another, what was rejected and why, what
+    the shape costs or forecloses, and directives for work not yet written.
+  - A cross-reference earns its place only where the second location needs the
+    first to be intelligible. Prefer naming the symbol or section over restating
+    a summary of it — a summary is a copy too, and drifts like one.
 
 ## Git
 
