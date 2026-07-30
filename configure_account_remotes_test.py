@@ -1,22 +1,31 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 
-"""Tests for the shared-repo remote configuration."""
+"""Tests for the shared-repo remote configuration.
+
+These build real repositories under `tmp_path` rather than working in memory, as
+`rules/testing.md` otherwise prefers. What is under test is what `git` does to a
+repository on disk, so there is no stream to inject in place of the filesystem:
+faking the subprocess would only check which arguments were assembled, and
+assembling them is not where the risk is.
+"""
 
 import subprocess
+import textwrap
 from pathlib import Path
 
 import pytest
 
 from configure_account_remotes import (
   ACCOUNT_REMOTE_INCLUDE,
+  GitHubRepository,
   RemotePlan,
   SkipReason,
   describe_skip,
-  github_path_of,
+  github_repository_of,
   main,
   plan_remotes,
-  repository_checkouts,
+  scan_repositories,
 )
 
 
@@ -58,28 +67,33 @@ def _make_shared_tree(tmp_path: Path) -> tuple[Path, Path]:
   shared = tmp_path / 'code'
   shared.mkdir()
   account_remote_file = tmp_path / 'account-remote'
-  account_remote_file.write_text('[branch "main"]\n\tremote = origin-https\n')
+  account_remote_file.write_text(
+    textwrap.dedent("""\
+      [branch "main"]
+      \tremote = origin-https
+    """)
+  )
   return shared, account_remote_file
 
 
-# --- github_path_of ---
+# --- github_repository_of ---
 
 
-def test_ssh_url_yields_owner_and_repo() -> None:
-  assert github_path_of('git@github.com:ishermandom/bridge.git') == (
-    'ishermandom/bridge'
+def test_ssh_url_yields_owner_and_repository() -> None:
+  assert github_repository_of('git@github.com:ishermandom/bridge.git') == (
+    GitHubRepository(owner='ishermandom', name='bridge')
   )
 
 
-def test_https_url_yields_owner_and_repo() -> None:
-  assert github_path_of('https://github.com/ishermandom/bridge.git') == (
-    'ishermandom/bridge'
+def test_https_url_yields_owner_and_repository() -> None:
+  assert github_repository_of('https://github.com/ishermandom/bridge.git') == (
+    GitHubRepository(owner='ishermandom', name='bridge')
   )
 
 
-def test_https_url_without_git_suffix_yields_owner_and_repo() -> None:
-  assert github_path_of('https://github.com/ishermandom/dotfiles') == (
-    'ishermandom/dotfiles'
+def test_https_url_without_git_suffix_yields_owner_and_repository() -> None:
+  assert github_repository_of('https://github.com/ishermandom/dotfiles') == (
+    GitHubRepository(owner='ishermandom', name='dotfiles')
   )
 
 
@@ -96,7 +110,7 @@ def test_https_url_without_git_suffix_yields_owner_and_repo() -> None:
   ],
 )
 def test_urls_that_are_not_github_repositories_are_rejected(url: str) -> None:
-  assert github_path_of(url) is None
+  assert github_repository_of(url) is None
 
 
 # --- plan_remotes ---
@@ -104,21 +118,25 @@ def test_urls_that_are_not_github_repositories_are_rejected(url: str) -> None:
 
 def test_a_correct_pair_needs_no_changes() -> None:
   plan = plan_remotes(
-    'git@github.com:ishermandom/bridge.git',
-    'https://github.com/ishermandom/bridge.git',
+    origin_url='git@github.com:ishermandom/bridge.git',
+    https_url='https://github.com/ishermandom/bridge.git',
   )
 
   assert plan == RemotePlan()
 
 
 def test_an_https_origin_is_repointed_to_ssh() -> None:
-  plan = plan_remotes('https://github.com/ishermandom/bridge.git', '')
+  plan = plan_remotes(
+    origin_url='https://github.com/ishermandom/bridge.git', https_url=''
+  )
 
   assert plan.ssh_url == 'git@github.com:ishermandom/bridge.git'
 
 
 def test_a_missing_https_remote_is_added() -> None:
-  plan = plan_remotes('git@github.com:ishermandom/bridge.git', '')
+  plan = plan_remotes(
+    origin_url='git@github.com:ishermandom/bridge.git', https_url=''
+  )
 
   assert plan.https_url == 'https://github.com/ishermandom/bridge.git'
   assert not plan.ssh_url
@@ -129,44 +147,50 @@ def test_a_working_https_url_keeps_its_exact_form() -> None:
   # that already reaches the right repo is left alone even without the .git
   # suffix that a freshly built one would carry.
   plan = plan_remotes(
-    'git@github.com:ishermandom/dotfiles.git',
-    'https://github.com/ishermandom/dotfiles',
+    origin_url='git@github.com:ishermandom/dotfiles.git',
+    https_url='https://github.com/ishermandom/dotfiles',
   )
 
   assert not plan.https_url
 
 
 def test_origin_is_derived_from_the_https_remote() -> None:
-  plan = plan_remotes('', 'https://github.com/ishermandom/bridge.git')
+  plan = plan_remotes(
+    origin_url='', https_url='https://github.com/ishermandom/bridge.git'
+  )
 
   assert plan.ssh_url == 'git@github.com:ishermandom/bridge.git'
 
 
 def test_another_accounts_repository_is_skipped() -> None:
-  plan = plan_remotes('https://github.com/someone-else/thing.git', '')
+  plan = plan_remotes(
+    origin_url='https://github.com/someone-else/thing.git', https_url=''
+  )
 
   assert plan.skip_reason is SkipReason.FOREIGN_OWNER
   assert plan.foreign_owner == 'someone-else'
 
 
 def test_a_non_github_remote_is_skipped() -> None:
-  plan = plan_remotes('https://gitlab.com/someone/thing.git', '')
+  plan = plan_remotes(
+    origin_url='https://gitlab.com/someone/thing.git', https_url=''
+  )
 
   assert plan.skip_reason is SkipReason.UNRECOGNIZED_REMOTE
 
 
 def test_a_repository_with_no_remotes_is_skipped() -> None:
-  plan = plan_remotes('', '')
+  plan = plan_remotes(origin_url='', https_url='')
 
-  assert plan.skip_reason is SkipReason.NO_GITHUB_REMOTE
+  assert plan.skip_reason is SkipReason.MISSING_BOTH_REMOTES
 
 
 def test_a_non_github_origin_is_never_overwritten() -> None:
   # The counterpart URL is derivable here, which is exactly the trap: rewriting
   # origin would discard a remote pointing somewhere else entirely.
   plan = plan_remotes(
-    'https://gitlab.com/team/thing.git',
-    'https://github.com/ishermandom/bridge.git',
+    origin_url='https://gitlab.com/team/thing.git',
+    https_url='https://github.com/ishermandom/bridge.git',
   )
 
   assert plan.skip_reason is SkipReason.UNRECOGNIZED_REMOTE
@@ -175,8 +199,8 @@ def test_a_non_github_origin_is_never_overwritten() -> None:
 
 def test_a_non_github_https_remote_is_never_overwritten() -> None:
   plan = plan_remotes(
-    'git@github.com:ishermandom/bridge.git',
-    'https://gitlab.com/team/thing.git',
+    origin_url='git@github.com:ishermandom/bridge.git',
+    https_url='https://gitlab.com/team/thing.git',
   )
 
   assert plan.skip_reason is SkipReason.UNRECOGNIZED_REMOTE
@@ -185,8 +209,8 @@ def test_a_non_github_https_remote_is_never_overwritten() -> None:
 
 def test_a_local_path_origin_is_never_overwritten() -> None:
   plan = plan_remotes(
-    '/Users/Shared/code/local-mirror',
-    'https://github.com/ishermandom/bridge.git',
+    origin_url='/Users/Shared/code/local-mirror',
+    https_url='https://github.com/ishermandom/bridge.git',
   )
 
   assert plan.skip_reason is SkipReason.UNRECOGNIZED_REMOTE
@@ -194,13 +218,24 @@ def test_a_local_path_origin_is_never_overwritten() -> None:
 
 def test_remotes_naming_different_repositories_are_skipped() -> None:
   plan = plan_remotes(
-    'git@github.com:ishermandom/alpha.git',
-    'https://github.com/ishermandom/beta.git',
+    origin_url='git@github.com:ishermandom/alpha.git',
+    https_url='https://github.com/ishermandom/beta.git',
   )
 
   assert plan.skip_reason is SkipReason.CONFLICTING_REMOTES
   assert not plan.ssh_url
   assert not plan.https_url
+
+
+def test_conflicting_remotes_are_reported_before_the_owner() -> None:
+  # The owner is unanswerable while the two remotes disagree about which
+  # repository this is, so the conflict is the reason worth reporting.
+  plan = plan_remotes(
+    origin_url='git@github.com:someone-else/thing.git',
+    https_url='https://github.com/ishermandom/bridge.git',
+  )
+
+  assert plan.skip_reason is SkipReason.CONFLICTING_REMOTES
 
 
 # --- describe_skip ---
@@ -213,26 +248,37 @@ def test_a_foreign_owner_is_named_in_the_reason() -> None:
 
 
 def test_other_reasons_use_their_own_wording() -> None:
-  assert 'GitHub' in describe_skip(SkipReason.NO_GITHUB_REMOTE, None)
+  assert 'origin-https' in describe_skip(SkipReason.MISSING_BOTH_REMOTES, None)
 
 
-# --- repository_checkouts ---
+# --- scan_repositories ---
 
 
 def test_a_plain_checkout_is_returned(tmp_path: Path) -> None:
   _make_repository(tmp_path / 'solo')
 
-  assert repository_checkouts(tmp_path) == [tmp_path / 'solo']
+  assert scan_repositories(tmp_path).checkouts == [tmp_path / 'solo']
 
 
 def test_a_directory_that_is_not_a_checkout_is_ignored(tmp_path: Path) -> None:
   (tmp_path / 'not-a-repo').mkdir()
 
-  assert repository_checkouts(tmp_path) == []
+  assert scan_repositories(tmp_path).checkouts == []
 
 
-def test_a_missing_shared_directory_yields_nothing(tmp_path: Path) -> None:
-  assert repository_checkouts(tmp_path / 'absent') == []
+def test_a_checkout_git_cannot_read_is_counted_as_unreadable(
+  tmp_path: Path,
+) -> None:
+  # An empty `.git` is not a valid gitfile, so git refuses to inspect the
+  # directory at all.
+  broken = tmp_path / 'broken'
+  broken.mkdir()
+  (broken / '.git').touch()
+
+  scan = scan_repositories(tmp_path)
+
+  assert scan.checkouts == []
+  assert scan.unreadable_repos == ['broken']
 
 
 def test_worktrees_collapse_onto_the_checkout_owning_the_config(
@@ -244,7 +290,7 @@ def test_worktrees_collapse_onto_the_checkout_owning_the_config(
   _run_git(main_checkout, 'worktree', 'add', '-q', str(worktree), '-b', 'side')
 
   # Two checkouts, one config, so one entry — named for the owning checkout.
-  assert repository_checkouts(tmp_path) == [main_checkout]
+  assert scan_repositories(tmp_path).checkouts == [main_checkout]
 
 
 def test_a_worktree_owned_from_a_nested_repo_is_left_out(
@@ -259,7 +305,7 @@ def test_a_worktree_owned_from_a_nested_repo_is_left_out(
   worktree = tmp_path / 'a-worktree'
   _run_git(main_checkout, 'worktree', 'add', '-q', str(worktree), '-b', 'side')
 
-  assert repository_checkouts(tmp_path) == []
+  assert scan_repositories(tmp_path).checkouts == []
 
 
 def test_a_worktree_owned_from_outside_is_left_out(tmp_path: Path) -> None:
@@ -273,7 +319,7 @@ def test_a_worktree_owned_from_outside_is_left_out(tmp_path: Path) -> None:
   worktree = shared / 'a-worktree'
   _run_git(main_checkout, 'worktree', 'add', '-q', str(worktree), '-b', 'side')
 
-  assert repository_checkouts(shared) == []
+  assert scan_repositories(shared).checkouts == []
 
 
 # --- main ---
@@ -376,7 +422,9 @@ def test_a_non_github_origin_survives_a_full_run(tmp_path: Path) -> None:
   assert _include_paths(repo) == []
 
 
-def test_a_missing_account_remote_file_stops_the_run(tmp_path: Path) -> None:
+def test_a_missing_account_remote_file_stops_the_run(
+  tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
   shared, _ = _make_shared_tree(tmp_path)
 
   exit_code = main(
@@ -384,6 +432,7 @@ def test_a_missing_account_remote_file_stops_the_run(tmp_path: Path) -> None:
   )
 
   assert exit_code == 1
+  assert 'install.sh' in capsys.readouterr().err
 
 
 def test_a_dry_run_previews_without_the_account_remote_file(
@@ -397,3 +446,52 @@ def test_a_dry_run_previews_without_the_account_remote_file(
   )
 
   assert exit_code == 0
+
+
+def test_a_missing_shared_directory_fails_the_run(
+  tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+  _, account_remote_file = _make_shared_tree(tmp_path)
+
+  exit_code = main(
+    [],
+    shared_code_dir=tmp_path / 'absent',
+    account_remote_file=account_remote_file,
+  )
+
+  assert exit_code == 1
+  assert 'absent' in capsys.readouterr().err
+
+
+def test_a_dry_run_still_needs_the_shared_directory(tmp_path: Path) -> None:
+  # Unlike a missing account-remote file, which a preview tolerates because
+  # stow's own dry run never creates it, nothing about a dry run explains a
+  # shared directory that isn't there.
+  _, account_remote_file = _make_shared_tree(tmp_path)
+
+  exit_code = main(
+    ['-n'],
+    shared_code_dir=tmp_path / 'absent',
+    account_remote_file=account_remote_file,
+  )
+
+  assert exit_code == 1
+
+
+def test_a_checkout_git_cannot_read_fails_the_run(
+  tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+  shared, account_remote_file = _make_shared_tree(tmp_path)
+  broken = shared / 'broken'
+  broken.mkdir()
+  (broken / '.git').touch()
+
+  exit_code = main(
+    [], shared_code_dir=shared, account_remote_file=account_remote_file
+  )
+
+  output = capsys.readouterr()
+  assert exit_code == 1
+  assert 'broken' in output.err
+  # A failed run must not also claim that everything already matched.
+  assert 'already matches' not in output.out

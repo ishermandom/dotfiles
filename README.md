@@ -23,36 +23,20 @@ when `install.sh` runs as that account, layering over the shared packages.
 
 ### Git remotes
 
-Both accounts on this machine share the working copies under
-`/Users/Shared/code`, but reach GitHub over different transports: one over ssh
-(`origin`), the other over https (`origin-https`). Each account's choice lives
-in `accounts/<account>/git/.config/git/account-remote`, stowed to
-`~/.config/git/account-remote`.
+The two accounts reach GitHub over different transports, so every shared repo
+carries both: `origin` over ssh and `origin-https` over https. Which one an
+account uses lives in `accounts/<account>/git/.config/git/account-remote`,
+stowed to `~/.config/git/account-remote`.
 
-That file can't simply be included from `~/.gitconfig`, because a repo's own
-config outranks global config and `git clone` writes `branch.main.remote` into
-it. Each shared repo's config includes the file directly instead, by a
-`~`-relative path that resolves to whichever account is running.
-
-`install.sh` wires this after stowing, so account setup stays one command.
-`configure_account_remotes.py` also runs on its own, which is what you want
-after cloning a repo:
+Each repo's own config includes that file, and `configure_account_remotes.py` is
+what puts the include there and keeps the remotes themselves in line. Its
+docstring covers the rest, including why the selection can't live in
+`~/.gitconfig`. `install.sh` runs it after stowing, so account setup stays one
+command; it also runs on its own, which is what you want after cloning a repo:
 
 ```bash
 ./configure_account_remotes.py        # -n to preview
 ```
-
-Every repo carries both remotes under fixed names, and the script creates or
-repoints one that is missing or aimed at the wrong transport — a GitHub URL
-carries the owner and repo, so its counterpart follows mechanically. Repos owned
-by anyone else are left alone, as is an https URL that already works, since
-`credential.useHttpPath` keys stored credentials on the exact path.
-
-Selecting a remote does not create its tracking refs — those arrive on the first
-successful fetch, so until then `git status` shows no upstream. The script
-deliberately does not report that: an account may have no credentials stored for
-a repo it never fetches, and for that repo the state can be permanent and
-correct, not a pending chore.
 
 Wiring is a script rather than another stow package because `.git/config` is
 per-clone state: Git creates it and writes that clone's own remotes and branches
