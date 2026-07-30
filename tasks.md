@@ -2,13 +2,33 @@
 
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
 
-- [ ] **Review `configure_account_remotes.py` by hand** — it wires each shared
+- [x] **Review `configure_account_remotes.py` by hand** — it wires each shared
       repo's `.git/config` to the per-account remote and repairs missing or
       mis-pointed remotes. It writes to repos outside this one, which is a wider
       blast radius than anything else here, and it was written across one
       session without an independent pass.
-  - Note: `plan_remotes` and `github_path_of` carry unit tests; the git-facing
-    layer around them was checked only by hand against throwaway repos.
+  - Outcome: reviewed 2026-07-29, every finding addressed. The substantive ones:
+    a GitHub URL now parses once into a `GitHubRepository` rather than being
+    re-derived through the planner; a missing shared directory or an unreadable
+    checkout now exits non-zero instead of reporting success; and the paired URL
+    parameters are keyword-only, since in either order they type-check the same.
+
+- [ ] **Give the repo a project-local `.venv`** — the dev tools live in
+      `/Users/claude-sandbox/.venvs/default`, inside one account's home, which
+      the other account cannot read. Nothing in the repo root points an editor
+      at it, and neither `/usr/bin/python3` nor `/opt/homebrew/bin/python3` has
+      pytest, so Zed's language server reports `import pytest` as unresolved in
+      `configure_account_remotes_test.py` (observed 2026-07-29).
+  - Note: a `.venv` at the repo root is the one location both accounts and any
+    editor find without per-account configuration. It needs gitignoring, and
+    `pyproject.toml`'s header ("Provision the venv directly") then describes the
+    wrong setup.
+  - Note: check what the move does to everything that shells out to `python3` —
+    `run_tests.sh`, the Stop hooks, and `~/.claude/scripts/quiet-*.sh` resolve
+    whatever is on PATH, which is the per-account venv today.
+  - Note: two accounts writing into one venv is the open question. The shared
+    ACLs grant each of them read and write, but installed files stay owned by
+    whichever account ran the install. Verify before committing to the approach.
 
 - [ ] **Remove the duplicated test-path list** — `pyproject.toml`'s
       `[tool.pytest.ini_options] testpaths` and the explicit path arguments in
