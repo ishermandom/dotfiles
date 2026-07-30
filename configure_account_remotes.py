@@ -33,7 +33,8 @@ Re-running is harmless.
 import argparse
 import subprocess
 import sys
-from collections.abc import Sequence
+import urllib.parse
+from collections.abc import Collection, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
@@ -44,12 +45,28 @@ from pathlib import Path
 
 SHARED_CODE_DIR = Path('/Users/Shared/code')
 REPO_OWNER = 'ishermandom'
-SSH_URL_PREFIX = 'git@github.com:'
-HTTPS_URL_PREFIX = 'https://github.com/'
+GITHUB_HOST = 'github.com'
+
+# The two canonical spellings this writes: the scp-like ssh form git itself
+# prints, and the plain https form. Other spellings of the same repository are
+# recognized on the way in — see `github_repository_of`.
+SSH_URL_PREFIX = f'git@{GITHUB_HOST}:'
+HTTPS_URL_PREFIX = f'https://{GITHUB_HOST}/'
 
 # The tilde stays literal in the config file: Git expands it per account when it
 # reads the include, which is what lets one line serve both accounts.
 ACCOUNT_REMOTE_INCLUDE = '~/.config/git/account-remote'
+
+
+class UnreadableRepository(Exception):
+  """Raised when git refuses to answer a question about a repository.
+
+  Separates a genuine failure to read a repository's config from the ordinary
+  answers that mean nothing is wrong — no such remote, no such key — which git
+  also reports by exiting non-zero with nothing on stdout. Without the
+  distinction, an unreadable config reads as a repository that simply has no
+  remotes, and the run reports success over a repo it never configured.
+  """
 
 
 class Remote(StrEnum):
@@ -90,7 +107,10 @@ class SkipReason(StrEnum):
 
   UNRECOGNIZED_REMOTE = 'a remote points somewhere this does not manage'
   CONFLICTING_REMOTES = 'origin and origin-https name different repos'
-  MISSING_BOTH_REMOTES = 'neither origin nor origin-https exists'
+  MULTIPLE_REMOTE_URLS = 'a remote carries several URLs'
+  MISSING_BOTH_REMOTES = (
+    'neither origin nor origin-https has a URL to work from'
+  )
   FOREIGN_OWNER = 'owned by another account'
 
 
@@ -109,34 +129,72 @@ class RemotePlan:
 
 
 def github_repository_of(url: str) -> GitHubRepository | None:
-  """The repository a GitHub URL names, in either transport form.
+  """The repository a `github.com` URL names, in any of its usual spellings.
+
+  Recognizing every spelling matters because an unrecognized URL leaves the
+  whole repository alone: `ssh://git@github.com/owner/repo`, a URL carrying
+  embedded credentials, and a trailing slash all name a repository whose
+  canonical counterpart follows just as mechanically as the two forms this
+  writes.
+
+  A URL that reaches the same repository through some other host — an ssh alias
+  out of `~/.ssh/config`, or `ssh.github.com` — is deliberately left
+  unrecognized, so the repository is skipped rather than repointed at a host the
+  account may not be able to reach.
 
   Returns `None` for anything that is not a GitHub repository URL, including the
-  empty string a missing remote yields.
+  empty string a remote without one yields.
   """
-  for prefix in (SSH_URL_PREFIX, HTTPS_URL_PREFIX):
-    if url.startswith(prefix):
-      path = url[len(prefix) :].removesuffix('.git')
-      break
+  # The scp-like form has no scheme for a URL parser to work from, so it is
+  # matched by prefix; everything else git accepts is a real URL. Matched
+  # case-insensitively, as a host name is — and as the parsed branch below is,
+  # since `hostname` lowercases what it returns.
+  if url.lower().startswith(SSH_URL_PREFIX):
+    path = url[len(SSH_URL_PREFIX) :]
   else:
-    return None
+    try:
+      split = urllib.parse.urlsplit(url)
+    except ValueError:
+      # A URL malformed enough for the parser to reject names no repository.
+      return None
+    # `hostname` rather than `netloc`: it drops any credentials and port, and
+    # lowercases the host, so only the host itself decides.
+    if split.hostname != GITHUB_HOST:
+      return None
+    path = split.path
 
   # A repository path is exactly `owner/repo`, both segments non-empty. An
   # absent separator leaves the name empty, so that case needs no test of its
   # own.
-  owner, _, name = path.partition('/')
+  owner, _, name = path.strip('/').removesuffix('.git').partition('/')
   if not owner or not name or '/' in name:
     return None
   return GitHubRepository(owner=owner, name=name)
 
 
-def plan_remotes(*, origin_url: str, https_url: str) -> RemotePlan:
+def plan_remotes(
+  *, origin_urls: Sequence[str], https_urls: Sequence[str]
+) -> RemotePlan:
   """Decides what a repository's two remotes should become.
 
-  Both arguments are the repository's current URLs, empty when that remote is
-  absent. Keyword-only, since two URLs in either order type-check equally well
-  and a swap would silently plan each remote against the other's state.
+  Both arguments are every URL the corresponding remote records, empty when it
+  records none. Sequences rather than single URLs because git allows a remote
+  several, and a plan built from one of them would leave the rest in place.
+  Keyword-only, since two URL lists in either order type-check equally well and
+  a swap would silently plan each remote against the other's state.
   """
+  # A remote holding several URLs belongs to a setup this script knows nothing
+  # about, and `git remote set-url` refuses to rewrite one in any case — so the
+  # repository is left alone rather than having the extra URLs quietly outlive a
+  # rewrite of the first.
+  if len(origin_urls) > 1 or len(https_urls) > 1:
+    return RemotePlan(skip_reason=SkipReason.MULTIPLE_REMOTE_URLS)
+
+  # Past that guard each remote holds at most one URL, and the empty string is
+  # how the rest of the planning spells "no URL to work from".
+  origin_url = origin_urls[0] if origin_urls else ''
+  https_url = https_urls[0] if https_urls else ''
+
   origin_repository = github_repository_of(origin_url)
   https_repository = github_repository_of(https_url)
 
@@ -159,9 +217,9 @@ def plan_remotes(*, origin_url: str, https_url: str) -> RemotePlan:
   ):
     return RemotePlan(skip_reason=SkipReason.CONFLICTING_REMOTES)
 
-  # Past those guards an unparsed URL means only an absent remote, and either
-  # remote alone identifies the repository — so one is enough to build both
-  # from.
+  # Past those guards an unparsed URL means only that the remote has none — it
+  # may be absent or declared without one — and either remote alone identifies
+  # the repository, so one is enough to build both from.
   repository = origin_repository or https_repository
   if not repository:
     return RemotePlan(skip_reason=SkipReason.MISSING_BOTH_REMOTES)
@@ -179,8 +237,10 @@ def plan_remotes(*, origin_url: str, https_url: str) -> RemotePlan:
   # `origin-https` need only reach the same repository over https. One that
   # already does keeps its exact URL rather than being normalized like the ssh
   # side: `credential.useHttpPath` keys stored credentials on the full path, so
-  # rewriting a working URL would break authentication.
-  reaches_over_https = https_url.startswith(HTTPS_URL_PREFIX)
+  # rewriting a working URL would break authentication. The scheme is the whole
+  # test, since the URL is already known to name the right repository — that way
+  # a URL carrying its own credentials is preserved rather than replaced.
+  reaches_over_https = urllib.parse.urlsplit(https_url).scheme == 'https'
   https_change = None if reaches_over_https else repository.https_url
 
   return RemotePlan(ssh_url=ssh_change, https_url=https_change)
@@ -196,13 +256,44 @@ def run_git(repo: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
   )
 
 
-def remote_url_of(repo: Path, remote: Remote) -> str:
-  """A remote's URL, empty when the repository has no such remote.
+def declared_remotes_of(repo: Path) -> Collection[str]:
+  """Every remote name the repository's config declares.
 
-  `git remote get-url` rather than `git config --get`, which reports only the
-  last of a multi-valued `remote.<name>.url`.
+  Presence here, rather than a non-empty URL, is what decides whether a remote
+  must be added or repointed: git allows a remote to be declared with no URL at
+  all, and answers `git remote get-url` for one by echoing the remote's own
+  name.
+
+  Raises `UnreadableRepository` when git cannot list them.
   """
-  return run_git(repo, 'remote', 'get-url', remote).stdout.strip()
+  result = run_git(repo, 'remote')
+  if result.returncode != 0:
+    raise UnreadableRepository(
+      f'git could not list the remotes: {result.stderr.strip()}'
+    )
+  return set(result.stdout.splitlines())
+
+
+def remote_urls_of(repo: Path, remote: Remote) -> Sequence[str]:
+  """Every URL the repository's config records for `remote`, in config order.
+
+  Reads the config key rather than asking `git remote get-url`, which answers
+  only one end of a multi-valued `remote.<name>.url` — the first, where `git
+  config --get` gives the last, so neither reports a second URL that a rewrite
+  would leave in place. `--get-all` reports all of them.
+
+  Empty when the remote is absent or declares no URL. Raises
+  `UnreadableRepository` when git fails for any reason other than that.
+  """
+  result = run_git(repo, 'config', '--get-all', f'remote.{remote}.url')
+  # git exits 1 for a key that is simply not set, and 128 when it cannot read
+  # the config at all — a failure worth surfacing rather than reading as a
+  # remote without a URL.
+  if result.returncode > 1:
+    raise UnreadableRepository(
+      f'git could not read the URL of {remote}: {result.stderr.strip()}'
+    )
+  return result.stdout.splitlines()
 
 
 @dataclass(frozen=True)
@@ -212,10 +303,15 @@ class RepositoryScan:
   `unreadable_repos` holds the names of checkouts git refused to inspect. They
   are failures rather than skips: a repo nobody can configure is a problem, not
   a choice.
+
+  `foreign_worktrees` holds the names of worktrees owned from outside the shared
+  directory. Those are skips, and are named here so the run's summary can
+  account for them rather than claiming every repo matched.
   """
 
   checkouts: Sequence[Path]
   unreadable_repos: Sequence[str]
+  foreign_worktrees: Sequence[str]
 
 
 def scan_repositories(shared_code_dir: Path) -> RepositoryScan:
@@ -234,9 +330,15 @@ def scan_repositories(shared_code_dir: Path) -> RepositoryScan:
   Raises `FileNotFoundError` when `shared_code_dir` does not exist. `main`
   checks for that first, so the run can report it and exit non-zero.
   """
+  # git reports the paths below with symlinks resolved, so the owning-checkout
+  # test compares against a resolved directory: a symlinked component anywhere
+  # in the path would otherwise make every checkout, plain ones included, look
+  # like a worktree owned from somewhere else.
+  scan_root = shared_code_dir.resolve()
   checkouts: dict[Path, Path] = {}
   unreadable_repos: list[str] = []
-  for candidate in sorted(shared_code_dir.iterdir()):
+  foreign_worktrees: list[str] = []
+  for candidate in sorted(scan_root.iterdir()):
     if not (candidate / '.git').exists():
       continue
     result = run_git(
@@ -258,31 +360,37 @@ def scan_repositories(shared_code_dir: Path) -> RepositoryScan:
     # its own `.git`, and so maps to itself.
     common_dir = Path(result.stdout.strip())
     owning_checkout = common_dir.parent
-    if owning_checkout.parent != shared_code_dir:
+    # Deliberately left alone, so it reads on stdout alongside the other skips —
+    # stderr is for the failures.
+    if owning_checkout.parent != scan_root:
       print(
         f'  {candidate.name}: a worktree of {owning_checkout}, which is not a '
-        f'repo directly under {shared_code_dir}, left alone',
-        file=sys.stderr,
+        f'repo directly under {scan_root}, left alone'
       )
+      foreign_worktrees.append(candidate.name)
       continue
     checkouts.setdefault(common_dir, owning_checkout)
 
   return RepositoryScan(
-    checkouts=sorted(checkouts.values()), unreadable_repos=unreadable_repos
+    checkouts=sorted(checkouts.values()),
+    unreadable_repos=unreadable_repos,
+    foreign_worktrees=foreign_worktrees,
   )
 
 
 def set_remote_url(
-  repo: Path, remote: Remote, *, url: str, current_url: str
+  repo: Path, remote: Remote, *, url: str, is_declared: bool
 ) -> bool:
   """Points a remote at a URL, creating the remote when it is absent.
 
-  `current_url` is what the remote holds now, empty when it has none — passed in
-  rather than re-read so that whether the remote exists is decided once. The two
-  URLs are keyword-only: in either order they type-check equally well, and a
-  swap would point the remote at the URL it already holds.
+  `is_declared` is whether the config already names this remote, read from `git
+  remote` rather than inferred from a non-empty URL: a remote declared without
+  one still has to be repointed rather than added, and `git remote add` on an
+  existing remote fails. Passed in rather than re-read so the question is
+  answered once, and keyword-only so neither argument can stand in for the
+  other.
   """
-  subcommand = 'set-url' if current_url else 'add'
+  subcommand = 'set-url' if is_declared else 'add'
   result = run_git(repo, 'remote', subcommand, remote, url)
   if result.returncode != 0:
     print(
@@ -294,9 +402,26 @@ def set_remote_url(
 
 
 def is_already_wired(repo: Path) -> bool:
-  """Whether the repository's own config already carries the include."""
+  """Whether the repository's own config already carries the include.
+
+  Compares expanded paths, so an entry spelled as the absolute path counts as
+  the same include as the `~`-relative one this writes — an exact-string test
+  would append a second copy of it on every run.
+
+  Raises `UnreadableRepository` when git cannot read the config.
+  """
   result = run_git(repo, 'config', '--local', '--get-all', 'include.path')
-  return ACCOUNT_REMOTE_INCLUDE in result.stdout.splitlines()
+  # As in `remote_urls_of`: exit 1 is a key that is simply not set, anything
+  # above it a config git could not read.
+  if result.returncode > 1:
+    raise UnreadableRepository(
+      f'git could not read the includes: {result.stderr.strip()}'
+    )
+  wired_file = Path(ACCOUNT_REMOTE_INCLUDE).expanduser()
+  return any(
+    Path(entry).expanduser() == wired_file
+    for entry in result.stdout.splitlines()
+  )
 
 
 def wire_include(repo: Path) -> bool:
@@ -321,8 +446,12 @@ def describe_skip(reason: SkipReason, foreign_owner: str | None) -> str:
 
 
 def default_account_remote_file() -> Path:
-  """Where this account's stowed copy of the remote selection lives."""
-  return Path.home() / '.config/git/account-remote'
+  """Where this account's stowed copy of the remote selection lives.
+
+  Derived from the include this writes, so the file checked for and the file the
+  include points at cannot drift into being two different paths.
+  """
+  return Path(ACCOUNT_REMOTE_INCLUDE).expanduser()
 
 
 def main(
@@ -372,31 +501,48 @@ def main(
 
   scan = scan_repositories(shared_code_dir)
   changed_repos: list[str] = []
-  # A checkout git could not read never reaches the loop, so it starts out
-  # counted among the failures.
+  # Neither of these reaches the loop: a checkout git could not read starts out
+  # counted among the failures, and a worktree owned from outside the tree among
+  # the repos left alone. Both were reported as the scan found them.
   failed_repos: list[str] = list(scan.unreadable_repos)
+  skipped_repos: list[str] = list(scan.foreign_worktrees)
 
   for repo in scan.checkouts:
-    origin_url = remote_url_of(repo, Remote.SSH)
-    https_url = remote_url_of(repo, Remote.HTTPS)
-    plan = plan_remotes(origin_url=origin_url, https_url=https_url)
+    # Every read of this repository's config, so one failure to read it is
+    # handled in one place. Each message names the read that failed.
+    try:
+      declared_remotes = declared_remotes_of(repo)
+      origin_urls = remote_urls_of(repo, Remote.SSH)
+      https_urls = remote_urls_of(repo, Remote.HTTPS)
+      needs_wiring = not is_already_wired(repo)
+    except UnreadableRepository as error:
+      # A failure, not a skip: a repo whose own config cannot be read is a
+      # problem rather than a choice, and reporting success over it would bury
+      # the problem. A backstop in practice — a config git cannot parse already
+      # failed the scan — but the alternative to handling it here is a
+      # traceback.
+      print(f'  {repo.name}: {error}', file=sys.stderr)
+      failed_repos.append(repo.name)
+      continue
+
+    plan = plan_remotes(origin_urls=origin_urls, https_urls=https_urls)
 
     if plan.skip_reason:
       reason = describe_skip(plan.skip_reason, plan.foreign_owner)
       print(f'  {repo.name}: {reason}, left alone')
+      skipped_repos.append(repo.name)
       continue
 
-    # Each entry pairs the new URL with what the remote holds now, so the write
-    # step never has to ask again whether the remote exists.
+    # Each entry pairs the new URL with whether that remote already exists, so
+    # the write step never has to ask again.
     pending_remotes = [
-      (remote, new_url, current_url)
-      for remote, new_url, current_url in (
-        (Remote.SSH, plan.ssh_url, origin_url),
-        (Remote.HTTPS, plan.https_url, https_url),
+      (remote, new_url, remote in declared_remotes)
+      for remote, new_url in (
+        (Remote.SSH, plan.ssh_url),
+        (Remote.HTTPS, plan.https_url),
       )
       if new_url
     ]
-    needs_wiring = not is_already_wired(repo)
     if not pending_remotes and not needs_wiring:
       continue
 
@@ -411,8 +557,8 @@ def main(
 
     # `all` short-circuits, so a failed write stops the rest for this repo.
     has_succeeded = all(
-      set_remote_url(repo, remote, url=new_url, current_url=current_url)
-      for remote, new_url, current_url in pending_remotes
+      set_remote_url(repo, remote, url=new_url, is_declared=is_declared)
+      for remote, new_url, is_declared in pending_remotes
     )
     if has_succeeded and needs_wiring:
       has_succeeded = wire_include(repo)
@@ -421,8 +567,13 @@ def main(
   changed_verb = 'would change' if args.dry_run else 'changed'
   if changed_repos:
     print(f'{script_name}: {changed_verb}: {" ".join(changed_repos)}')
-  elif not failed_repos:
+  # The all-clear speaks for every repo in the tree, so one left alone rules it
+  # out: that repo demonstrably does not match.
+  elif not failed_repos and not skipped_repos:
     print(f'{script_name}: every repo already matches')
+
+  if skipped_repos:
+    print(f'{script_name}: left alone (see above): {" ".join(skipped_repos)}')
 
   if failed_repos:
     print(
