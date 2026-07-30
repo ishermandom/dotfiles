@@ -299,9 +299,10 @@ Every session, without being asked:
   state why the current context is insufficient. If the file appeared in any
   prior tool result this session, use that; don't fetch again.
 - **Don't spend a tool call re-verifying state already guaranteed** — when a
-  standing instruction fixes a value (e.g. push to `origin-https`) or a wrong
-  value would fail loudly on the next step, skip the confirming query; it costs
-  a call, often a permission prompt, for no new information.
+  standing instruction fixes a value (e.g. commit to `main` rather than checking
+  the current branch) or a wrong value would fail loudly on the next step, skip
+  the confirming query; it costs a call, often a permission prompt, for no new
+  information.
 - **Prefer `Edit` over `Write` for an existing file** — output tokens drive
   cost, and `Edit` regenerates only the changed lines while `Write` regenerates
   the whole file. `Edit` is cheaper for focused changes; `Write` for a
@@ -439,8 +440,6 @@ Every session, without being asked:
 ### GitHub
 
 - **Never push a branch to a remote** — only `main` pushes.
-- **When pushing**: always use `origin-https`, never `origin` — the sandbox's
-  fine-grained tokens ride HTTPS; it holds no SSH key.
 - **After creating a new repo**: run `~/.claude/scripts/gh-protect.sh` to verify
   its branch-protection ruleset; on a reported gap, ask the user to create the
   printed ruleset in the GitHub UI.

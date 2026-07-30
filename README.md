@@ -24,14 +24,15 @@ when `install.sh` runs as that account, layering over the shared packages.
 ### Git remotes
 
 The two accounts reach GitHub over different transports: `ishermandom` over ssh,
-`claude-sandbox` over https, holding no ssh key. The intended mechanism is
-per-account URL rewriting — `url.<base>.insteadOf` in each account's
-`~/.gitconfig.local`, rewriting a GitHub URL to the transport that account can
-reach. A shared repo then needs no per-account configuration of its own, and a
-fresh clone works with no post-clone step.
+`claude-sandbox` over https, holding no ssh key. Each account's
+`~/.gitconfig.local` rewrites a GitHub URL to the transport it can reach, using
+`url.<base>.insteadOf`; those two files carry the rules and what they constrain.
 
-That rewriting is not wired up yet, and the approach it replaces has been
-removed, so nothing currently selects a transport per account.
+A shared repo therefore records one ssh `origin` that both accounts read, needs
+no per-account configuration of its own, and works straight out of a fresh clone
+with no post-clone step. The rewrite changes the URL git connects with, not what
+`git remote -v` prints — `git ls-remote --get-url origin` shows the one actually
+used.
 
 #### Discarded: two remotes selected by an include
 

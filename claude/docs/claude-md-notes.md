@@ -43,10 +43,3 @@ The inline clause carries the misfire risk (BRE mode). The fuller picture: the
 `grep` shim runs ugrep with `-G`, so `|`, `+`, `(` are literal without `-E`; rg
 defaults to recursive, smart-case, gitignore-aware search with an ERE-ish flavor
 that matches how patterns are typically written.
-
-## origin-https (Git)
-
-The inline clause compresses this: the sandbox authenticates with fine-grained
-personal access tokens, minted by the user per repo with minimal permissions;
-tokens work over HTTPS, `origin` is SSH, and the sandbox holds no SSH key for
-it.

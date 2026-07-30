@@ -1,0 +1,14 @@
+# Configuration specific to the ishermandom account, included by the shared
+# ~/.gitconfig. Stowed from accounts/ishermandom/ only when install.sh runs as
+# this account.
+
+# This account reaches GitHub over ssh, so every GitHub URL is rewritten to the
+# ssh form before git uses it. The mirror image of the sandbox account's rule:
+# each account normalizes to the transport it has, so a shared repo can record
+# one `origin` that both read, with nothing in its own config differing per
+# account.
+#
+# Rewriting applies to the URL git connects with, not to what `git remote -v`
+# prints. `git ls-remote --get-url origin` shows the URL actually used.
+[url "git@github.com:"]
+	insteadOf = https://github.com/

@@ -16,3 +16,20 @@
 	useHttpPath = true
 	helper =
 	helper = store
+
+# This account holds no ssh key, so every GitHub URL is rewritten to https
+# before git uses it. Shared repos can then record one ssh `origin` that both
+# accounts read, with each account reaching it over the transport it has —
+# nothing in a repo's own config has to differ per account, and a fresh clone
+# needs no post-clone step.
+#
+# Rewriting applies to the URL git connects with, not to what `git remote -v`
+# prints, which still shows the ssh URL. `git ls-remote --get-url origin` shows
+# the URL actually used.
+#
+# The rewritten URL ends in `.git`, since that is what the canonical ssh form
+# carries, and `useHttpPath` above makes that suffix part of the credential
+# lookup key — so entries in ~/.git-credentials must be spelled with it.
+[url "https://github.com/"]
+	insteadOf = git@github.com:
+	insteadOf = ssh://git@github.com/
