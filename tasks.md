@@ -36,6 +36,22 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     exiting 0. Run from a subdirectory and confirm the collected count matches a
     run from the repo root.
 
+- [ ] **Surface ruff lint failures at Stop, and clear the open ones** —
+      `claude/hooks/reflow_prose.py` carries two `B905` errors (`zip()` without
+      an explicit `strict=`). `~/.claude/scripts/quiet-ruff.sh` reports them,
+      yet turns end clean, so they have gone unnoticed (observed 2026-07-29).
+  - First step: establish why a turn ends clean while they stand. Unverified
+    hypothesis — the Stop array runs `claude/hooks/ruff-format.sh`, which
+    formats but never lints, while `quiet-ruff.sh` does both, leaving lint
+    findings with no Stop-time path to the user. Confirm before designing a fix;
+    a formatter that silently drops lint findings is a different problem from a
+    check that runs and is ignored.
+  - Note: mypy and pytest do surface at Stop, so the gap is specific to ruff
+    rather than to Stop-time checks generally.
+  - Note: if a lint check earns a place at Stop, add it as a step in
+    `stop_checks.sh` rather than as a fifth parallel entry. Depends on
+    #stop-orchestrator.
+
 - [ ] **Sequence the Stop hooks through one orchestrator wrapper**
       #stop-orchestrator — same-event hooks run in parallel (verified live
       2026-07-03: two probe Stop hooks started 0.8 ms apart with fully
