@@ -80,33 +80,6 @@ conclusion. Each entry states the **Question**, then **Measure** (the evidence
 that answers it) and the action on each outcome. Step 3 reviews these against
 the in-scope log; trim entries as they are answered.
 
-### Hook-output context cost
-
-**Question:** does large hook output crowd the context window often enough to
-warrant a guard that inlines a short preview and routes the full output to a
-file (naming that file's path in the preview)? **Measure:** whether log entries
-show hook dumps large or frequent enough to bury later content. If yes, build
-the guard; if large output stays rare, drop the idea.
-
-### Task complexity routing
-
-**Question:** do explicit planning tiers by task size (1–2 files → direct; 3–5 →
-design phase; 6+ → full plan) add value, or does the conversational planning
-flow already handle sizing without the ceremony? **Measure:** sessions across a
-range of task sizes — whether mis-sized planning (too heavy or too light)
-recurs. If tiers help, define them; if the flow handles it, drop the idea.
-
-### Mechanical tool trace for rule adherence
-
-**Question:** is the narrative rule-adherence signal in the session log
-(`wrap-session`'s Rules section) insufficient often enough — missing or
-rationalizing rules that were silently dropped — to justify a mechanical
-per-call tool trace as a distillation input? **Measure:** distill runs where a
-violation surfaces from tool-call evidence the narrative had missed or
-downplayed. If that recurs, build the trace — a digested `PostToolUse` JSONL, or
-teach distill to parse the session transcript (which already records every tool
-call); if the narrative suffices, drop the idea.
-
 ### Unverified claims stated as fact
 
 **Question:** what mechanism, if any, would stop Claude from stating unchecked
