@@ -332,6 +332,9 @@ Every session, without being asked:
   `python3 ~/.claude/hooks/reflow_prose.py <path>` for Python) rather than
   hand-fixing line lengths, which won't quite match what the hook would have
   produced.
+- **Don't reflexively measure line width by hand where a formatter owns the
+  file** — the reflow hooks settle it on every edit. Where no formatter runs,
+  use `wc -L`; `awk length` counts bytes, overcounting every em dash.
 - **Prefer to search code with `rg`**: ripgrep for recursive searches. The
   bundled `grep` shim (backed by ugrep) handles quick literal or piped lookups,
   and is the better pick for compressed/archived logs and fuzzy matching — but
