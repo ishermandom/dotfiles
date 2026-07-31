@@ -164,6 +164,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       pass.
   - Note: sequence after #consolidation-recheck — landing folds first keeps them
     from churning a fresh ordering.
+  - Note: a candidate organizing signal, found while placing the pronouns rule —
+    `## Style` holds prose rules that reach chat responses, `## Documentation`
+    holds documentation-only ones. The scope clauses on "Plain language over
+    jargon" and "Concepts over implementation" differ by exactly that item.
 
 - [ ] **Legibility sweep of config prose** — apply the
       make-each-idea-separately-legible rule (rules/claude-configuration.md)
@@ -185,7 +189,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `rules/claude-configuration.md` says to cite a section as the filename
       plus a backticked slug, never the heading text, but the repo still cites
       by heading text: `docs/design.md` in six places (e.g. "CLAUDE.md (Working
-      method)", "CLAUDE.md (Interaction style)"), all four
+      method)", "CLAUDE.md (Interaction style)"), all five
       `docs/claude-md-notes.md` headings, and `skills/wrap-session/notes.md`
       pointing at design.md the same way. Ratified 2026-07-29 — convert the
       references rather than soften the rule.

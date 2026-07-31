@@ -7,6 +7,29 @@ CLAUDE.md injection does not strip HTML comments (verified 2026-07-03), so
 rationale cannot ride in the file for free; anything beyond a one-clause inline
 why lands here, keyed by rule.
 
+## Pronouns and demonstratives (Style)
+
+Two elements were drafted into this rule and cut; both are tempting to re-add.
+
+The `X is what Y` shape (`the issue is what keeps it`) was drafted as a second
+failure mode. The shape predicts nothing: across the motivating survey roughly
+half the instances name their referent in the same sentence
+(`the side is what tells pair 5 North-South from pair 5 East-West`), and in the
+genuinely bad instances the vagueness comes from a trailing `it` that the main
+directive already catches. The shape's real cost is three words — a concision
+question, not a reference one.
+
+`which` is absent from the trigger list despite six clause-pointing instances in
+the same survey. A sentence-final `which` reaching back to a clause is ordinary
+English and usually clear, so listing `which` re-creates the over-firing that
+removed the shape.
+
+Worked examples were cut rather than repaired. An example of a back-reference
+defect cannot demonstrate itself: stripped of the preceding sentence,
+`That is a complete parse of what the file says` reads as unremarkable, since
+the referent could be a noun that simply is not shown. Such an example needs
+both halves to teach anything.
+
 ## License (Style)
 
 Beyond the inline shareability clause: applying the block uniformly across code
