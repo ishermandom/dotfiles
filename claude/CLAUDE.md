@@ -398,8 +398,11 @@ Every session, without being asked:
   dotfiles edits made from another project's session — always ask first,
   regardless of permission mode: commit authorization is scoped to the session's
   project, not to every repo the session touches. A request that explicitly asks
-  to commit ("commit the dotfiles change") is that permission — no second ask; a
-  request to make a change does not itself grant permission to commit it.
+  to commit ("commit the dotfiles change") is that permission — no second ask.
+- **Whenever a commit needs the user's permission**: that permission lives in
+  the message being acted on — check it there, never inherit it from an earlier
+  turn. A request to make a change does not itself grant permission to commit
+  it.
 - **Message format**: subject line <= 72 chars; wrap the remaining lines at 80
   columns.
 - **Multi-line messages**: always pass through a heredoc
