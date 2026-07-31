@@ -234,9 +234,10 @@ doc or config.
 - **When violating or noticing a rule violation**: Surface it to the user in
   chat — don't silently override a rule, even when the existing codebase
   conflicts with it.
-- **After `Write` on a new file**: path-matched rules don't load until a
-  matching file is Read. `Read` a short excerpt (line 1 suffices), self-review
-  against the loaded rules, and `Edit` if there are gaps.
+- **Before creating a new file**: read the rules file for its type first —
+  path-matched rules load only when a file is touched, so a first draft is
+  otherwise authored without them. When a new file is already written, `Read` a
+  short excerpt, check it against the rules that then load, and `Edit` the gaps.
 - **Before reading or editing files in the dotfiles repo**: edits happen at the
   real paths behind the `~/.claude` symlinks — outside the project, where
   path-matched rules never fire. (Exception: in a session whose working project

@@ -120,3 +120,16 @@ the sessions where the rule did fire; append new instances there as they occur.
 Act only when a candidate survives the "When writing a rule" checks in
 `rules/claude-configuration.md` — recognizability and transition-anchoring above
 all. Drop the question if the pattern stops recurring.
+
+### Loaded rules dropped while authoring
+
+**Question:** what would make a rule that is loaded, quotable, and directly
+applicable fire while Claude is writing, rather than after a review or a user
+correction surfaces it? The new-file half of this pattern has a mechanical cause
+and is already handled by CLAUDE.md's "Before creating a new file"; what remains
+is rules dropped while editing an existing file or writing chat, with the rule
+in context throughout. **Measure:** read `rules-not-self-applied-cases.md`
+beside this file before proposing anything — it holds the cases and the
+approaches already rejected, including two wordings that failed on coverage or
+cost. Append new instances there, noting whether each dropped rule was a single
+directive or enumerated the constructs it applies to.
