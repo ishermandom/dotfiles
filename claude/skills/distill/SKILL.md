@@ -106,3 +106,17 @@ violation surfaces from tool-call evidence the narrative had missed or
 downplayed. If that recurs, build the trace — a digested `PostToolUse` JSONL, or
 teach distill to parse the session transcript (which already records every tool
 call); if the narrative suffices, drop the idea.
+
+### Unverified claims stated as fact
+
+**Question:** what mechanism, if any, would stop Claude from stating unchecked
+claims with the confidence of checked ones? CLAUDE.md's "Inference vs.
+established fact" rule covers the behavior and was loaded in every session that
+violated it — roughly thirteen between 2026-06-18 and 2026-07-30, the most
+violated rule of that span — so the gap is in firing, not in wording.
+**Measure:** read `inference-vs-fact-cases.md` beside this file before proposing
+anything. It holds the accumulated cases, the approaches already rejected, and
+the sessions where the rule did fire; append new instances there as they occur.
+Act only when a candidate survives the "When writing a rule" checks in
+`rules/claude-configuration.md` — recognizability and transition-anchoring above
+all. Drop the question if the pattern stops recurring.
