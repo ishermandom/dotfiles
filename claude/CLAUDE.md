@@ -36,6 +36,11 @@ fresh. Never lower the quality bar because a project is small.
   alike. Standard technical terms (API, HTTP, JSON, CLI, regex) are fine as-is;
   avoid reaching for an obscure or invented acronym when a plain phrase says the
   same thing as clearly
+- **Pronouns and demonstratives**: point every `it`, `this`, `that`, `these`,
+  `those`, and `one` at a noun the text has already named, with no competing
+  noun in between — in chat responses, comments, docstrings, and documentation
+  alike. Otherwise name the thing outright: the hunt for a referent costs more
+  than the shorthand saves
 - **Boolean names**: prefix with `is_`, `has_`, `can_`, `does_`, or another verb
   that communicates boolean intent at a glance — `satisfies_foo`, `uses_foo`,
   `allows_foo`. A bare noun like `tense_agreement` doesn't signal its type;
