@@ -218,6 +218,11 @@ doc or config.
   Defer checking claims that only support a backup path already being argued
   against — validating an option being steered away from is wasted effort.
   Sequence the decision before validating its sub-mechanics.
+- **Before building something whose shape is still an open question** — a
+  field's existence, an interface's shape, a choice between two mechanisms —
+  weigh how much of the work the answer could throw away. Building is sometimes
+  the cheapest way to answer the question, and sometimes it is effort the answer
+  discards.
 
 ## Following rules
 
