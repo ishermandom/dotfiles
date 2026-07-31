@@ -21,7 +21,10 @@ Design decisions:
   prevents mistakenly acting before there is evidence from observed usage.
 - **Inline in the skill**: the registry holds plans, which are git-tracked and
   read on every distill run regardless — so inline carries no extra cost, while
-  an external location might be untracked.
+  an external location might be untracked. Exception: an entry accumulating case
+  evidence keeps only its question and measure inline, naming a tracked
+  companion file beside `SKILL.md` that holds the record. Cases parked for a
+  future run would otherwise bill context on every unrelated run.
 - **distill owns it alone**: evidence accrues from the session log distill
   already reads, so no wrap-session involvement is needed; the occasional
   distill cadence matches measurements that resolve only once usage accumulates.

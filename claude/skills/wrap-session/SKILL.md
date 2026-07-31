@@ -159,7 +159,7 @@ relevant rules file — handle that in step 3's memory routing.
 Run `~/.claude/scripts/distillation_backlog.py` for the count of reflection
 entries since the log's last distillation marker — the entries distillation
 consumes (stats-only entries, reported separately, carry none). If it reports
-~10 or more reflection entries, suggest running the distill skill — the
+~25 or more reflection entries, suggest running the distill skill — the
 suggestion only, not the case for it.
 
 ## 5. Pending commits
