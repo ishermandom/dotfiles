@@ -27,6 +27,17 @@ Maintainer rationale for the `fanout-teardown` skill. The `fanout` skill's
   against a live lock (`cannot remove a locked working tree`), so the session
   holding it has to exit rather than the removal being forced.
 
+- **The session stops itself**: `claude stop` works from inside the session it
+  names (verified 2026-08-01), so the final step needs no hand-off to the user.
+  Reverting to a printed command is the tempting mistake, on the reasoning that
+  a running session cannot issue its own stop. A session can.
+
+- **The id comes from the environment**: `CLAUDE_CODE_SESSION_ID` holds the
+  session's own id, whose leading segment is the short form `claude stop` takes.
+  A `claude agents` lookup would also reach it, but concurrent fanout sessions
+  are told apart there only by the worktree slug inside their launch prompt, and
+  stopping a sibling interrupts live work.
+
 - **`tasks.md` conflicts are expected, not exceptional**: every fanned-out
   branch edits the tracker, so the second and later landings conflict there by
   construction. That is what the rebase step buys — the conflicts arrive in the

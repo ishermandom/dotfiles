@@ -45,6 +45,5 @@ teardown from anywhere else wraps the wrong one. Work the steps in order.
    fast-forwarded `main` to the branch tip, so deleting the branch loses
    nothing.
 
-8. **Report how to close the background session**: find its id with
-   `claude agents` and print `claude stop <id>` for the user. Teardown is
-   running inside that session, so it cannot stop itself.
+8. **Close the background session**: report the outcome, then run
+   `claude stop "${CLAUDE_CODE_SESSION_ID%%-*}"`.
