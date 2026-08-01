@@ -250,31 +250,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     so a row reading `idle done` against `idle blocked` may be the separation
     this task wants — one reading each, so confirm before relying on it.
 
-- [ ] **Add a rule for settling Claude Code behavior questions from the
-      installed CLI** — when work is blocked on what the harness itself does,
-      the shipped bundle answers it directly, yet nothing in the always-loaded
-      rules points there, so the default is to guess or queue an open question.
-  - Worktree: cli-behavior-rule
-  - Rationale: queued 2026-08-01, after the fanout override task settled two
-    blocking questions this way at one command each — whether cleanup can
-    discard uncommitted worktree work, and whether `--append-system-prompt-file`
-    is real despite being absent from `--help`.
-  - Note: the two techniques that made it cheap are worth stating. Search for a
-    behavior's distinctive log or error text rather than a common identifier —
-    in a 257 MB minified bundle that is the difference between a few matches and
-    a wall of them. Probe an undocumented flag by triggering its validation (a
-    nonexistent path) rather than by running it, and read whether the failure
-    names the flag or the value.
-  - Note: search the bundle with a plain literal (`rg -a -c`) or `strings`. The
-    file is effectively one enormous line, so a regex carrying wide context —
-    `.{200}<literal>.{300}` — matches nothing even where the literal is present,
-    and the empty result reads as "the string isn't there".
-  - Note: CLAUDE.md #working-method is the likely home, but that file is already
-    long and carries a queued reorganization — weigh placement against
-    #consolidation-recheck. The validate-live-not-from-docs auto-memory covers
-    adjacent ground and may fold in, since a global authoritative preference
-    belongs in CLAUDE.md per #disprefer-memory.
-
 - [ ] **Give config work a safe way to validate against the live harness** —
       `/fanout` tells an agent whose task changes hooks, `settings.json`, or
       anything else behind `~/.claude` to validate in the main checkout, but
