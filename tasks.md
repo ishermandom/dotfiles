@@ -189,25 +189,37 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     the fail-open path on an unparseable payload, and the shape of the emitted
     deny decision. Both are untested today.
 
-- [ ] **Autoformat shell scripts** — Markdown, JavaScript, and Python each have
-      a formatter wired into the edit or Stop hooks; shell has none, so
-      `rules/shell.md`'s conventions and the 80-column limit rest on manual care
-      alone. `claude/hooks/prettier-format.sh` carries two over-length lines
-      today.
+- [ ] **Autoformat shell scripts** {#shell-autoformat} — Markdown, JavaScript,
+      and Python each have a formatter wired into the edit or Stop hooks; shell
+      has none, so `rules/shell.md`'s conventions and the 80-column limit rest
+      on manual care alone. `claude/hooks/prettier-format.sh` carries two
+      over-length lines today.
   - Worktree: shell-autoformat
   - Rationale: queued 2026-08-01, when a fix to that hook left the two long
     lines in place because tidying them by hand was out of the change's scope.
   - Note: neither `shfmt` nor `shellcheck` is installed, so this starts with
     choosing and installing a tool rather than with wiring.
-  - Note: four files carry over-length lines, not one — `quiet-mypy.sh`,
-    `quiet-prettier.sh`, `statusline.sh`, and `hooks/prettier-format.sh` — per
-    `rg -n --glob '*.sh' '.{81,}'` on 2026-08-01. That is the first pass's
-    scope, whichever tool wins.
+  - Note: wiring a formatter up leaves the files already over 80 untouched until
+    each is next edited, so clearing those is a separate pass — see
+    #shell-rewrap.
   - Note: a formatter that reflows comment prose would overlap
     `reflow_prose.py`, which handles that for Python only — worth deciding
     whether shell prose belongs there instead.
   - Note: if it earns a Stop-time check, add it as a step in `stop_checks.sh`
     rather than as another parallel entry. Depends on #stop-orchestrator.
+
+- [ ] **Rewrap the shell scripts already over 80 columns** {#shell-rewrap} — a
+      formatter reaches a file only when that file is next edited, so
+      #shell-autoformat leaves today's violations standing, and each one's first
+      later edit then mixes a mechanical rewrap into a substantive diff. Four
+      files are over: `quiet-mypy.sh`, `quiet-prettier.sh`, `statusline.sh`, and
+      `hooks/prettier-format.sh`.
+  - Note: that list came from `rg -n --glob '*.sh' '.{81,}'` on 2026-08-01;
+    re-run it rather than trusting it, since any shell edit since then moves the
+    set.
+  - Note: worth doing whether or not #shell-autoformat ever lands — the pass is
+    the same either way, and doing it first means the formatter's own first
+    contact with each file produces no diff.
 
 - [ ] **Determine what makes `claude agents` flag a thread as needing input** —
       the fanout workflow routes attention entirely through that view and keeps
