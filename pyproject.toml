@@ -27,10 +27,10 @@ dev = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["claude/hooks", "claude/scripts"]
-# Neither is a package, so put each on sys.path for the test modules' sibling
-# imports (`from gate_git import ...`, `from distillation_backlog import ...`);
-# this replaces a manual PYTHONPATH in run_tests.sh.
+# Neither directory below is a package, so put each on sys.path for the test
+# modules' sibling imports — `from gate_git import ...` and
+# `from distillation_backlog import ...`. Which directories hold tests is
+# run_tests.sh's to say.
 pythonpath = ["claude/hooks", "claude/scripts"]
 
 [tool.mypy]

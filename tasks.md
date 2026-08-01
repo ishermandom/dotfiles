@@ -76,24 +76,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     ACLs grant each of them read and write, but installed files stay owned by
     whichever account ran the install. Verify before committing to the approach.
 
-- [ ] **Remove the duplicated test-path list** — `pyproject.toml`'s
-      `[tool.pytest.ini_options] testpaths` and the explicit path arguments in
-      `run_tests.sh` name the same locations. Command-line paths override
-      `testpaths`, so the `pyproject.toml` value applies only to a bare
-      `pytest`; the two must be edited together. Updating only `pyproject.toml`
-      leaves the Stop hook — which runs `run_tests.sh` — silently not covering a
-      new test file.
-  - Worktree: test-paths
-  - Note: the candidate fix is for `run_tests.sh` to pass no paths and pin the
-    config instead (`pytest --rootdir="$root" -c "$root/pyproject.toml"`), so
-    `testpaths` becomes the single source of truth. It passes paths today
-    because it resolves them against the script's own location, letting the
-    suite behave the same from any working directory without ever `cd`-ing.
-  - Note: verify rather than assume — `testpaths` and `pythonpath` both resolve
-    relative to rootdir, and a wrong rootdir would collect nothing while still
-    exiting 0. Run from a subdirectory and confirm the collected count matches a
-    run from the repo root.
-
 - [ ] **Honor a project's own line length in the prose reflow hook** —
       `claude/hooks/reflow_prose.py` assumes 80 columns everywhere (see the TODO
       at `LINE_WIDTH`); read the target repo's ruff `line-length` or equivalent
@@ -229,21 +211,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the payload level covers behavior the predicate level cannot reach —
     the fail-open path on an unparseable payload, and the shape of the emitted
     deny decision. Both are untested today.
-
-- [ ] **Make `quiet-tests.sh` scope to the paths it is given** — CLAUDE.md
-      advertises
-      `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier}.sh [paths]`, and
-      `quiet-mypy.sh` and `quiet-ruff.sh` do honor paths. `quiet-tests.sh`
-      forwards its arguments to `run_tests.sh`, which already passes
-      `claude/hooks` and `claude/scripts` ahead of them, so a path argument
-      never narrows the run — the full suite executes either way, silently. Have
-      `run_tests.sh` fall back to the two directories only when given no
-      arguments.
-  - Worktree: test-paths
-  - Rationale: queued 2026-07-31 after a mid-turn check aimed at one test file
-    ran all 252 tests and looked like it had worked.
-  - Note: `-k <expression>` does narrow the run today — the workaround until the
-    argument handling changes.
 
 - [ ] **Autoformat shell scripts** — Markdown, JavaScript, and Python each have
       a formatter wired into the edit or Stop hooks; shell has none, so
