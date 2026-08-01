@@ -227,18 +227,12 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     so a row reading `idle done` against `idle blocked` may be the separation
     this task wants — one reading each, so confirm before relying on it.
 
-- [ ] **Fix CLAUDE.md's line-width measurement advice** — the token-efficiency
-      section says to measure with `wc -L` because `awk length` counts bytes and
-      overcounts every em dash. On macOS `wc -L` counts bytes too, so the
-      recommended tool carries the exact flaw the rule warns about.
-  - Worktree: width-advice
-  - Rationale: queued 2026-08-01, after `wc -L` flagged three over-80 lines in
-    prettier-formatted markdown that were all within 80 characters — one em dash
-    apiece. Repro under `LANG=en_US.UTF-8`: `wc -L` reports 7 for the
-    5-character line `a — b`.
-  - Note: a replacement still needs choosing. The rule only bites where no
-    formatter owns the file, since prettier and `reflow_prose.py` settle width
-    everywhere else.
+- [ ] **Rewrap the shell scripts whose lines exceed 80 columns** — no formatter
+      owns `.sh`, so four have drifted over: `quiet-mypy.sh`,
+      `quiet-prettier.sh`, `statusline.sh`, and `hooks/prettier-format.sh`.
+  - Note: found 2026-08-01 via `rg -n --glob '*.sh' '.{81,}'`. Whether shell
+    deserves a formatter of its own, such as `shfmt`, is the larger question
+    behind this — a hand pass fixes today's four and nothing after.
 
 - [ ] **Add a rule for settling Claude Code behavior questions from the
       installed CLI** — when work is blocked on what the harness itself does,

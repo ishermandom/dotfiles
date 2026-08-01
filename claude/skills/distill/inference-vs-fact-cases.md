@@ -46,9 +46,8 @@ Re-proposing one of these needs new reasoning, not new instances.
 - **Line-width and column checks.** Proposed as an example, then withdrawn:
   Markdown runs through Prettier and Python through the reflow hook on every
   edit, so those checks re-do work already done and should not happen at all.
-  Only shell scripts lack a formatter, and there the tool is `wc -L`, never
-  `awk length`, which counts bytes and overcounts em dashes. This is a
-  re-verification problem, not an unverified-claim problem.
+  Only shell scripts lack a formatter. This is a re-verification problem, not an
+  unverified-claim problem.
 
 ## Structural diagnosis
 
