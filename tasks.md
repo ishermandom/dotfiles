@@ -214,10 +214,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `waiting` alongside a `waitingFor` reason, and live session state sits in
     `~/.claude/sessions/<pid>.json`. `waiting` appeared to track whichever
     dialog is open, with a per-dialog reason defaulting to "permission prompt".
-  - Note: that session schema also carries `state`, `detail`, `tempo`, and
-    `needs` fields which local sessions leave unset. They may belong to the
-    cloud-agent surface, which would explain why its richer `blocked` state
-    never shows up locally.
+  - Note: `state`, `detail`, and `tempo` are populated for local background
+    jobs, living in `~/.claude/jobs/<id>/state.json` rather than in the session
+    file — observed on CLI 2.1.220, with `state` taking `working`, `done`, and
+    `blocked`, and `detail` carrying free text such as "starting…".
+    `claude agents --json` surfaces `state` beside `status` but never `detail`,
+    so a row reading `idle done` against `idle blocked` may be the separation
+    this task wants — one reading each, so confirm before relying on it.
 
 - [ ] **Fix CLAUDE.md's line-width measurement advice** — the token-efficiency
       section says to measure with `wc -L` because `awk length` counts bytes and
