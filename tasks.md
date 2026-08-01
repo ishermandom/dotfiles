@@ -219,16 +219,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     cloud-agent surface, which would explain why its richer `blocked` state
     never shows up locally.
 
-- [ ] **Have each fanned-out agent open by recapping its task** — `/fanout`
-      hands an agent a worktree handle and nothing more, and the
-      background-agent view lists only that handle, so nothing says which
-      tracker task a session actually picked up short of attaching to it.
-  - Worktree: recap-on-start
-  - Rationale: queued 2026-08-01 after a three-lane fanout, where the lane names
-    alone did not convey what any agent was working on.
-  - Note: the recap belongs in `claude/skills/fanout/agent-prompt.md`, the file
-    `/fanout`'s launch step appends to each agent's system prompt.
-
 - [ ] **Fix CLAUDE.md's line-width measurement advice** — the token-efficiency
       section says to measure with `wc -L` because `awk length` counts bytes and
       overcounts every em dash. On macOS `wc -L` counts bytes too, so the

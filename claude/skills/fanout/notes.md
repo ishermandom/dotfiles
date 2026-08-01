@@ -38,6 +38,12 @@ Maintainer rationale for the `fanout` skill.
   is. The line's primary job is keeping in-flight state visible — which task is
   running, and where to resume it.
 
+- **The recap is the agent's own output, not a launch-time label**: `--name`
+  would put a tidier title in the background-agent listing, but a label the
+  launch writes can only repeat what the launch already knew. What the user
+  wants from a running session is the task as the agent understood it, so the
+  recap belongs in the session's output.
+
 - **No status machinery in the skill**: Claude Code's own background-agent view
   already reports each session's state, setting `waiting` plus a `waitingFor`
   reason whenever a dialog is open — so an `AskUserQuestion` call surfaces there
