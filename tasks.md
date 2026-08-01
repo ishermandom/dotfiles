@@ -292,6 +292,12 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: whichever mechanism wins, `/fanout`'s launch step has to change with
     it. The current "validate in the main checkout" wording is what licenses the
     unsafe act, so leaving it in place would preserve the edge.
+  - Note: a hook that is a plain stdin-to-stdout program needs no live harness
+    at all — run the worktree copy and the main checkout copy as subprocesses
+    over one corpus and diff every result. That settled both gate hooks on
+    2026-08-01 across 244 inputs with nothing written outside the worktree. It
+    does not reach hooks whose effect is a file rewrite, or `settings.json`,
+    which still want the inner-session mechanism above.
 
 - [ ] **Record how to fan out tasks that share a file** — one task per worktree
       keeps each agent's review surface small, but two tasks touching the same
