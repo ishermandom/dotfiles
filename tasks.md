@@ -87,6 +87,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `gate_auto_tools.py` reflow diff, 2026-07-02). Rewrap each repo's Python
       files in a dedicated pass, one commit per repo, so future diffs stay
       clean.
+  - Worktree: dotfiles-python-reflow — this repo's pass only; the task stays
+    open for the remaining repos.
   - Note: a Stop-time reflow safety net (mirroring the markdown design) was
     deliberately omitted, which is why this pass is manual — files changed by
     Bash or scripts stay un-reflowed until their next Edit. Revisit only if that
