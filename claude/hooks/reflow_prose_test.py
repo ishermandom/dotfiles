@@ -607,6 +607,57 @@ def test_raw_docstring_is_left_alone() -> None:
   assert reflow_source(source, fill_markdown) == source
 
 
+# --- project line width ---
+
+
+def test_a_wider_line_width_leaves_a_long_comment_unwrapped() -> None:
+  """The width passed in, not a fixed 80, decides where prose breaks."""
+  source = (
+    '# This comment runs well past eighty columns, stopping just short of a'
+    ' hundred wide.\n'
+  )
+
+  assert reflow_source(source, fill_markdown, 100) == source
+
+
+def test_a_projects_line_length_sets_the_reflow_width(tmp_path: Path) -> None:
+  """Prose wraps where ruff says that project's code wraps.
+
+  This runs the real `ruff` the hook shells out to, so it covers the whole
+  chain: asking ruff, reading the width out of its settings dump, and reflowing
+  to it. Ruff's own rules for resolving which file supplies the width are ruff's
+  to test, not this suite's.
+  """
+  (tmp_path / 'pyproject.toml').write_text('[tool.ruff]\nline-length = 100\n')
+  target = tmp_path / 'module.py'
+  target.write_text('# ' + 'word ' * 25 + '\n')
+
+  changed = reflow_file(target, fill_markdown)
+
+  assert changed
+  # Rewrapped past where the 80-column default would have broken it, and inside
+  # the 100 the project states.
+  widest = max(len(line) for line in target.read_text().split('\n'))
+  assert 80 < widest <= 100
+
+
+def test_configuration_ruff_rejects_falls_back_to_the_default_width(
+  tmp_path: Path,
+) -> None:
+  """A width ruff cannot resolve leaves the house style standing."""
+  # Truncated TOML: ruff exits nonzero and reports no settings at all.
+  (tmp_path / 'ruff.toml').write_text('line-length = \n')
+  target = tmp_path / 'module.py'
+  target.write_text('# ' + 'word ' * 25 + '\n')
+
+  changed = reflow_file(target, fill_markdown)
+
+  assert changed
+  # The 80-column default, not a width salvaged out of the broken file.
+  widest = max(len(line) for line in target.read_text().split('\n'))
+  assert 60 < widest <= 80
+
+
 # --- error handling ---
 
 

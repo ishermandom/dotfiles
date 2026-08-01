@@ -3,7 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # PostToolUse(Edit|Write) hook: reflow comment and docstring prose in a
-# just-edited Python file to 80 columns.
+# just-edited Python file to the line width that file's project uses, or 80
+# columns by default.
 #
 # Python formatters deliberately leave comment and docstring text alone, so
 # fitting prose to the line limit is manual work. This hook closes that gap with
@@ -72,9 +73,15 @@ import tokenize
 from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 
-LINE_WIDTH = 80
-# TODO: honor a project's own line length (e.g. ruff's line-length) instead of
-# assuming 80 in every repo this global hook touches.
+# Width for a file whose project states none — the 80-column house style.
+DEFAULT_LINE_WIDTH = 80
+
+# `ruff check --show-settings` prints a file's resolved configuration as
+# `key = value` lines. The formatter's wrap width is the one prose should match,
+# since it is where ruff breaks the code around that prose.
+_LINE_WIDTH_PATTERN = re.compile(
+  r'^formatter\.line_width = (?P<width>\d+)$', re.MULTILINE
+)
 
 # Formats a markdown document to a print width; comment chunks go through this.
 # reflow_source() takes it as a dependency so tests can substitute a
@@ -168,7 +175,8 @@ class ProseChunk:
   """One markdown document to reflow, with what's needed to reinsert it.
 
   Line numbers are 1-indexed and inclusive; `indent` is the column where the `#`
-  or opening quotes sit, applied to every reinserted line.
+  or opening quotes sit, applied to every reinserted line; `line_width` is the
+  width the reinserted source lines have to fit.
   """
 
   kind: ChunkKind
@@ -176,6 +184,7 @@ class ProseChunk:
   last_line: int
   indent: int
   markdown: str
+  line_width: int
 
   # A docstring chunk covering only the prose head above a structured section
   # stops before the closing triple-quote, which stays with the untouched tail;
@@ -185,8 +194,8 @@ class ProseChunk:
   def reflow_width(self) -> int:
     """Print width for the markdown text, net of indent and prefix."""
     if self.kind is ChunkKind.COMMENT:
-      return max(1, LINE_WIDTH - self.indent - len('# '))
-    return max(1, LINE_WIDTH - self.indent)
+      return max(1, self.line_width - self.indent - len('# '))
+    return max(1, self.line_width - self.indent)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -197,15 +206,21 @@ class _CommentLine:
   content: str
 
 
-def run_prettier(markdown: str, width: int) -> str:
-  """Reflow a markdown document with prettier at the given print width."""
-  # Hooks can run with a minimal environment; make sure both common Homebrew bin
-  # directories (where prettier lives) are on PATH.
+def _tool_environment() -> Mapping[str, str]:
+  """The process environment with both Homebrew bin directories on PATH.
+
+  Hooks can run with a minimal environment, and the two subprocesses this hook
+  shells out to — prettier and ruff — usually live in one of those directories.
+  """
   environment = dict(os.environ)
   environment['PATH'] = '/opt/homebrew/bin:/usr/local/bin:' + environment.get(
     'PATH', ''
   )
+  return environment
 
+
+def run_prettier(markdown: str, width: int) -> str:
+  """Reflow a markdown document with prettier at the given print width."""
   # `--no-config` shields the reflow from project-level prettier settings: a
   # project with `proseWrap: never` would otherwise unwrap every comment.
   # Changing flags here interacts with the fixed-point skip in _reflow_chunks:
@@ -227,7 +242,7 @@ def run_prettier(markdown: str, width: int) -> str:
       input=markdown,
       text=True,
       capture_output=True,
-      env=environment,
+      env=_tool_environment(),
       timeout=10,
     )
   except (OSError, subprocess.TimeoutExpired, UnicodeDecodeError) as error:
@@ -430,7 +445,7 @@ def _is_verbatim_line(content: str) -> bool:
 
 
 def _comment_chunks(
-  comments: Mapping[int, _CommentLine],
+  comments: Mapping[int, _CommentLine], line_width: int
 ) -> Sequence[ProseChunk]:
   """Split whole-line comments into reflowable prose chunks.
 
@@ -449,7 +464,9 @@ def _comment_chunks(
       text = '\n'.join(line for _, line in run)
       indent = comments[run[0][0]].indent
       chunks.append(
-        ProseChunk(ChunkKind.COMMENT, run[0][0], run[-1][0], indent, text)
+        ProseChunk(
+          ChunkKind.COMMENT, run[0][0], run[-1][0], indent, text, line_width
+        )
       )
       run.clear()
 
@@ -489,7 +506,7 @@ def _comment_chunks(
 
 
 def _docstring_chunks(
-  source: str, source_lines: Sequence[str], tree: ast.Module
+  source: str, source_lines: Sequence[str], tree: ast.Module, line_width: int
 ) -> Sequence[ProseChunk]:
   """Find docstrings in the common reflowable shape and chunk their prose."""
   chunks: list[ProseChunk] = []
@@ -503,7 +520,9 @@ def _docstring_chunks(
       and isinstance(first_statement.value.value, str)
     ):
       continue
-    chunk = _docstring_chunk(source, source_lines, first_statement.value)
+    chunk = _docstring_chunk(
+      source, source_lines, first_statement.value, line_width
+    )
     if chunk:
       chunks.append(chunk)
   return chunks
@@ -534,7 +553,10 @@ def _structured_tail_start(content_lines: Sequence[str]) -> int | None:
 
 
 def _docstring_chunk(
-  source: str, source_lines: Sequence[str], literal: ast.Constant
+  source: str,
+  source_lines: Sequence[str],
+  literal: ast.Constant,
+  line_width: int,
 ) -> ProseChunk | None:
   """Chunk one docstring literal, or None when its shape must stay manual.
 
@@ -623,6 +645,7 @@ def _docstring_chunk(
     last_reflowed_line,
     indent,
     markdown,
+    line_width,
     closes_docstring=closes,
   )
 
@@ -741,15 +764,17 @@ def _render(chunk: ProseChunk, markdown: str) -> Sequence[str]:
 
   quote = markdown[:3]
   closing_inline = f'{prefix}{lines[0]}{quote}'
-  if len(lines) == 1 and len(closing_inline) <= LINE_WIDTH:
+  if len(lines) == 1 and len(closing_inline) <= chunk.line_width:
     return [closing_inline]
   return [*rendered, prefix + quote]
 
 
 def reflow_source(
-  source: str, format_comment_markdown: MarkdownFormatter
+  source: str,
+  format_comment_markdown: MarkdownFormatter,
+  line_width: int = DEFAULT_LINE_WIDTH,
 ) -> str:
-  """Reflow all comment and docstring prose in Python source to 80 columns.
+  """Reflow all comment and docstring prose in Python source to `line_width`.
 
   Raises SyntaxError (or tokenize.TokenError) on source that doesn't parse; the
   caller owns deciding what a broken file means.
@@ -763,8 +788,8 @@ def reflow_source(
 
   source_lines = source.split('\n')
   chunks = [
-    *_comment_chunks(_full_line_comments(source)),
-    *_docstring_chunks(source, source_lines, ast.parse(source)),
+    *_comment_chunks(_full_line_comments(source), line_width),
+    *_docstring_chunks(source, source_lines, ast.parse(source), line_width),
   ]
   reflowed = _reflow_chunks(chunks, format_comment_markdown)
 
@@ -789,6 +814,46 @@ def reflow_source(
   return '\n'.join(source_lines)
 
 
+def _discover_line_width(path: Path) -> int:
+  """The width to reflow a file's prose to: where ruff wraps that file's code.
+
+  Prose reads best wrapped where the surrounding code wraps, and ruff is asked
+  for that width rather than the configuration being read a second time here:
+  `--show-settings` reports what a real `ruff format` would use, so every
+  configuration file, `extend` chain, and user-level default is already
+  accounted for. Whenever ruff cannot answer — not installed, a configuration it
+  rejects, output without the setting in it — the 80-column house style stands
+  in.
+
+  The call costs roughly 10 ms, paid on every Python edit rather than only on
+  the ones that reflow something: the width is what decides whether a file is
+  already wrapped, so it has to be known before that question can be asked.
+  """
+  try:
+    result = subprocess.run(
+      ['ruff', 'check', '--show-settings', str(path)],
+      text=True,
+      capture_output=True,
+      env=_tool_environment(),
+      # A cap on a pathological hang, nothing more — see the docstring for what
+      # the call actually costs. It stays small enough that the prettier budget
+      # in _reflow_chunks can still run to its own worst case within the
+      # 30-second hook timeout in settings.json.
+      timeout=3,
+    )
+  except (OSError, subprocess.TimeoutExpired, UnicodeDecodeError):
+    # No ruff on PATH, or a hang: reflow is best-effort, and a width it can
+    # guess well enough must never block the edit loop.
+    return DEFAULT_LINE_WIDTH
+  # `--show-settings` reports settings instead of running the check, so lint
+  # violations in the file leave the exit status at zero; a nonzero one means
+  # ruff could not resolve the settings at all.
+  if result.returncode != 0:
+    return DEFAULT_LINE_WIDTH
+  setting = _LINE_WIDTH_PATTERN.search(result.stdout)
+  return int(setting['width']) if setting else DEFAULT_LINE_WIDTH
+
+
 def reflow_file(path: Path, format_comment_markdown: MarkdownFormatter) -> bool:
   """Reflow a Python file in place; report whether it changed."""
   try:
@@ -802,8 +867,9 @@ def reflow_file(path: Path, format_comment_markdown: MarkdownFormatter) -> bool:
     # Unreadable file (permissions, or it vanished between the is_file check and
     # here): reflow is best-effort, never a blocker.
     return False
+  line_width = _discover_line_width(path)
   try:
-    updated = reflow_source(source, format_comment_markdown)
+    updated = reflow_source(source, format_comment_markdown, line_width)
   except (SyntaxError, tokenize.TokenError):
     # Mid-turn edits pass through broken states; ruff reports real syntax errors
     # at Stop, so a quiet skip is the correct contract here.

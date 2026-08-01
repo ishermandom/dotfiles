@@ -11,11 +11,11 @@ target region before composing an `old_string` — the prose reflow hook
 after each Edit or Write, so match the post-reflow wording, not the pre-reflow
 snapshot.
 
-- **Comment and docstring prose is markdown, auto-reflowed to 80 columns**: a
-  blank comment line (`#` alone) separates paragraphs; adjacent plain lines
-  merge into one, so express structure as markdown (`-` bullets, backticked
-  code, fenced blocks). Never reflowed: shebangs, directives (`noqa`, `fmt:`,
-  `type:`), license tag lines, `fmt: off` regions, trailing comments,
+- **Comment and docstring prose is markdown, auto-reflowed to the project's line
+  length**: a blank comment line (`#` alone) separates paragraphs; adjacent
+  plain lines merge into one, so express structure as markdown (`-` bullets,
+  backticked code, fenced blocks). Never reflowed: shebangs, directives (`noqa`,
+  `fmt:`, `type:`), license tag lines, `fmt: off` regions, trailing comments,
   tab-indented comments, and a docstring's `Args:`-style section or doctest tail
   (the prose head above it still reflows)
 - ruff enforces formatting (2-space indentation, single quotes), configured
