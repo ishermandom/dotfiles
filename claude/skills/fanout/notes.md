@@ -92,13 +92,13 @@ Maintainer rationale for the `fanout` skill.
   serially.
 
 - **A tracker conflict is the exception, because the tracker logs state living
-  elsewhere**: code carries enough of itself that a conflict is resolvable on
-  inspection, whereas a deleted `tasks.md` entry says nothing about whether the
-  task was finished or dropped, so a merged tracker can read as consistent and
-  still be false. Neighboring entries collide by construction — deleting a
-  finished task removes the blank line below the entry, leaving the deletion
-  flush against the next task's first line, and git fuses changes that touch.
-  `c182c8a` landed a tracker reviving a task that `954bb36` had already
+  elsewhere** {#tracker-merges}: code carries enough of itself that a conflict
+  is resolvable on inspection, whereas a deleted `tasks.md` entry says nothing
+  about whether the task was finished or dropped, so a merged tracker can read
+  as consistent and still be false. Neighboring entries collide by construction
+  — deleting a finished task removes the blank line below the entry, leaving the
+  deletion flush against the next task's first line, and git fuses changes that
+  touch. `c182c8a` landed a tracker reviving a task that `954bb36` had already
   implemented and pruned. Keeping a tracker merge honest belongs to
   `fanout-teardown`, which owns the landing.
 

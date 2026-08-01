@@ -27,13 +27,16 @@ teardown from anywhere else wraps the wrong one. Work the steps in order.
    invocation, judge from context whether to pick up here or start over — a wrap
    that has gone stale is worth redoing.
 
-4. **Bring the task's tracker entry up to date**: delete its `Worktree:` line,
-   and prune or update the task as appropriate. Commit it, treating the tracker
-   edit as user-approved — it belongs in the same landing as the work it
-   describes.
+4. **Rebase onto `main` before landing**: conflicts then surface here, in the
+   worktree, while the work is still in context. A `tasks.md` conflict means
+   another lane landed first — an entry missing from `main` was pruned by the
+   lane that finished that work. Be careful not to accidentally undo other
+   lanes' changes.
 
-5. **Rebase onto `main` before landing**: conflicts then surface here, in the
-   worktree, while the work is still in context.
+5. **Bring the task's tracker entry up to date**: delete its `Worktree:` line,
+   and prune or update the task as appropriate. Commit the edit, treating it as
+   user-approved — the tracker change belongs in the same landing as the work it
+   describes.
 
 6. **Land, then confirm before pushing**: run `git land`, which fast-forwards
    `main` and stops there. Push only if the user has requested a push, or if the

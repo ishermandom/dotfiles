@@ -38,7 +38,11 @@ Maintainer rationale for the `fanout-teardown` skill. The `fanout` skill's
   are told apart there only by the worktree slug inside their launch prompt, and
   stopping a sibling interrupts live work.
 
-- **`tasks.md` conflicts are expected, not exceptional**: every fanned-out
-  branch edits the tracker, so the second and later landings conflict there by
-  construction. That is what the rebase step buys — the conflicts arrive in the
-  worktree, with the work still in context, rather than part-way through a land.
+- **The tracker edit follows the rebase**: every fanned-out branch edits
+  `tasks.md`, and merging one of those edits against a stale base is not safely
+  mechanical — `fanout/notes.md #tracker-merges` carries the hazard and the
+  case. Ordering the edit after the rebase removes the hazard rather than asking
+  each lane to resolve it, since the entry is then written against `main`'s
+  current tracker. What wrap queued earlier still rides through the rebase, and
+  those are additions rather than deletions — the rebase step says whose side
+  wins when one collides.
