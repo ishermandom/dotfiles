@@ -44,10 +44,22 @@ Maintainer rationale for the `fanout` skill.
   wants from a running session is the task as the agent understood it, so the
   recap belongs in the session's output.
 
-- **No status machinery in the skill**: Claude Code's own background-agent view
-  already reports each session's state, setting `waiting` plus a `waitingFor`
-  reason whenever a dialog is open — so an `AskUserQuestion` call surfaces there
-  without the skill polling or mirroring anything.
+- **State reporting rides on Claude Code's own view, with one prompt-level
+  assist**: the background-agent view sets `waiting` plus a `waitingFor` reason
+  whenever a dialog is open, so an `AskUserQuestion` call surfaces there without
+  the skill polling or mirroring anything. End-of-turn state is weaker — a
+  classifier reads only the reply text and infers `working`, `blocked`, `done`,
+  or `failed` from the prose, so a turn ending on a question can read as
+  finished. `agent-prompt.md` has each agent close with `needs input:` instead,
+  which pins the row to `blocked` for as long as the job lives:
+  `fanout-teardown` is user-invoked, so no agent can finish its own task, and a
+  `done` row would drop out of the default listing once the process exits —
+  hiding a worktree that still needs landing. The sibling `failed:` marker stays
+  unused for that same reason, `done`, `failed`, and `stopped` being alike
+  terminal: an impossible task ends by telling the user so and asking, never by
+  reporting failure into a row that then disappears. The marker convention ships
+  with the built-in `claude` agent type, which a bare `claude --bg` launch does
+  not apply (verified in CLI 2.1.220).
 
 - **Fanout width is bounded by file clusters, not by task count**: tracker tasks
   tend to cluster on the same files, and a fanout wider than those clusters just
