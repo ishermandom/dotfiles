@@ -22,9 +22,19 @@ format_dir .
 
 # This script lives at claude/hooks/prettier-format.sh inside the dotfiles
 # repo. Resolve its real path and walk up three levels to find the repo root,
-# then format there too when the CWD is a different project.
+# then format there too when the session is working in a different project.
 script_real=$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null)
-dotfiles_root=$(dirname "$(dirname "$(dirname "$script_real")")")
-if [ "$(realpath .)" != "$(realpath "$dotfiles_root")" ]; then
+dotfiles_root=$(realpath "$(dirname "$(dirname "$(dirname "$script_real")")")")
+current_dir=$(realpath .)
+
+# The root itself and every worktree beneath it are already covered by the
+# format above, so only a genuinely different project needs the second pass.
+# Matching on the trailing slash keeps a sibling such as dotfiles-backup out.
+is_inside_dotfiles=""
+case "$current_dir" in
+  "$dotfiles_root" | "$dotfiles_root"/*) is_inside_dotfiles="yes" ;;
+esac
+
+if [ -z "$is_inside_dotfiles" ]; then
   format_dir "$dotfiles_root"
 fi
