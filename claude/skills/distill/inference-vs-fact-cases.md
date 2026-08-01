@@ -93,6 +93,16 @@ Both were unverified inferences the user caught. The entry notes the rule
 line per line of the file") was written in the same turn the formatter collapsed
 that layout, leaving the comment false immediately.
 
+**2026-08-01 · configuration rule.** CLAUDE.md advised measuring line width with
+`wc -L`, warning in the same clause that `awk length` counts bytes and
+overcounts em dashes. The warning was verified; the remedy never was. macOS
+`wc -L` counts bytes too, reporting 7 for the five-character line `a — b`, so
+the rule recommended a tool carrying the exact flaw it warned about. It stood
+until `wc -L` flagged three prettier-formatted files that were already inside 80
+columns. The verified half of the claim is what carried the unverified half past
+review — running on the recommended tool the same check already run on the
+rejected one would have caught it.
+
 ## Cases: claims made in chat
 
 **2026-06-18 · permissions.** Claimed twice, with confidence, that reading
