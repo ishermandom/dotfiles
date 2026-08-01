@@ -17,8 +17,11 @@ working in its own git worktree. Work the steps in order.
    hooks, `settings.json`, or anything else reached through `~/.claude` can be
    written in a worktree but not exercised there — those paths symlink to the
    main checkout, so every session runs the main checkout's config whatever its
-   worktree holds. Fan such a task out when authoring is the bulk of it; keep it
-   in the main checkout when validating is.
+   worktree holds. Most of that gap closes by running the worktree's copy and
+   the main checkout's against identical inputs and diffing every output; only
+   the live firing stays uncovered. Fan such a task out when authoring plus that
+   comparison covers it; keep it in the main checkout when a live firing is what
+   needs checking.
 
 2. **Check what the worktrees will branch from**: with `worktree.baseRef` unset,
    a new worktree starts from `origin/main`, so unpushed commits and uncommitted
