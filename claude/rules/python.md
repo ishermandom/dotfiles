@@ -47,6 +47,9 @@ snapshot.
     caller keeps a live handle and can mutate the field's contents after
     construction, quietly unfreezing the instance. Python has no immutable
     abstract collection type.
+    <!-- A `Mapping` field has the same hole — a `dict` satisfies `Mapping` —
+    but no clean fix: the stdlib has no `frozendict`, and `MappingProxyType` is
+    a view whose backing dict can still change. Deliberately out of scope. -->
 - **Never silence type errors**: fix the underlying type issue instead of adding
   `# type: ignore` or `cast()`. If silencing genuinely seems like the right
   call, stop, explain the case to the user, and get explicit approval.
