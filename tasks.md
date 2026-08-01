@@ -245,3 +245,23 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: a replacement still needs choosing. The rule only bites where no
     formatter owns the file, since prettier and `reflow_prose.py` settle width
     everywhere else.
+
+- [ ] **Add a rule for settling Claude Code behavior questions from the
+      installed CLI** — when work is blocked on what the harness itself does,
+      the shipped bundle answers it directly, yet nothing in the always-loaded
+      rules points there, so the default is to guess or queue an open question.
+  - Rationale: queued 2026-08-01, after the fanout override task settled two
+    blocking questions this way at one command each — whether cleanup can
+    discard uncommitted worktree work, and whether `--append-system-prompt-file`
+    is real despite being absent from `--help`.
+  - Note: the two techniques that made it cheap are worth stating. Search for a
+    behavior's distinctive log or error text rather than a common identifier —
+    in a 257 MB minified bundle that is the difference between a few matches and
+    a wall of them. Probe an undocumented flag by triggering its validation (a
+    nonexistent path) rather than by running it, and read whether the failure
+    names the flag or the value.
+  - Note: CLAUDE.md #working-method is the likely home, but that file is already
+    long and carries a queued reorganization — weigh placement against
+    #consolidation-recheck. The validate-live-not-from-docs auto-memory covers
+    adjacent ground and may fold in, since a global authoritative preference
+    belongs in CLAUDE.md per #disprefer-memory.
