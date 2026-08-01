@@ -13,16 +13,6 @@ working in its own git worktree. Work the steps in order.
    call. Ask for clarification when a choice is ambiguous, when two tasks edit
    the same files, or when one task depends on work that doesn't exist yet.
 
-   **Config work needs a judgment call** {#config-in-worktrees}: a task changing
-   hooks, `settings.json`, or anything else reached through `~/.claude` can be
-   written in a worktree but not exercised there — those paths symlink to the
-   main checkout, so every session runs the main checkout's config whatever its
-   worktree holds. Most of that gap closes by running the worktree's copy and
-   the main checkout's against identical inputs and diffing every output; only
-   the live firing stays uncovered. Fan such a task out when authoring plus that
-   comparison covers it; keep it in the main checkout when a live firing is what
-   needs checking.
-
 2. **Check what the worktrees will branch from**: with `worktree.baseRef` unset,
    a new worktree starts from `origin/main`, so unpushed commits and uncommitted
    changes never reach it. If there is a gap, report it and ask how to proceed
@@ -47,5 +37,8 @@ working in its own git worktree. Work the steps in order.
    Add no other flags by default — CLAUDE.md governs the rest of an agent's
    behavior.
 
-   For a task in the #config-in-worktrees case, say so in the prompt — an agent
-   otherwise might mistake its worktree's hooks and settings for the live ones.
+   For a task changing hooks, `settings.json`, or anything else reached through
+   `~/.claude`, say so in the prompt: those paths symlink to the main checkout,
+   so an agent can otherwise mistake its worktree's config for the one its own
+   session runs. `rules/claude-configuration.md` #live-validation covers firing
+   the worktree's copy safely.

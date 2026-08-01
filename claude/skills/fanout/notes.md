@@ -18,6 +18,17 @@ Maintainer rationale for the `fanout` skill.
   as a background job's respawn flags — so the override survives a respawn
   rather than evaporating mid-run (verified in CLI 2.1.220).
 
+- **Config work fans out like any other task**: `~/.claude` symlinks to the main
+  checkout, so a worktree's hooks never run in the session editing them. That
+  leaves a live firing the one thing a worktree cannot cover on its own, and
+  makes installing the worktree's copy the tempting shortcut — one that hands
+  every concurrent session an unreviewed hook. A throwaway session started from
+  the worktree's own settings covers the firing instead, so the skill needs no
+  routing rule for config tasks. The mechanism lives in
+  `rules/claude-configuration.md` #live-validation rather than here, because
+  that file loads whenever a session touches a hook or `settings.json` —
+  including the sessions this skill never launched.
+
 - **Leaving the work uncommitted risks nothing**: both automatic worktree
   cleanups — the stale-worktree sweep and the job-retention reaper — refuse any
   worktree whose `git status --porcelain` is non-empty, and log the worktree as
