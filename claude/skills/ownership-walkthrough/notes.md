@@ -35,5 +35,5 @@ order (the Superpowers two-stage-review pattern).
 ### Early-use watch items
 
 Two spots remain worth watching for friction while real-change runs are still
-few: partitioning the diff into logical units (step 2), and invoking
+few: partitioning the work into logical units (step 2), and invoking
 `/code-review --fix` from within the skill (step 1).

@@ -197,13 +197,15 @@ model is a post-hoc, attention-routing walkthrough:
   ("logical pull requests"), each with a risk tier, recommended review depth, a
   one-line why, and where to read. The user reads real code in their editor;
   chat holds only the map.
-- Review precedes commit, keeping history clean (commit-as-you-go with post-hoc
-  review was rejected as producing a messy log). The unit partition is an
-  attention lens, not a commit-structuring device.
+- Review precedes commit, keeping history clean and the diff easy to read
+  (commit-as-you-go with post-hoc review was rejected as producing a messy log);
+  a mid-turn snapshot commit is the exception, reviewed before the work lands.
+  The unit partition is an attention lens, not a commit-structuring device.
 
-Operative wording lives in CLAUDE.md #review-approach and the
-`ownership-walkthrough` skill. The exploratory→production graduation runs this
-same flow.
+Operative wording lives in CLAUDE.md — the review itself in #review-approach,
+the hard requirement in #review-gate, the ordering against commits in
+#review-ordering — and in the `ownership-walkthrough` skill. The
+exploratory→production graduation runs this same flow.
 
 **Git**: commit history is deliberately durable — preserving intermediate states
 is a primary reason for committing, so amending is reserved for noise and

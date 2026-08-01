@@ -13,10 +13,10 @@ Maintainer rationale for the `fanout-teardown` skill. The `fanout` skill's
   also gives the user one decision point — step 3 — instead of discovering new
   work after `main` has already moved.
 
-- **No review step**: `CLAUDE.md #review-axis` asks for user review before push,
-  not for a particular skill, and an agent flags a durable chunk needing
-  `/ownership-walkthrough` the same way it would in any session. A review step
-  here would restate a rule that already fires.
+- **No review step**: `CLAUDE.md #review-gate` asks for user review before
+  landing, not for a particular skill, and an agent flags a durable chunk
+  needing `/ownership-walkthrough` the same way it would in any session. A
+  review step here would restate a rule that already fires.
 
 - **The branch outlives its worktree**: `git worktree remove` leaves
   `worktree-<slug>` behind, so the branch needs deleting on its own. Landing has

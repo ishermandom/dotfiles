@@ -5,7 +5,7 @@ Maintainer rationale for the `fanout` skill.
 - **The launch adds one override and no tool restrictions**: agents are
   otherwise meant to behave as hand-started sessions, so the launch passes
   nothing further — `CLAUDE.md #interaction-style` already covers asking when
-  blocked, and `CLAUDE.md #review-axis` covers review. Committing is the one
+  blocked, and `CLAUDE.md #review-gate` covers review. Committing is the one
   place a background session carries its own contrary instructions — commit,
   push the branch, open a pull request — which CLAUDE.md and the local landing
   flow contradict without silencing. Overriding those instructions at launch is

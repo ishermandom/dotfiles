@@ -13,8 +13,7 @@ While working under `scratch/`:
 
 - **Style** — favor DAMP (repeat-for-clarity) over DRY; skip factoring polish.
   Clarity-in-the-moment beats durable structure at this bar.
-- **Review** — no ownership walkthrough; committing within `scratch/` needs no
-  review — the path already signals the bar.
+- **Review** — no ownership walkthrough; see CLAUDE.md #review-gate.
 - **Tests** — by default, write none and keep none green; probe correctness by
   hand.
 

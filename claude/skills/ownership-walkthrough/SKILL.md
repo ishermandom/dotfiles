@@ -1,14 +1,18 @@
 ---
 description:
   Drive a post-hoc ownership review of completed work — self-review and fix,
-  then present a risk-labeled map of the pending diff for the user to review
-  before committing. Run when a durable chunk of work is complete. Pass --fix to
-  run only the convergence review-and-fix, skipping the walkthrough.
+  then present a risk-labeled map of the work for the user to review before
+  committing. Run when a durable chunk of work is complete. Pass --fix to run
+  only the convergence review-and-fix, skipping the walkthrough.
 ---
 
-Work through each step in order. The aim is the user's ownership of what lands —
-by default every line maintainable by the user solo, at minimum the key
-decisions ratified — settled before anything is committed.
+Work through each step in order, toward the ownership bar in
+`CLAUDE.md #review-approach`.
+
+The scope is everything not yet reviewed. That is usually the pending diff, but
+commits made ahead of the review count too — a mid-turn snapshot, or a branch
+being reviewed at landing — whether or not they have been pushed. The session
+conversation usually settles the boundary; ask the user when it does not.
 
 When invoked with `--fix`, run only step 1 — the review-and-fix loop, to
 convergence — then report what each round found and fixed, and stop: no
@@ -18,11 +22,11 @@ default; `--fix` serves cleanup passes where the user reviews separately.
 ## 1. Self-review and fix, to convergence
 
 Clean the code before spending the user's attention on it. Run
-`/code-review --fix` over the pending changes, effort scaled to risk — `low` or
-`medium` for routine work, higher for core logic, data handling, or
-security-sensitive code. Use `/simplify` instead when there are no correctness
-concerns, only cleanup. Never use the `ultra` effort here — it runs in the cloud
-and is outside this local flow.
+`/code-review --fix` over the scope, effort scaled to risk — `low` or `medium`
+for routine work, higher for core logic, data handling, or security-sensitive
+code. Use `/simplify` instead when there are no correctness concerns, only
+cleanup. Never use the `ultra` effort here — it runs in the cloud and is outside
+this local flow.
 
 Iterate to convergence: when a round surfaces significant findings, run another
 round after applying its fixes, and stop only when a round comes back without
@@ -33,10 +37,11 @@ round's fix code — new fixes are where new bugs concentrate. Prefer finder
 instructions that reproduce findings against real inputs over reasoning-only
 review, and shrink the fanout as findings thin.
 
-## 2. Partition the diff into logical units
+## 2. Partition the work into logical units
 
-Read the full pending diff — staged, unstaged, and untracked (`git status`,
-`git diff`, `git diff --staged`). Group the changes into logical units, each a
+Read the whole scope: the pending diff — staged, unstaged, and untracked
+(`git status`, `git diff`, `git diff --staged`) — plus any commits the scope
+covers (`git log`, `git show`). Group the changes into logical units, each a
 single coherent concept — a "logical pull request" — regardless of file
 boundaries. One unit may span several files; one file may hold several units.
 
@@ -68,5 +73,5 @@ The walkthrough is done when the user owns the change.
 
 ## 6. Commit
 
-Once the user is on board, commit — review precedes the commit, so history stays
-clean. Commit granularity and message conventions follow the global Git rules.
+Once the user is on board, commit whatever is still uncommitted. Commit
+granularity and message conventions follow the global Git rules.

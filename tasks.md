@@ -166,15 +166,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     matching pass," which reads as a recurring audit rather than only a
     self-check on text the review itself writes. Settle when the sweep lands.
 
-- [ ] **Align skill review-gating with the review-is-a-separate-axis rule** —
-      `ownership-walkthrough` (frames review as settled before anything is
-      committed) and `wrap-session` step 5 (withholds a durable chunk's commit
-      pending the walkthrough) are now stricter than CLAUDE.md #review-axis:
-      committing never waits on review; production code is reviewed before push.
-  - Worktree: review-gating
-  - Rationale: queued 2026-07-07 when the Git-section edit decoupled review from
-    committing. Pre-commit review remains a valid ordering, so the mismatch is
-    posture, not breakage.
+- [ ] **Move the multiple-tasks rule out of the review section** — CLAUDE.md
+      `## Review approach` closes with a paragraph on adding user-given task
+      lists to `tasks.md` and checking in before starting. The content is sound
+      but unrelated to review, so it reads as having drifted into the wrong
+      section and dilutes what the heading promises.
+  - Note: surfaced 2026-08-01 while unifying the review rules; left alone as out
+    of scope.
 
 - [ ] **Settle one test altitude for the two gate hooks** — `gate_git_test.py`
       drives its gate through `main()` with a real hook payload, while

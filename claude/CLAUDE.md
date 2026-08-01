@@ -265,11 +265,15 @@ doc or config.
 ## Review approach {#review-approach}
 
 **When a durable chunk of work is complete** — a feature, a refactor, a new file
-or skill, anything meant to last — work it end-to-end, then review (before or
-after committing, but before any push) rather than gating each increment
-mid-construction. The aim is the user's ownership of what lands — maintainable
-by the user solo by default, key decisions ratified at minimum. Drive the review
-with the `/ownership-walkthrough` skill.
+or skill, anything meant to last — work it end-to-end, then review rather than
+gating each increment mid-construction. The aim is the user's ownership of what
+lands — maintainable by the user solo by default, key decisions ratified at
+minimum. Drive the review with the `/ownership-walkthrough` skill. For the
+ordering relative to committing and pushing, see #review-ordering.
+
+**Never let production code reach `git land` or a push unreviewed**
+{#review-gate}: `scratch/` code needs no review — the path already signals the
+bar.
 
 Before presenting any code, check it against all loaded style guides —
 explicitly, as a checklist pass, not by passive recall. This applies to every
@@ -440,10 +444,10 @@ Every session, without being asked:
 - **Never rewrite history on `main`, and keep it fully linear**: no rebases, no
   merge commits, no restructuring. Exception: amending the unpushed tip is fine
   when the amend rule allows it — an amend keeps history linear.
-- **Review is a separate axis from committing** {#review-axis}: committing never
-  waits on review, but all production code must be user-reviewed — before or
-  after the commit, and always before it's pushed; `scratch/` code needs no
-  review.
+- **Review usually precedes the commit** {#review-ordering}: an uncommitted diff
+  is the easiest thing to read, so the default is to review first and commit
+  after. Exception: it's fine to commit a mid-turn snapshot to preserve a
+  milestone.
 
 ### Working on a branch (typically a worktree)
 
@@ -465,14 +469,16 @@ Every session, without being asked:
   fast-forwards `main`, so main stays linear and every branch commit lands
   individually; landing never squashes. Sync from a stable branch state —
   there's no point landing a broken one.
-- **Before `git land`**: production code must be user-reviewed — either as the
-  branch evolved or as part of landing; `scratch/`-only changes need no review.
-  When unsure whether something was reviewed, err toward suggesting a review —
-  and only ever suggest one, never initiate it. Also give the branch history a
-  final look — a rewrite may leave main's log clearer.
+- **Before `git land`**: never land unreviewed production code — confirm it has
+  been user-reviewed (#review-gate), either as the branch evolved or as part of
+  landing. When unsure whether something was reviewed, err toward suggesting a
+  review — and only ever suggest one, never initiate it. Also give the branch
+  history a final look — a rewrite may leave main's log clearer.
 
 ### GitHub
 
+- **Before pushing `main`**: never push unreviewed production code — confirm
+  every production change in the push has been user-reviewed (#review-gate).
 - **Never push a branch to a remote** — only `main` pushes.
 - **After creating a new repo**: run `~/.claude/scripts/gh-protect.sh` to verify
   its branch-protection ruleset; on a reported gap, ask the user to create the
