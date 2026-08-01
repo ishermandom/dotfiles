@@ -63,6 +63,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       them as strict JSON and strips the trailing commas, so a repo-wide
       `quiet-prettier.sh .` silently reverts them (observed 2026-07-31, undoing
       a commit made minutes earlier). Add a `.prettierignore` covering `zed/`.
+  - Worktree: zed-prettier
   - Note: check whether the Stop-time prettier hook reaches these files too, or
     only the repo-wide invocation does — the fix is the same, the exposure is
     not.
@@ -149,11 +150,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       Either parametrize and drop the direct-run mode, or keep it and record the
       exception as a maintainer comment. Deferred from the 2026-07 config
       close-out.
+  - Worktree: gate-auto-tools-test
 
 - [ ] **Test `session_tokens.py`'s transcript-summing path** — `summed_usage`
       reads files directly, so testing it per the I/O-boundary rule
       (`rules/testing.md`) means restructuring it to accept streams, with a thin
       path-opening wrapper. Deferred from the 2026-07 config close-out.
+  - Worktree: session-tokens-test
 
 - [ ] **Consider rotating `sessions.md` as part of the distillation skill** —
       `sessions.md` is the curated session log; it is deliberately _not_
