@@ -76,8 +76,8 @@
           "font_weight": 700
         },
         "emphasis.strong": {
-          "color": "#F8F8F8",
-          "font_weight": 700
+          "color": "#E9C062",
+          "font_weight": 700,
         },
         "emphasis": {
           "color": "#E9C062",
@@ -104,5 +104,5 @@
     "inline_blame": {
       "enabled": false
     }
-  }
+  },
 }
