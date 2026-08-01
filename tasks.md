@@ -211,15 +211,37 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     committing. Pre-commit review remains a valid ordering, so the mismatch is
     posture, not breakage.
 
-- [ ] **Override the background harness's push-and-PR demand in `/fanout`** — a
-      `claude --bg` session is instructed to push its branch and open a draft
-      PR. Both contradict CLAUDE.md ("only `main` pushes") and the fanout
+- [ ] **Override the background harness's commit-push-and-PR demand in
+      `/fanout`** — a `claude --bg` session is instructed to commit its work,
+      push its branch, and open a draft PR. All three contradict CLAUDE.md
+      (never commit dotfiles unasked; "only `main` pushes") and the fanout
       workflow, which ends in a local `git land`. Each agent has to notice and
       resolve the conflict on its own.
   - Rationale: queued 2026-07-31, after the zed-prettier agent hit the conflict
     and reasoned it out before reporting. The user confirmed the local workflow
-    supersedes the harness default.
+    supersedes the harness default, and wants each worktree's work left as a
+    pending diff — easier to review than commits an agent already made.
   - Note: `--append-system-prompt` on the launch command is the likely
     mechanism. The launch step (4) currently directs "Pass no other flags by
     default", reasoning that CLAUDE.md already governs agentic behavior — the
     premise this task corrects, so that line needs updating in the same edit.
+  - Open question: whether a background session's worktree survives with
+    uncommitted work or can be discarded at exit. If work can be lost, telling
+    agents not to commit trades a review cost for a data-loss risk, and the fix
+    belongs in the landing flow instead.
+
+- [ ] **Settle one test altitude for the two gate hooks** — `gate_git_test.py`
+      drives its gate through `main()` with a real hook payload, while
+      `gate_auto_tools_test.py` calls the `runs_gated_tool` predicate directly.
+      Neither breaks the test-via-public-APIs rule, but sibling tests over
+      near-identical PreToolUse gates shouldn't differ in depth without a stated
+      reason.
+  - Rationale: queued 2026-07-31 during the `gate_auto_tools_test.py`
+    parametrize pass, which left the difference alone as out of scope.
+  - Note: converting means first giving `gate_auto_tools.main()` the
+    `stdin`/`stdout` parameters `gate_git.main()` already has — the auto-tools
+    gate reads `sys.stdin` directly today, against `rules/testing.md`'s
+    stream-injection rule.
+  - Note: the payload level covers behavior the predicate level cannot reach —
+    the fail-open path on an unparseable payload, and the shape of the emitted
+    deny decision. Both are untested today.
