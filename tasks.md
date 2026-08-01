@@ -199,6 +199,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     lines in place because tidying them by hand was out of the change's scope.
   - Note: neither `shfmt` nor `shellcheck` is installed, so this starts with
     choosing and installing a tool rather than with wiring.
+  - Note: four files carry over-length lines, not one — `quiet-mypy.sh`,
+    `quiet-prettier.sh`, `statusline.sh`, and `hooks/prettier-format.sh` — per
+    `rg -n --glob '*.sh' '.{81,}'` on 2026-08-01. That is the first pass's
+    scope, whichever tool wins.
   - Note: a formatter that reflows comment prose would overlap
     `reflow_prose.py`, which handles that for Python only — worth deciding
     whether shell prose belongs there instead.
@@ -226,13 +230,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `claude agents --json` surfaces `state` beside `status` but never `detail`,
     so a row reading `idle done` against `idle blocked` may be the separation
     this task wants — one reading each, so confirm before relying on it.
-
-- [ ] **Rewrap the shell scripts whose lines exceed 80 columns** — no formatter
-      owns `.sh`, so four have drifted over: `quiet-mypy.sh`,
-      `quiet-prettier.sh`, `statusline.sh`, and `hooks/prettier-format.sh`.
-  - Note: found 2026-08-01 via `rg -n --glob '*.sh' '.{81,}'`. Whether shell
-    deserves a formatter of its own, such as `shfmt`, is the larger question
-    behind this — a hand pass fixes today's four and nothing after.
 
 - [ ] **Add a rule for settling Claude Code behavior questions from the
       installed CLI** — when work is blocked on what the harness itself does,
