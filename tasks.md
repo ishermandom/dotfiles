@@ -245,3 +245,17 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the payload level covers behavior the predicate level cannot reach —
     the fail-open path on an unparseable payload, and the shape of the emitted
     deny decision. Both are untested today.
+
+- [ ] **Make `quiet-tests.sh` scope to the paths it is given** — CLAUDE.md
+      advertises
+      `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier}.sh [paths]`, and
+      `quiet-mypy.sh` and `quiet-ruff.sh` do honor paths. `quiet-tests.sh`
+      forwards its arguments to `run_tests.sh`, which already passes
+      `claude/hooks` and `claude/scripts` ahead of them, so a path argument
+      never narrows the run — the full suite executes either way, silently. Have
+      `run_tests.sh` fall back to the two directories only when given no
+      arguments.
+  - Rationale: queued 2026-07-31 after a mid-turn check aimed at one test file
+    ran all 252 tests and looked like it had worked.
+  - Note: `-k <expression>` does narrow the run today — the workaround until the
+    argument handling changes.
