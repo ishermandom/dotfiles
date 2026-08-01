@@ -39,6 +39,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       → mypy-check → run_tests sequentially, fail-fast after mypy (ratified
       2026-07-03); replace the four Stop entries with one, single ~120 s
       timeout.
+  - Worktree: stop-orchestrator
   - Note: ride-alongs — run_tests.sh needs the repo-root anchor mypy-check.sh
     has, and its `-f` gate should be `-x` (quiet-tests.sh demands executable);
     add the parallel-hooks why to design.md's Hooks section. `PYTEST_FROM_HOOK`
@@ -209,6 +210,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 - [ ] **Rewrap the shell scripts already over 80 columns** {#shell-rewrap} —
       shfmt never wraps a long line, whatever else it reformats, so every
       violation stands until a human rewrites the line itself.
+  - Worktree: shell-rewrap
   - Note: re-derive the set with `rg -n '.{81,}'` over the shell files rather
     than trusting a list written here — any shell edit moves it, and a glob of
     `*.sh` alone misses the zsh files.
@@ -251,6 +253,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       build the first promising one. That instruction reached the 2026-08-01
       lanes only as ad-hoc text appended to each launch command, so it holds
       only as long as whoever runs `/fanout` remembers to type it.
+  - Worktree: weigh-the-approach
   - Rationale: it earned its place that run — two of nine lanes resolved by not
     building, one dropping its task as already covered elsewhere and one
     deferring behind a larger sweep.
@@ -259,6 +262,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `rules/markdown.md` names `Rationale:`, `Open question:`, and `Note:`,
       while `/fanout` writes a `Worktree:` line onto every task it claims, so
       the stated convention and the tooling disagree.
+  - Worktree: worktree-note-label
 
 - [ ] **Decide what a new worktree should branch from** — `worktree.baseRef` is
       unset, so every worktree starts from `origin/main`, and a fanout has to
