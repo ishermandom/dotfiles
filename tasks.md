@@ -301,3 +301,20 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the stated reasoning has to go with the behavior. Left in place,
     "teardown is running inside that session, so it cannot stop itself" would
     argue the change back out on the next edit.
+
+- [ ] **Stop worktree entry from blocking every fanned-out agent** — a
+      fanned-out agent's first act is entering its worktree, and that raises a
+      permission prompt the user has to answer. Each lane stalls there until
+      they do, which costs a background fanout most of what makes it background.
+  - Rationale: queued 2026-08-01, after most of a nine-lane fanout raised the
+    prompt at once.
+  - Note: the prompt names the worktree path, then calls it "a model-supplied
+    worktree outside `.claude/worktrees/`" — a path that sits inside
+    `.claude/worktrees/`. Its wording and its own argument disagree, on CLI
+    2.1.220. Full text:
+
+    ```text
+    permission-root relocation to
+    "<repo>/.claude/worktrees/<slug>" — a model-supplied worktree
+    outside .claude/worktrees/
+    ```
