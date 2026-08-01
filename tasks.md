@@ -198,3 +198,16 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Rationale: queued 2026-07-07 when the Git-section edit decoupled review from
     committing. Pre-commit review remains a valid ordering, so the mismatch is
     posture, not breakage.
+
+- [ ] **Override the background harness's push-and-PR demand in `/fanout`** — a
+      `claude --bg` session is instructed to push its branch and open a draft
+      PR. Both contradict CLAUDE.md ("only `main` pushes") and the fanout
+      workflow, which ends in a local `git land`. Each agent has to notice and
+      resolve the conflict on its own.
+  - Rationale: queued 2026-07-31, after the zed-prettier agent hit the conflict
+    and reasoned it out before reporting. The user confirmed the local workflow
+    supersedes the harness default.
+  - Note: `--append-system-prompt` on the launch command is the likely
+    mechanism. The launch step (4) currently directs "Pass no other flags by
+    default", reasoning that CLAUDE.md already governs agentic behavior — the
+    premise this task corrects, so that line needs updating in the same edit.
