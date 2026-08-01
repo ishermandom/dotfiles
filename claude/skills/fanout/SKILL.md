@@ -40,11 +40,12 @@ working in its own git worktree. Work the steps in order.
 
    ```bash
    claude --bg --model claude-opus-5 --effort xhigh --permission-mode auto \
+     --append-system-prompt-file ~/.claude/skills/fanout/agent-prompt.md \
      "In worktree <slug>, work the tasks.md task annotated Worktree: <slug>."
    ```
 
-   Pass no other flags by default — an agent then behaves exactly as a
-   hand-started session, and CLAUDE.md already governs agentic behavior.
+   Add no other flags by default — CLAUDE.md governs the rest of an agent's
+   behavior.
 
    For a task in the #config-in-worktrees case, say so in the prompt — an agent
    otherwise might mistake its worktree's hooks and settings for the live ones.

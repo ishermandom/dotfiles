@@ -2,14 +2,28 @@
 
 Maintainer rationale for the `fanout` skill.
 
-- **No appended system prompt and no tool restrictions**: agents are meant to
-  behave exactly as hand-started sessions, so the launch passes nothing beyond
-  the task itself — `CLAUDE.md #interaction-style` already covers asking when
-  blocked, and `CLAUDE.md #review-axis` covers review. Committing is where the
-  premise thins: a background session carries its own instructions to commit,
-  push its branch, and open a pull request, which CLAUDE.md contradicts without
-  silencing, leaving each agent to resolve the clash alone. Overriding those
-  instructions is what would earn an appended prompt.
+- **The launch adds one override and no tool restrictions**: agents are
+  otherwise meant to behave as hand-started sessions, so the launch passes
+  nothing further — `CLAUDE.md #interaction-style` already covers asking when
+  blocked, and `CLAUDE.md #review-axis` covers review. Committing is the one
+  place a background session carries its own contrary instructions — commit,
+  push the branch, open a pull request — which CLAUDE.md and the local landing
+  flow contradict without silencing. Overriding those instructions at launch is
+  what keeps each agent from reasoning the clash out alone.
+
+  The override text sits in `agent-prompt.md` rather than inline in the launch
+  command, which keeps the command scannable and keeps literal newlines out of a
+  shell argument. `--append-system-prompt-file` is undocumented in
+  `claude --help` but accepted, and is on the CLI's allowlist of flags persisted
+  as a background job's respawn flags — so the override survives a respawn
+  rather than evaporating mid-run (verified in CLI 2.1.220).
+
+- **Leaving the work uncommitted risks nothing**: both automatic worktree
+  cleanups — the stale-worktree sweep and the job-retention reaper — refuse any
+  worktree whose `git status --porcelain` is non-empty, and log the worktree as
+  kept. Removal takes a deliberate act: `ExitWorktree`'s remove path, the
+  interactive exit dialog, or `git worktree remove` by hand. So a pending diff
+  waiting on the user is not a race against cleanup (verified in CLI 2.1.220).
 
 - **The agent creates its own worktree, rather than the skill passing `-w`**:
   fewer moving parts in the skill, and worktree setup is ordinary work an agent
