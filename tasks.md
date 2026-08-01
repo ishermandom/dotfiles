@@ -47,6 +47,15 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `stop_checks.sh` rather than as a fifth parallel entry. Depends on
     #stop-orchestrator.
 
+- [ ] **Exclude the Zed configs from prettier** — `zed/**` is JSONC: the files
+      carry comments and trailing commas, and Zed accepts both. Prettier parses
+      them as strict JSON and strips the trailing commas, so a repo-wide
+      `quiet-prettier.sh .` silently reverts them (observed 2026-07-31, undoing
+      a commit made minutes earlier). Add a `.prettierignore` covering `zed/`.
+  - Note: check whether the Stop-time prettier hook reaches these files too, or
+    only the repo-wide invocation does — the fix is the same, the exposure is
+    not.
+
 - [ ] **Give the repo a project-local `.venv`** — the dev tools live in
       `/Users/claude-sandbox/.venvs/default`, inside one account's home, which
       the other account cannot read. Nothing in the repo root points an editor
