@@ -1,0 +1,47 @@
+---
+description:
+  Start a background session per tracker task, each in its own git worktree.
+disable-model-invocation: true
+---
+
+Start one background Claude Code session per task the user has chosen, each
+working in its own git worktree. Work the steps in order.
+
+## Steps
+
+1. **Take the task set from the user**: which tasks to fan out is the user's
+   call. Ask for clarification when a choice is ambiguous, when two tasks edit
+   the same files, or when one task depends on work that doesn't exist yet.
+
+   **Config work needs a judgment call** {#config-in-worktrees}: a task changing
+   hooks, `settings.json`, or anything else reached through `~/.claude` can be
+   written in a worktree but not exercised there — those paths symlink to the
+   main checkout, so every session runs the main checkout's config whatever its
+   worktree holds. Fan such a task out when authoring is the bulk of it; keep it
+   in the main checkout when validating is.
+
+2. **Check what the worktrees will branch from**: with `worktree.baseRef` unset,
+   a new worktree starts from `origin/main`, so unpushed commits and uncommitted
+   changes never reach it. If there is a gap, report it and ask how to proceed
+   rather than launching agents onto a stale base.
+
+3. **Record each task's worktree in the tracker before launching anything**: add
+   a single `Worktree: <slug>` line under the task, naming the worktree for the
+   work it holds — `zed-prettier`, not `task-2`. The line keeps the in-flight
+   state from getting lost and says where to pick the work back up; writing it
+   first also gives the launch prompt a unique way to name the task. Commit and
+   push this change to the task tracker. Treat the /fanout skill invocation as
+   explicit user permission for this scoped commit and push.
+
+4. **Launch one background session per task** from the main checkout:
+
+   ```bash
+   claude --bg --model claude-opus-5 --effort xhigh --permission-mode auto \
+     "In worktree <slug>, work the tasks.md task annotated Worktree: <slug>."
+   ```
+
+   Pass no other flags by default — an agent then behaves exactly as a
+   hand-started session, and CLAUDE.md already governs agentic behavior.
+
+   For a task in the #config-in-worktrees case, say so in the prompt — an agent
+   otherwise might mistake its worktree's hooks and settings for the live ones.
