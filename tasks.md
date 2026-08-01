@@ -277,3 +277,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `needs` fields which local sessions leave unset. They may belong to the
     cloud-agent surface, which would explain why its richer `blocked` state
     never shows up locally.
+
+- [ ] **Have each fanned-out agent open by recapping its task** — `/fanout`
+      hands an agent a worktree handle and nothing more, and the
+      background-agent view lists only that handle, so nothing says which
+      tracker task a session actually picked up short of attaching to it.
+  - Rationale: queued 2026-08-01 after a three-lane fanout, where the lane names
+    alone did not convey what any agent was working on.
+  - Note: the recap belongs in whatever text `/fanout`'s launch step passes to
+    the agent. Another queued task rewrites that same step, so land the two
+    together or sequence this one after it rather than editing the step twice.
