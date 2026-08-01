@@ -2,10 +2,13 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Tests for the pure formatting and log-editing logic in session_tokens. The I/O
-# paths (transcript summing, hook dispatch) are exercised manually; see the
-# module's docstring for the hook contract.
+# Tests for session_tokens' summing, formatting, and log-editing logic. The
+# remaining I/O paths — opening transcript files, hook dispatch — are exercised
+# manually; see the module's docstring for the hook contract.
 
+import io
+import json
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 
 import pytest
@@ -16,7 +19,24 @@ from session_tokens import (
   stats_only_entry,
   tokens_line,
   updated_log_text,
+  usage_summary,
 )
+
+
+def _make_transcript(records: Sequence[object]) -> io.StringIO:
+  """A transcript stream carrying one JSON-serialized record per line."""
+  return io.StringIO(''.join(f'{json.dumps(record)}\n' for record in records))
+
+
+def _make_raw_transcript(lines: Sequence[str]) -> io.StringIO:
+  """A transcript stream from literal lines, for malformed-input tests."""
+  return io.StringIO(''.join(f'{line}\n' for line in lines))
+
+
+def _make_usage_record(usage: Mapping[str, object]) -> Mapping[str, object]:
+  """A transcript record wrapping one usage mapping."""
+  return {'message': {'usage': usage}}
+
 
 # --- formatted_count ---
 
@@ -114,6 +134,130 @@ def test_stats_only_entry_carries_heading_marker_and_counts() -> None:
     '<!-- session: abc -->\n'
     'tokens: input 1\n'
   )
+
+
+# --- usage_summary ---
+
+
+def test_all_four_counters_sum_across_records() -> None:
+  """Every counter accumulates over the transcript's usage records."""
+  transcript = _make_transcript(
+    [
+      _make_usage_record(
+        {
+          'input_tokens': 10,
+          'output_tokens': 1,
+          'cache_creation_input_tokens': 100,
+          'cache_read_input_tokens': 1000,
+        }
+      ),
+      _make_usage_record(
+        {
+          'input_tokens': 5,
+          'output_tokens': 2,
+          'cache_creation_input_tokens': 200,
+          'cache_read_input_tokens': 3000,
+        }
+      ),
+    ]
+  )
+
+  summary = usage_summary([transcript])
+
+  assert summary.totals == UsageTotals(
+    input_tokens=15,
+    output_tokens=3,
+    cache_creation_input_tokens=300,
+    cache_read_input_tokens=4000,
+  )
+  assert summary.anomalies == ()
+
+
+def test_counters_sum_across_several_transcripts() -> None:
+  """A session's subagent transcripts fold into the same totals."""
+  main_transcript = _make_transcript([_make_usage_record({'input_tokens': 10})])
+  subagent_transcript = _make_transcript(
+    [_make_usage_record({'input_tokens': 5})]
+  )
+
+  summary = usage_summary([main_transcript, subagent_transcript])
+
+  assert summary.totals.input_tokens == 15
+
+
+@pytest.mark.parametrize(
+  'record',
+  [
+    {'type': 'user', 'message': {'content': 'hello'}},
+    {'message': 'not a mapping'},
+    {'message': {'usage': 'not a mapping'}},
+    ['not a mapping at all'],
+    'a bare string',
+  ],
+)
+def test_records_without_a_usage_mapping_are_ignored(record: object) -> None:
+  """Only a record carrying `message.usage` contributes to the totals."""
+  transcript = _make_transcript([record])
+
+  summary = usage_summary([transcript])
+
+  assert summary.totals == UsageTotals(
+    input_tokens=0,
+    output_tokens=0,
+    cache_creation_input_tokens=0,
+    cache_read_input_tokens=0,
+  )
+  assert summary.anomalies == ()
+
+
+def test_a_malformed_line_is_skipped_and_reported() -> None:
+  """A crash mid-write can cut a line short; the intact records still sum."""
+  transcript = _make_raw_transcript(
+    [
+      '{"message": {"usage": {"input_tokens": 10}}}',
+      '{"message": {"usage": {"input_toke',
+    ]
+  )
+
+  summary = usage_summary([transcript])
+
+  assert summary.totals.input_tokens == 10
+  assert len(summary.anomalies) == 1
+  assert 'malformed' in summary.anomalies[0]
+
+
+def test_an_unexpected_usage_field_is_reported_once_per_sweep() -> None:
+  """A drifted usage schema yields one report, not one per record."""
+  transcript = _make_transcript(
+    [
+      _make_usage_record({'input_tokens': 10, 'thinking_tokens': 3}),
+      _make_usage_record({'input_tokens': 5, 'thinking_tokens': 4}),
+    ]
+  )
+
+  summary = usage_summary([transcript])
+
+  assert summary.totals.input_tokens == 15  # the known counters still sum
+  reports = [
+    anomaly for anomaly in summary.anomalies if 'thinking_tokens' in anomaly
+  ]
+  assert len(reports) == 1
+
+
+def test_a_non_integer_counter_is_reported_and_left_uncounted() -> None:
+  """A counter that isn't a number can't be summed, so it's flagged instead."""
+  transcript = _make_transcript(
+    [
+      _make_usage_record({'input_tokens': 'lots'}),
+      _make_usage_record({'input_tokens': 10}),
+    ]
+  )
+
+  summary = usage_summary([transcript])
+
+  assert summary.totals.input_tokens == 10
+  assert len(summary.anomalies) == 1
+  assert 'non-integer' in summary.anomalies[0]
 
 
 # --- session_transcript_paths ---

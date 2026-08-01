@@ -19,10 +19,11 @@ import json
 import os
 import re
 import sys
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Iterable, Iterator, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
+from typing import TextIO
 
 import log_rotation
 
@@ -87,6 +88,14 @@ class UsageTotals:
   cache_read_input_tokens: int
 
 
+@dataclass(frozen=True)
+class UsageSummary:
+  """Usage totals, plus any anomalies noticed while summing the counters."""
+
+  totals: UsageTotals
+  anomalies: tuple[str, ...]
+
+
 def _usage_of(record: object) -> Mapping[str, object] | None:
   """The usage mapping on one transcript record; None when absent."""
   if not isinstance(record, Mapping):
@@ -98,8 +107,13 @@ def _usage_of(record: object) -> Mapping[str, object] | None:
   return usage if isinstance(usage, Mapping) else None
 
 
-def summed_usage(transcript_paths: Iterable[Path]) -> UsageTotals:
-  """Sum the usage counters across all records in the transcripts."""
+def usage_summary(transcripts: Iterable[TextIO]) -> UsageSummary:
+  """Sum the usage counters across all records in the transcript streams.
+
+  Anomalies are returned rather than logged, so summing stays free of I/O and
+  can be exercised with in-memory streams; `session_usage_totals` does the
+  logging.
+  """
   totals = {
     'input_tokens': 0,
     'output_tokens': 0,
@@ -107,20 +121,11 @@ def summed_usage(transcript_paths: Iterable[Path]) -> UsageTotals:
     'cache_read_input_tokens': 0,
   }
   malformed_line_count = 0
-  missing_paths: list[Path] = []
-  # Each distinct schema oddity is logged once after the sweep, not per record —
-  # a drifted schema would otherwise flood the diagnostic log.
-  oddities: set[str] = set()
-  for path in transcript_paths:
-    try:
-      transcript_text = path.read_text()
-    except FileNotFoundError:
-      # SessionEnd can fire with a transcript that was never written (e.g. a
-      # session cleared before its first write); sum what exists rather than
-      # losing the whole session from the log.
-      missing_paths.append(path)
-      continue
-    for line in transcript_text.splitlines():
+  # Each distinct schema oddity is reported once after the sweep, not per record
+  # — a drifted schema would otherwise flood the diagnostic log.
+  schema_oddities: set[str] = set()
+  for transcript in transcripts:
+    for line in transcript:
       try:
         record: object = json.loads(line)
       except json.JSONDecodeError:
@@ -132,30 +137,53 @@ def summed_usage(transcript_paths: Iterable[Path]) -> UsageTotals:
       if usage is None:
         continue
       for name in usage.keys() - EXPECTED_USAGE_FIELD_NAMES:
-        oddities.add(f'unexpected usage field: {name}')
+        schema_oddities.add(f'unexpected usage field: {name}')
       for name in totals:
         value = usage.get(name)
         if isinstance(value, int):
           totals[name] += value
         elif value is not None:
-          oddities.add(f'non-integer counter {name}: {value!r}')
+          schema_oddities.add(f'non-integer counter {name}: {value!r}')
+  anomalies: list[str] = []
   if malformed_line_count:
-    log_diagnostic(
+    anomalies.append(
       f'skipped {malformed_line_count} malformed transcript line(s)'
     )
+  anomalies.extend(sorted(schema_oddities))
+  return UsageSummary(
+    totals=UsageTotals(
+      input_tokens=totals['input_tokens'],
+      output_tokens=totals['output_tokens'],
+      cache_creation_input_tokens=totals['cache_creation_input_tokens'],
+      cache_read_input_tokens=totals['cache_read_input_tokens'],
+    ),
+    anomalies=tuple(anomalies),
+  )
+
+
+def _opened_transcripts(transcript_paths: Iterable[Path]) -> Iterator[TextIO]:
+  """Open each transcript in turn; a missing file is reported and skipped.
+
+  Each file closes as the consumer moves to the next, so a session with many
+  subagent transcripts never holds every transcript open at once.
+  """
+  missing_paths: list[Path] = []
+  for path in transcript_paths:
+    try:
+      transcript = path.open()
+    except FileNotFoundError:
+      # SessionEnd can fire with a transcript that was never written (e.g. a
+      # session cleared before its first write); sum what exists rather than
+      # losing the whole session from the log.
+      missing_paths.append(path)
+      continue
+    with transcript:
+      yield transcript
   if missing_paths:
     log_diagnostic(
       f'{len(missing_paths)} transcript file(s) missing, summed the rest: '
       f'{", ".join(path.name for path in missing_paths)}'
     )
-  for oddity in sorted(oddities):
-    log_diagnostic(oddity)
-  return UsageTotals(
-    input_tokens=totals['input_tokens'],
-    output_tokens=totals['output_tokens'],
-    cache_creation_input_tokens=totals['cache_creation_input_tokens'],
-    cache_read_input_tokens=totals['cache_read_input_tokens'],
-  )
 
 
 def session_transcript_paths(transcript_path: Path) -> Sequence[Path]:
@@ -168,6 +196,19 @@ def session_transcript_paths(transcript_path: Path) -> Sequence[Path]:
     transcript_path.parent / transcript_path.stem / 'subagents'
   )
   return [transcript_path, *sorted(subagent_directory.glob('*.jsonl'))]
+
+
+def session_usage_totals(transcript_path: Path) -> UsageTotals:
+  """Sum the session's own transcript together with its subagents'.
+
+  Anomalies noticed along the way go to the diagnostic log.
+  """
+  summary = usage_summary(
+    _opened_transcripts(session_transcript_paths(transcript_path))
+  )
+  for anomaly in summary.anomalies:
+    log_diagnostic(anomaly)
+  return summary.totals
 
 
 def formatted_count(count: int) -> str:
@@ -261,7 +302,7 @@ def record_session_end(payload: Mapping[str, object], log_path: Path) -> None:
     session_value if isinstance(session_value, str) else transcript_path.stem
   )
 
-  totals = summed_usage(session_transcript_paths(transcript_path))
+  totals = session_usage_totals(transcript_path)
   new_line = tokens_line(totals)
   cwd_value = payload.get('cwd')
   project = Path(cwd_value).name if isinstance(cwd_value, str) else 'unknown'
@@ -346,7 +387,7 @@ def live_transcript_path(
 def print_live_counts(session_id: str | None) -> None:
   """Print the live session's marker line and provisional tokens line."""
   transcript_path, warning = live_transcript_path(Path.cwd(), session_id)
-  totals = summed_usage(session_transcript_paths(transcript_path))
+  totals = session_usage_totals(transcript_path)
   print(marker_line(transcript_path.stem))
   print(tokens_line(totals))
   if warning:
