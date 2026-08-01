@@ -97,6 +97,11 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     indented comment structure before reflowing it and convert that structure to
     markdown first; which constructs survive is written up in
     `claude/hooks/reflow_prose.py`'s module header.
+  - Note: to scope a repo's pass, reflow every Python file and read the diff —
+    `find . -name '*.py' | xargs python3 claude/hooks/reflow_prose.py`, then
+    `git diff` — reverting it until the structure is converted. In this repo
+    that surfaces a handful of files, two of whose test headers flatten an
+    indented `PYTHONPATH=… pytest …` command into prose.
 
 - [ ] **Build a license-header Stop lint** — a Stop-hook check flagging source
       files that lack the license block (copyright line + SPDX identifier, per
