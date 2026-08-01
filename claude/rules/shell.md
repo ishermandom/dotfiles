@@ -9,6 +9,10 @@ paths:
 
 # Shell script style guide
 
+- **Run `~/.claude/scripts/quiet-shell.sh` after writing shell**: it formats
+  with shfmt and lints with shellcheck. Nothing else will — unlike Markdown,
+  JavaScript, and Python, shell has no edit-time or Stop-time formatter, and
+  shfmt never wraps long lines, so keeping to 80 columns stays hand work.
 - **Prefer decomposing multi-step operations into named variables**: when a
   command sequence mixes concerns — capturing output, checking exit status, or
   chaining transformations — assign each step to a named variable

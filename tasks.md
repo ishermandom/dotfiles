@@ -196,37 +196,58 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: surfaced 2026-08-01 while unifying the review rules; left alone as out
     of scope.
 
-- [ ] **Autoformat shell scripts** {#shell-autoformat} — Markdown, JavaScript,
-      and Python each have a formatter wired into the edit or Stop hooks; shell
-      has none, so `rules/shell.md`'s conventions and the 80-column limit rest
-      on manual care alone. `claude/hooks/prettier-format.sh` carries two
-      over-length lines today.
-  - Worktree: shell-autoformat
-  - Rationale: queued 2026-08-01, when a fix to that hook left the two long
-    lines in place because tidying them by hand was out of the change's scope.
-  - Note: neither `shfmt` nor `shellcheck` is installed, so this starts with
-    choosing and installing a tool rather than with wiring.
-  - Note: wiring a formatter up leaves the files already over 80 untouched until
-    each is next edited, so clearing those is a separate pass — see
-    #shell-rewrap.
-  - Note: a formatter that reflows comment prose would overlap
-    `reflow_prose.py`, which handles that for Python only — worth deciding
-    whether shell prose belongs there instead.
-  - Note: if it earns a Stop-time check, add it as a step in `stop_checks.sh`
-    rather than as another parallel entry. Depends on #stop-orchestrator.
+- [ ] **Settle one test altitude for the two gate hooks** — `gate_git_test.py`
+      drives its gate through `main()` with a real hook payload, while
+      `gate_auto_tools_test.py` calls the `runs_gated_tool` predicate directly.
+      Neither breaks the test-via-public-APIs rule, but sibling tests over
+      near-identical PreToolUse gates shouldn't differ in depth without a stated
+      reason.
+  - Worktree: gate-test-altitude
+  - Rationale: queued 2026-07-31 during the `gate_auto_tools_test.py`
+    parametrize pass, which left the difference alone as out of scope.
+  - Note: converting means first giving `gate_auto_tools.main()` the
+    `stdin`/`stdout` parameters `gate_git.main()` already has — the auto-tools
+    gate reads `sys.stdin` directly today, against `rules/testing.md`'s
+    stream-injection rule.
+  - Note: the payload level covers behavior the predicate level cannot reach —
+    the fail-open path on an unparseable payload, and the shape of the emitted
+    deny decision. Both are untested today.
 
-- [ ] **Rewrap the shell scripts already over 80 columns** {#shell-rewrap} — a
-      formatter reaches a file only when that file is next edited, so
-      #shell-autoformat leaves today's violations standing, and each one's first
-      later edit then mixes a mechanical rewrap into a substantive diff. Four
-      files are over: `quiet-mypy.sh`, `quiet-prettier.sh`, `statusline.sh`, and
-      `hooks/prettier-format.sh`.
-  - Note: that list came from `rg -n --glob '*.sh' '.{81,}'` on 2026-08-01;
-    re-run it rather than trusting it, since any shell edit since then moves the
-    set.
-  - Note: worth doing whether or not #shell-autoformat ever lands — the pass is
-    the same either way, and doing it first means the formatter's own first
-    contact with each file produces no diff.
+- [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
+      shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
+      so nothing catches unformatted or unlinted shell the way Stop catches
+      Python.
+  - Rationale: the manual wrapper was chosen deliberately as the starting point;
+    promoting it to a Stop-time step is the open follow-on.
+  - Note: add it as a step in `stop_checks.sh` rather than as another parallel
+    entry. Depends on #stop-orchestrator.
+  - Note: `rules/shell.md` tells Claude to run the wrapper by hand because
+    nothing else will. Correct that claim when a hook starts doing it.
+  - Note: shellcheck reports 15 findings today (12 × SC2155 in
+    `gh-protect-test.sh`, plus SC2164, SC2086, SC2001), so a gating check needs
+    those cleared or consciously accepted first.
+
+- [ ] **Reflow shell comment prose to 80 columns** {#shell-prose-reflow} —
+      `reflow_prose.py` wraps comment and docstring prose for Python only, and
+      shfmt will never do it for shell, so shell comments are hand-fitted.
+  - Rationale: extending the existing reflow hook is preferred over adding a
+    second mechanism for the same job.
+  - Note: weigh the payoff before building — exactly 2 shell lines exceed 80
+    columns as prose today, at `claude/hooks/prettier-format.sh:5` and
+    `claude/scripts/quiet-mypy.sh:23`. The other 12 over-long lines are code,
+    which no formatter wraps.
+  - Note: take comment positions from `shfmt --to-json` rather than a line-based
+    scan. `claude/scripts/gh-protect.sh` heredocs JSON and `gh-protect-test.sh`
+    heredocs a stub script, both carrying `#` lines that are not comments.
+
+- [ ] **Rewrap the shell scripts already over 80 columns** {#shell-rewrap} —
+      shfmt never wraps a long line, whatever else it reformats, so every
+      violation stands until a human rewrites the line itself.
+  - Note: re-derive the set with `rg -n '.{81,}'` over the shell files rather
+    than trusting a list written here — any shell edit moves it, and a glob of
+    `*.sh` alone misses the zsh files.
+  - Note: the comment prose among them could be automated instead — that is
+    #shell-prose-reflow. The remainder is code, which no formatter wraps.
 
 - [ ] **Give config work a safe way to validate against the live harness** —
       `/fanout` tells an agent whose task changes hooks, `settings.json`, or
