@@ -7,6 +7,7 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
+  "buffer_font_size": 18.0,
   "title_bar": {
     "show_branch_status_icon": true,
     "show_sign_in": false,
@@ -56,7 +57,6 @@
   "base_keymap": "Emacs",
   "icon_theme": "Zed (Default)",
   "ui_font_size": 16,
-  "buffer_font_size": 18.0,
   "theme": {
     "mode": "dark",
     "light": "One Light",
