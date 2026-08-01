@@ -33,5 +33,7 @@ Maintainer rationale for the `fanout` skill.
   attention is the tighter limit in practice, since finished branches queue for
   it serially.
 
-- **Worktrees need no gitignore entry**: git ignores the paths it has registered
-  as worktrees, so `.claude/worktrees/` stays out of `git status` on its own.
+- **`.claude/worktrees/` needs a gitignore entry**: a worktree directory shows
+  up as untracked in the repo that hosts it, which would otherwise make the
+  step-2 base check report a gap for every worktree left over from an earlier
+  run.
