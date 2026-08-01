@@ -33,7 +33,7 @@ that make a rule fire (trigger phrasing, stakes), even when they are longer.
 Optimize for utility first, brevity second. This guide is itself a rules file —
 its own rules apply when editing it.
 
-## When writing a rule
+## When writing a rule {#writing-a-rule}
 
 Users typically state a goal; Claude formulates the rule text. Apply these
 checks first — if the rule fails one, surface the issue to the user rather than

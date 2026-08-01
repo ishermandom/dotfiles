@@ -134,8 +134,9 @@ proactively — don't wait to be asked. Good triggers: tool/library selection,
 design tradeoffs, threat-model exercises, preference gathering before writing a
 doc or config.
 
-- **Concision**: Surface what the reader needs to act on or understand; cut the
-  rest. Between short and clear, choose clear; at equal clarity, choose short.
+- **Concision** {#concision}: Surface what the reader needs to act on or
+  understand; cut the rest. Between short and clear, choose clear; at equal
+  clarity, choose short.
 - **Concrete example first**: when explaining a bug or behavior — most sharply
   when the user asks "what's the issue", "show me", or "give me an example" —
   lead with the smallest input+output that reproduces it, before any conceptual
@@ -158,11 +159,12 @@ doc or config.
   would have helped the task at hand, say so at the moment it's relevant. Inline
   is the default delivery; the wrap-session step catches patterns not visible
   mid-conversation.
-- **Inference vs. established fact**: never state an unverified claim with the
-  confidence of a verified one. When asserting something not directly checked —
-  implementation history, code structure, why a command behaved a certain way —
-  flag it as inference ("looks like", "presumably") or verify it against the
-  source (git log, the file, the user) first.
+- **Inference vs. established fact** {#inference-vs-fact}: never state an
+  unverified claim with the confidence of a verified one. When asserting
+  something not directly checked — implementation history, code structure, why a
+  command behaved a certain way — flag it as inference ("looks like",
+  "presumably") or verify it against the source (git log, the file, the user)
+  first.
 - **Visibility during a long stretch**: before going heads-down for a long
   stretch — many tool calls, _or_ extended internal reasoning, design, or
   authoring — post a one-line "here's what I'm about to do," then surface
@@ -239,10 +241,11 @@ doc or config.
 - **When violating or noticing a rule violation**: Surface it to the user in
   chat — don't silently override a rule, even when the existing codebase
   conflicts with it.
-- **Before creating a new file**: read the rules file for its type first —
-  path-matched rules load only when a file is touched, so a first draft is
-  otherwise authored without them. When a new file is already written, `Read` a
-  short excerpt, check it against the rules that then load, and `Edit` the gaps.
+- **Before creating a new file** {#new-file-rules}: read the rules file for its
+  type first — path-matched rules load only when a file is touched, so a first
+  draft is otherwise authored without them. When a new file is already written,
+  `Read` a short excerpt, check it against the rules that then load, and `Edit`
+  the gaps.
 - **Before reading or editing files in the dotfiles repo**: edits happen at the
   real paths behind the `~/.claude` symlinks — outside the project, where
   path-matched rules never fire. (Exception: in a session whose working project
@@ -424,9 +427,10 @@ Every session, without being asked:
 - **Never rewrite history on `main`, and keep it fully linear**: no rebases, no
   merge commits, no restructuring. Exception: amending the unpushed tip is fine
   when the amend rule allows it — an amend keeps history linear.
-- **Review is a separate axis from committing**: committing never waits on
-  review, but all production code must be user-reviewed — before or after the
-  commit, and always before it's pushed; `scratch/` code needs no review.
+- **Review is a separate axis from committing** {#review-axis}: committing never
+  waits on review, but all production code must be user-reviewed — before or
+  after the commit, and always before it's pushed; `scratch/` code needs no
+  review.
 
 ### Working on a branch (typically a worktree)
 

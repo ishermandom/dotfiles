@@ -13,10 +13,10 @@ attention landed on it — the gap is between holding the rule and applying it.
 
 An adjacent group of cases — a first draft of a **new file** written against
 rules not yet in context — has a mechanical cause and a fix in CLAUDE.md
-("Before creating a new file"). Path-matched rules load only when a file is
-touched, so a new file's first draft is otherwise authored before its rules
-arrive. Those cases are not in this record; adding one here that turns out to be
-a new-file case would obscure the distinction.
+`#new-file-rules`. Path-matched rules load only when a file is touched, so a new
+file's first draft is otherwise authored before its rules arrive. Those cases
+are not in this record; adding one here that turns out to be a new-file case
+would obscure the distinction.
 
 The cases below are different: the rule was loaded, the file already existed or
 the output was chat, and the rule was dropped anyway.
@@ -68,7 +68,7 @@ summary" was loaded when a tracker note was written that re-narrated a commit.
 The user's response was that it does not inform future work. The rule was
 dropped at write time and applied only after.
 
-**2026-07-05 · chat output.** CLAUDE.md's Concision rule was loaded for a whole
+**2026-07-05 · chat output.** CLAUDE.md `#concision` was loaded for a whole
 session and applied to file prose when asked, but not to Claude's own chat
 drafts, which ran to multi-paragraph explanations until the user forced a trim —
 each round costing a full extra turn. The entry notes the rule was "directly

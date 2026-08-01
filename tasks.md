@@ -104,10 +104,26 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 
 - [ ] **Build a license-header Stop lint** — a Stop-hook check flagging source
       files that lack the license block (copyright line + SPDX identifier, per
-      CLAUDE.md's License rule). Once it exists and holds, shrink the CLAUDE.md
-      License rule to a pointer, per the graduation policy. Queued from the
+      CLAUDE.md `#license`). Once it exists and holds, shrink the CLAUDE.md
+      `#license` rule to a pointer, per the graduation policy. Queued from the
       2026-07 adversarial review (cluster F2, ratified 2026-07-04).
   - Note: depends on #stop-orchestrator — build the check as a step in
+    `stop_checks.sh`, not as another parallel Stop entry.
+
+- [ ] **Lint slug anchors against their citations** — the cross-reference
+      convention now spans CLAUDE.md, `rules/`, `docs/`, `skills/`, and
+      `tasks.md`, but the "check for stale references" instruction in
+      `rules/claude-configuration.md` is manual, so a renamed or deleted anchor
+      leaves a dangling citation that nothing catches. Compare `{#slug}`
+      definitions against backticked `#slug` citations and report both
+      directions — dangling citations, and anchors nothing cites (the rule says
+      to add slugs lazily, so an uncited anchor is also a defect).
+  - Note: two `rg` passes plus a set comparison suffice; the 2026-07-31 session
+    ran the check ad hoc while converting the citations.
+  - Note: illustrative placeholders must not trip it — `#slug` in
+    `claude-configuration.md`'s own template, and `#smoke-test` and
+    `#session-log` in `rules/markdown.md`'s examples.
+  - Note: depends on #stop-orchestrator — build it as a step in
     `stop_checks.sh`, not as another parallel Stop entry.
 
 - [ ] **Reconcile `gate_auto_tools_test.py` with the no-loop testing rule** —
@@ -173,9 +189,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 - [ ] **Align skill review-gating with the review-is-a-separate-axis rule** —
       `ownership-walkthrough` (frames review as settled before anything is
       committed) and `wrap-session` step 5 (withholds a durable chunk's commit
-      pending the walkthrough) are now stricter than CLAUDE.md's Committing
-      rule: committing never waits on review; production code is reviewed before
-      push.
+      pending the walkthrough) are now stricter than CLAUDE.md `#review-axis`:
+      committing never waits on review; production code is reviewed before push.
   - Rationale: queued 2026-07-07 when the Git-section edit decoupled review from
     committing. Pre-commit review remains a valid ordering, so the mismatch is
     posture, not breakage.

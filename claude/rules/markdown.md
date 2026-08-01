@@ -60,7 +60,7 @@ structure to use, what enters the tracker, and how aggressively to prune are
 per-project judgments — keep the process light. Create the file when loose ends
 start accumulating; single-session task breakdowns usually live in chat.
 
-### When resuming work from a tasks file
+### When resuming work from a tasks file {#resume-protocol}
 
 At the start of a session, the `whats-next` skill drives this — see it for the
 resume protocol.

@@ -4,12 +4,12 @@ Accumulated evidence for one open question in `SKILL.md`'s **Pending
 evaluations**: what, if anything, would actually stop Claude from stating
 unchecked claims with the confidence of checked ones.
 
-CLAUDE.md's "Inference vs. established fact" rule already covers this and was
-loaded in every session below. It was violated in roughly thirteen of the
-seventy-nine reflection entries between 2026-06-18 and 2026-07-30 — the most
-frequently violated rule in that span by a wide margin. The 2026-07-30
-distillation run could not produce a fix it could argue would fire, so the
-evidence is parked here instead of spent on a rule that would not work.
+CLAUDE.md `#inference-vs-fact` already covers this and was loaded in every
+session below. It was violated in roughly thirteen of the seventy-nine
+reflection entries between 2026-06-18 and 2026-07-30 — the most frequently
+violated rule in that span by a wide margin. The 2026-07-30 distillation run
+could not produce a fix it could argue would fire, so the evidence is parked
+here instead of spent on a rule that would not work.
 
 These cases are preserved rather than left in the session log because each
 distillation run scopes to entries after the most recent marker. The 2026-07-30
@@ -24,7 +24,7 @@ element matters most — a mechanism can only key on something present at the
 moment of the claim.
 
 Resolve the question when a candidate mechanism survives the checks in
-`rules/claude-configuration.md` ("When writing a rule"), particularly
+`rules/claude-configuration.md` `#writing-a-rule`, particularly
 **recognizability** and **anchor to transitions, not ambient conditions**. Drop
 the question if the pattern stops recurring.
 

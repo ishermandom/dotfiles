@@ -83,26 +83,26 @@ the in-scope log; trim entries as they are answered.
 ### Unverified claims stated as fact
 
 **Question:** what mechanism, if any, would stop Claude from stating unchecked
-claims with the confidence of checked ones? CLAUDE.md's "Inference vs.
-established fact" rule covers the behavior and was loaded in every session that
-violated it — roughly thirteen between 2026-06-18 and 2026-07-30, the most
-violated rule of that span — so the gap is in firing, not in wording.
-**Measure:** read `inference-vs-fact-cases.md` beside this file before proposing
-anything. It holds the accumulated cases, the approaches already rejected, and
-the sessions where the rule did fire; append new instances there as they occur.
-Act only when a candidate survives the "When writing a rule" checks in
-`rules/claude-configuration.md` — recognizability and transition-anchoring above
-all. Drop the question if the pattern stops recurring.
+claims with the confidence of checked ones? CLAUDE.md `#inference-vs-fact`
+covers the behavior and was loaded in every session that violated it — roughly
+thirteen between 2026-06-18 and 2026-07-30, the most violated rule of that span
+— so the gap is in firing, not in wording. **Measure:** read
+`inference-vs-fact-cases.md` beside this file before proposing anything. It
+holds the accumulated cases, the approaches already rejected, and the sessions
+where the rule did fire; append new instances there as they occur. Act only when
+a candidate survives the `rules/claude-configuration.md` `#writing-a-rule`
+checks — recognizability and transition-anchoring above all. Drop the question
+if the pattern stops recurring.
 
 ### Loaded rules dropped while authoring
 
 **Question:** what would make a rule that is loaded, quotable, and directly
 applicable fire while Claude is writing, rather than after a review or a user
 correction surfaces it? The new-file half of this pattern has a mechanical cause
-and is already handled by CLAUDE.md's "Before creating a new file"; what remains
-is rules dropped while editing an existing file or writing chat, with the rule
-in context throughout. **Measure:** read `rules-not-self-applied-cases.md`
-beside this file before proposing anything — it holds the cases and the
-approaches already rejected, including two wordings that failed on coverage or
-cost. Append new instances there, noting whether each dropped rule was a single
-directive or enumerated the constructs it applies to.
+and is already handled by CLAUDE.md `#new-file-rules`; what remains is rules
+dropped while editing an existing file or writing chat, with the rule in context
+throughout. **Measure:** read `rules-not-self-applied-cases.md` beside this file
+before proposing anything — it holds the cases and the approaches already
+rejected, including two wordings that failed on coverage or cost. Append new
+instances there, noting whether each dropped rule was a single directive or
+enumerated the constructs it applies to.
