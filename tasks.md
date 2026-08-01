@@ -265,3 +265,42 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     #consolidation-recheck. The validate-live-not-from-docs auto-memory covers
     adjacent ground and may fold in, since a global authoritative preference
     belongs in CLAUDE.md per #disprefer-memory.
+
+- [ ] **Give config work a safe way to validate against the live harness** —
+      `/fanout` tells an agent whose task changes hooks, `settings.json`, or
+      anything else behind `~/.claude` to validate in the main checkout, but
+      names no mechanism for doing so. Writing the change into the main checkout
+      is the only way to act on that instruction, and every session on the
+      machine then executes it — unreviewed and uncommitted.
+  - Rationale: queued 2026-08-01, after the reflow-hook agent copied its
+    modified `reflow_prose.py` into the main checkout to exercise the live
+    PostToolUse hook, leaving every concurrent session running that copy.
+  - Note: a disposable inner session carrying the worktree's own config is one
+    candidate — `claude -p --settings <rewritten>` with the hook paths pointed
+    into the worktree, plus `--setting-sources` to drop the user-level entries.
+    Untested; whether that cleanly excludes the live hooks is the open question.
+  - Note: whichever mechanism wins, `/fanout`'s launch step has to change with
+    it. The current "validate in the main checkout" wording is what licenses the
+    unsafe act, so leaving it in place would preserve the edge.
+
+- [ ] **Record how to fan out tasks that share a file** — one task per worktree
+      keeps each agent's review surface small, but two tasks touching the same
+      file cannot run as concurrent lanes without a landing conflict in the
+      messy sense. Sequencing them across separate fanouts is the resolution,
+      and nothing states it.
+  - Rationale: queued 2026-08-01, after pairing two tasks into a single worktree
+    to dodge that collision. One lane handled the pairing; the other spent a
+    long stretch on a wrong solution, inside a diff too large to review
+    comfortably.
+  - Note: `fanout/notes.md` is the home. The skill never recommends assigning
+    several tasks to one worker, so what is missing is maintainer rationale for
+    the constraint behind that, not a change to the rules.
+
+- [ ] **Have a teardown session close itself instead of printing the command** —
+      `fanout-teardown`'s final step hands the user a `claude stop <id>` to run,
+      on the reasoning that a session cannot stop itself. Running the command
+      from inside the session in fact works (verified 2026-08-01), so the step
+      can simply do it.
+  - Note: the stated reasoning has to go with the behavior. Left in place,
+    "teardown is running inside that session, so it cannot stop itself" would
+    argue the change back out on the next edit.
