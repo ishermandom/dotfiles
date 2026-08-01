@@ -145,7 +145,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     holds documentation-only ones. The scope clauses on "Plain language over
     jargon" and "Concepts over implementation" differ by exactly that item.
 
-- [ ] **Legibility sweep of config prose** — apply the
+- [ ] **Legibility sweep of config prose** {#legibility-sweep} — apply the
       make-each-idea-separately-legible rule (rules/claude-configuration.md)
       across CLAUDE.md, rules/, docs/, and skills/. First assess all files and
       rank the worst offenders; then fix them in reviewable chunks sized to the
@@ -156,11 +156,15 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 - [ ] **Add a legibility pass to the config-review skill** — a consistent pass
       applying the make-each-idea-separately-legible rule
       (rules/claude-configuration.md), so config prose stays legible as it lands
-      rather than waiting for another sweep.
-  - Worktree: config-review-legibility
+      rather than waiting for another sweep. Depends on #legibility-sweep.
   - Note: the pass also self-applies — run it on any rule text the review itself
     adds or rewrites. Self-application caught four refinements in one pass
     during the legibility rule's own drafting (2026-07-04).
+  - Open question: a recurring fan-out angle in `/config-review` would do what
+    the sweep does — assess, rank, then fix in review-sized chunks — so the two
+    may want to be one mechanism. The task's queuing commit calls this "a
+    matching pass," which reads as a recurring audit rather than only a
+    self-check on text the review itself writes. Settle when the sweep lands.
 
 - [ ] **Align skill review-gating with the review-is-a-separate-axis rule** —
       `ownership-walkthrough` (frames review as settled before anything is
