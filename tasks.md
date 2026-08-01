@@ -215,30 +215,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the comment prose among them could be automated instead — that is
     #shell-prose-reflow. The remainder is code, which no formatter wraps.
 
-- [ ] **Give config work a safe way to validate against the live harness** —
-      `/fanout` tells an agent whose task changes hooks, `settings.json`, or
-      anything else behind `~/.claude` to validate in the main checkout, but
-      names no mechanism for doing so. Writing the change into the main checkout
-      is the only way to act on that instruction, and every session on the
-      machine then executes it — unreviewed and uncommitted.
-  - Worktree: safe-config-validation
-  - Rationale: queued 2026-08-01, after the reflow-hook agent copied its
-    modified `reflow_prose.py` into the main checkout to exercise the live
-    PostToolUse hook, leaving every concurrent session running that copy.
-  - Note: a disposable inner session carrying the worktree's own config is one
-    candidate — `claude -p --settings <rewritten>` with the hook paths pointed
-    into the worktree, plus `--setting-sources` to drop the user-level entries.
-    Untested; whether that cleanly excludes the live hooks is the open question.
-  - Note: whichever mechanism wins, `/fanout`'s launch step has to change with
-    it. The current "validate in the main checkout" wording is what licenses the
-    unsafe act, so leaving it in place would preserve the edge.
-  - Note: a hook that is a plain stdin-to-stdout program needs no live harness
-    at all — run the worktree copy and the main checkout copy as subprocesses
-    over one corpus and diff every result. That settled both gate hooks on
-    2026-08-01 across 244 inputs with nothing written outside the worktree. It
-    does not reach hooks whose effect is a file rewrite, or `settings.json`,
-    which still want the inner-session mechanism above.
-
 - [ ] **Record how to fan out tasks that share a file** — one task per worktree
       keeps each agent's review surface small, but two tasks touching the same
       file cannot run as concurrent lanes without a landing conflict in the
