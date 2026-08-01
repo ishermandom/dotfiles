@@ -42,20 +42,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: validate after wiring per the hooks rule — one deliberate mypy-failure
     Stop cycle (failure surfaces to the user), then a clean pass.
 
-- [ ] **Stop a worktree session from formatting the main checkout** —
-      `prettier-format.sh` formats the current directory, then formats the
-      dotfiles root too whenever the two differ, so a session in another project
-      still tidies dotfiles. A worktree of this repo meets that condition as
-      well, so every fanned-out agent reformats the user's main working copy on
-      each Stop (verified 2026-07-31 from the zed-prettier worktree).
-  - Note: during a fanout, several agents then write into one checkout at once —
-    the concurrent-rewrite hazard #stop-orchestrator describes, without the
-    single-session assumption that makes it rare there.
-  - Note: the condition wants "a different project", not "a different
-    directory". Testing whether the working directory sits anywhere inside the
-    dotfiles repo, worktrees included, would keep the cross-project behavior and
-    drop the self-formatting.
-
 - [ ] **Surface ruff lint failures at Stop, and clear the open ones** —
       `claude/hooks/reflow_prose.py` carries two `B905` errors (`zip()` without
       an explicit `strict=`). `~/.claude/scripts/quiet-ruff.sh` reports them,
@@ -253,3 +239,36 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     ran all 252 tests and looked like it had worked.
   - Note: `-k <expression>` does narrow the run today — the workaround until the
     argument handling changes.
+
+- [ ] **Autoformat shell scripts** — Markdown, JavaScript, and Python each have
+      a formatter wired into the edit or Stop hooks; shell has none, so
+      `rules/shell.md`'s conventions and the 80-column limit rest on manual care
+      alone. `claude/hooks/prettier-format.sh` carries two over-length lines
+      today.
+  - Rationale: queued 2026-08-01, when a fix to that hook left the two long
+    lines in place because tidying them by hand was out of the change's scope.
+  - Note: neither `shfmt` nor `shellcheck` is installed, so this starts with
+    choosing and installing a tool rather than with wiring.
+  - Note: a formatter that reflows comment prose would overlap
+    `reflow_prose.py`, which handles that for Python only — worth deciding
+    whether shell prose belongs there instead.
+  - Note: if it earns a Stop-time check, add it as a step in `stop_checks.sh`
+    rather than as another parallel entry. Depends on #stop-orchestrator.
+
+- [ ] **Determine what makes `claude agents` flag a thread as needing input** —
+      the fanout workflow routes attention entirely through that view and keeps
+      no status machinery of its own, so what sets a session to `waiting` is
+      load-bearing yet undocumented. Establish the rule, and whether a finished
+      session can be told apart from a stalled one.
+  - Note: the sharpest question is `idle`, which covers both a session that
+    finished and one that died mid-task. If nothing separates them, the fanout
+    has no way to say which threads still owe work.
+  - Note: partial findings from CLI 2.1.220, worth re-confirming rather than
+    trusting — `claude agents --json` reports `status` as `busy`, `idle`, or
+    `waiting` alongside a `waitingFor` reason, and live session state sits in
+    `~/.claude/sessions/<pid>.json`. `waiting` appeared to track whichever
+    dialog is open, with a per-dialog reason defaulting to "permission prompt".
+  - Note: that session schema also carries `state`, `detail`, `tempo`, and
+    `needs` fields which local sessions leave unset. They may belong to the
+    cloud-agent surface, which would explain why its richer `blocked` state
+    never shows up locally.
