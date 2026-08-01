@@ -6,13 +6,16 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       docstring** — when a line exceeds 80 only because the trailing `"""`
       counts, the hook moves those three characters to a line of their own,
       leaving a dangling quote no one would write by hand.
-  - Worktree: reflow-hook
   - Rationale: queued 2026-07-31, hit on four such docstrings in the bridge repo
     during a repo-wide reflow, every one of them at exactly 81 columns.
   - Note: the human fix is to reword the docstring to fit, which the hook cannot
-    do. So detecting the case and leaving the line untouched may beat splitting
-    it — a silent bad split is worse than a visible violation, which a width
-    check still catches.
+    do. Nothing flags the long line left behind either — the global ruff config
+    ignores `E501`, and `ruff format` never touches comment prose — so a fix
+    that declines to act leaves no trace for a check to catch.
+  - Note: leaving the line untouched, by detecting the case and declining to
+    render the chunk, was built and then reverted 2026-08-01; a differently
+    shaped fix is wanted. That shape also caught prose already wrapped across
+    two compliant lines whose merge would have overflowed.
 
 - [ ] **Reconsider the "inline rationale: at most one clause" cap** — the cap in
       rules/claude-configuration.md served an earlier token-limiting goal; the
@@ -76,19 +79,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     ACLs grant each of them read and write, but installed files stay owned by
     whichever account ran the install. Verify before committing to the approach.
 
-- [ ] **Honor a project's own line length in the prose reflow hook** —
-      `claude/hooks/reflow_prose.py` assumes 80 columns everywhere (see the TODO
-      at `LINE_WIDTH`); read the target repo's ruff `line-length` or equivalent
-      instead.
-  - Worktree: reflow-hook
-  - Note: two accepted latency levers if the hook ever feels slow, both cheaper
-    than a rewrite: a shell shim gating on file suffix before Python starts (~37
-    ms saved per non-Python edit), and a filler-only mode dropping prettier (~75
-    ms per reflow, losing markdown-aware layout).
-  - Note: a Stop-time reflow safety net (mirroring the markdown design) was
-    deliberately omitted — files changed by Bash or scripts stay un-reflowed
-    until their next Edit. Revisit only if that gap bites in practice.
-
 - [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
       (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring
       prose only when that file is next edited, so files untouched since the
@@ -97,6 +87,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `gate_auto_tools.py` reflow diff, 2026-07-02). Rewrap each repo's Python
       files in a dedicated pass, one commit per repo, so future diffs stay
       clean.
+  - Note: a Stop-time reflow safety net (mirroring the markdown design) was
+    deliberately omitted, which is why this pass is manual — files changed by
+    Bash or scripts stay un-reflowed until their next Edit. Revisit only if that
+    gap bites in practice.
 
 - [ ] **Build a license-header Stop lint** — a Stop-hook check flagging source
       files that lack the license block (copyright line + SPDX identifier, per
