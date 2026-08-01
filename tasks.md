@@ -229,6 +229,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       hands an agent a worktree handle and nothing more, and the
       background-agent view lists only that handle, so nothing says which
       tracker task a session actually picked up short of attaching to it.
+  - Worktree: recap-on-start
   - Rationale: queued 2026-08-01 after a three-lane fanout, where the lane names
     alone did not convey what any agent was working on.
   - Note: the recap belongs in `claude/skills/fanout/agent-prompt.md`, the file
