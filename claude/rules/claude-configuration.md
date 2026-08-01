@@ -118,15 +118,15 @@ compressing it — for an under-firing rule, the rationale and concrete match
 targets are the firing mechanism, and cutting them lowers the firing rate
 further.
 
-**Maintainer rationale**: when the "why" informs future editing but Claude
-doesn't need it to apply the rule, the home depends on the file. In path-matched
-rules files, an HTML comment is stripped on injection (verified 2026-07-03) —
-free, use it liberally. In CLAUDE.md, comments are _not_ stripped: they bill
-tokens and attention on every message, so rationale beyond a one-clause inline
-why goes to CLAUDE.md's companion notes file, `docs/claude-md-notes.md`, never a
-comment. `SKILL.md` and docs never strip either; for a skill, keep the
-editing-time why in a companion notes file — see "When recording maintainer
-rationale for a skill".
+**Maintainer rationale** {#maintainer-rationale}: when the "why" informs future
+editing but Claude doesn't need it to apply the rule, the home depends on the
+file. In path-matched rules files, an HTML comment is stripped on injection
+(verified 2026-07-03) — free, use it liberally. In CLAUDE.md, comments are _not_
+stripped: they bill tokens and attention on every message, so rationale beyond a
+one-clause inline why goes to CLAUDE.md's companion notes file,
+`docs/claude-md-notes.md`, never a comment. `SKILL.md` and docs never strip
+either; for a skill, keep the editing-time why in a companion notes file — see
+`#skill-rationale` below.
 
 **Specificity floor**: Give every rule a concrete, detectable trigger — the
 primary way to pass the checks above. "Write clear names" doesn't fire. "When
@@ -200,7 +200,7 @@ for the matched path) alone.
 with patterns Claude observes in the current project, surface it to the user as
 a candidate for revision rather than silently ignoring or following it.
 
-## When recording maintainer rationale for a skill
+## When recording maintainer rationale for a skill {#skill-rationale}
 
 Maintainer rationale is the editing-time "why" a future editor needs but the
 running skill does not. `SKILL.md` enters context verbatim whenever the skill
@@ -224,14 +224,15 @@ pull it in and defeat the purpose.
 skill's `notes.md` and cross-reference it from the other skills' notes — one
 home, no drift.
 
-## When cross-referencing a section externally
+## When cross-referencing a section
 
-**When citing a section from another file**: add a short descriptive slug to the
-heading — `## Heading {#slug}` — or, when the target is one bullet in a list, to
-its bold label: `- **Label** {#slug}: …`. Cite it as the filename plus the
-backticked slug, never the heading text: CLAUDE.md `#disprefer-memory`. A slug
-survives rewording; a quoted heading goes stale silently. Add slugs lazily —
-only when actively needed for cross-links.
+**When citing a section**: add a short descriptive slug to the heading —
+`## Heading {#slug}` — or, when the target is one bullet in a list, to its bold
+label: `- **Label** {#slug}: …`. Cite it as the filename plus the backticked
+slug, never the heading text: CLAUDE.md `#disprefer-memory`; within the same
+file, the backticked slug alone. A slug survives rewording; a quoted heading
+goes stale silently. Add slugs lazily — only when actively needed for
+cross-links.
 
 **When renaming a slug**: check for stale references and update them to match.
 

@@ -36,11 +36,11 @@ fresh. Never lower the quality bar because a project is small.
   alike. Standard technical terms (API, HTTP, JSON, CLI, regex) are fine as-is;
   avoid reaching for an obscure or invented acronym when a plain phrase says the
   same thing as clearly
-- **Pronouns and demonstratives**: point every `it`, `this`, `that`, `these`,
-  `those`, and `one` at a noun the text has already named, with no competing
-  noun in between — in chat responses, comments, docstrings, and documentation
-  alike. Otherwise name the thing outright: the hunt for a referent costs more
-  than the shorthand saves
+- **Pronouns and demonstratives** {#pronouns}: point every `it`, `this`, `that`,
+  `these`, `those`, and `one` at a noun the text has already named, with no
+  competing noun in between — in chat responses, comments, docstrings, and
+  documentation alike. Otherwise name the thing outright: the hunt for a
+  referent costs more than the shorthand saves
 - **Boolean names**: prefix with `is_`, `has_`, `can_`, `does_`, or another verb
   that communicates boolean intent at a glance — `satisfies_foo`, `uses_foo`,
   `allows_foo`. A bare noun like `tense_agreement` doesn't signal its type;
@@ -104,13 +104,13 @@ fresh. Never lower the quality bar because a project is small.
   implicit shared state that can't be overridden in tests without reaching into
   the module internals. A class that accepts its dependencies through the
   constructor makes them explicit and replaceable
-- **License**: include a license block at the top of every source file — most
-  repos here are public, so the block removes licensing ambiguity. For personal
-  projects, default to MIT: a copyright line followed by an SPDX identifier
-  (e.g. `# Copyright YEAR Name` / `# SPDX-License-Identifier: MIT`, using the
-  language's comment syntax). Default name: `Ilya Sherman (ishermandom@)`. Never
-  add the block to markdown or other prose files — the repo's `LICENSE` covers
-  them
+- **License** {#license}: include a license block at the top of every source
+  file — most repos here are public, so the block removes licensing ambiguity.
+  For personal projects, default to MIT: a copyright line followed by an SPDX
+  identifier (e.g. `# Copyright YEAR Name` / `# SPDX-License-Identifier: MIT`,
+  using the language's comment syntax). Default name:
+  `Ilya Sherman (ishermandom@)`. Never add the block to markdown or other prose
+  files — the repo's `LICENSE` covers them
 - **Abstract types in API signatures**: prefer abstract collection types over
   concrete ones in function signatures — the contract should express
   constraints, not implementation details. Applies to parameters and return
@@ -126,7 +126,7 @@ it for what doesn't belong in a tracked file: a project-local fact too informal
 to track, or one that recalls rarely enough that its load-only-when-recalled
 cost pays off.
 
-## Interaction style
+## Interaction style {#interaction-style}
 
 When gathering structured preferences or exploring a decision with a small,
 enumerable option set, use `AskUserQuestion` with multiple-choice options
@@ -176,10 +176,10 @@ doc or config.
   prefer breaking it up and externalizing verification (a first cut plus tests,
   run) over simulating every case in one internal pass — that is both more
   visible and more efficient. Pace by task structure, not a clock interval.
-- **Disagreement and pushback**: never silently execute an approach believed to
-  be mistaken — going along is worse than the friction of raising it. Raise
-  concerns at planning time — before code is written — calibrated by
-  consequence:
+- **Disagreement and pushback** {#disagreement}: never silently execute an
+  approach believed to be mistaken — going along is worse than the friction of
+  raising it. Raise concerns at planning time — before code is written —
+  calibrated by consequence:
   - A preference or minor inefficiency, easily changed later: note it in one
     sentence and proceed.
   - Likely rework, wrong results, or a hard-to-reverse choice: stop and ask
@@ -187,7 +187,7 @@ doc or config.
   - Confident the approach breaks something or contradicts the stated goal:
     don't execute; explain and propose an alternative.
 
-## Working method
+## Working method {#working-method}
 
 - **Technology currency**: For questions about current best-in-class tools,
   models, or libraries, run a web research agent call before making
@@ -259,7 +259,7 @@ doc or config.
   - any file with `test` in its name → `~/.claude/rules/testing.md`, in addition
     to its language rule
 
-## Review approach
+## Review approach {#review-approach}
 
 **When a durable chunk of work is complete** — a feature, a refactor, a new file
 or skill, anything meant to last — work it end-to-end, then review (before or
@@ -284,7 +284,7 @@ When the user gives multiple tasks at once, add them all to the project's
 `tasks.md` (the task tracker) first and ask which to start with. Don't act on a
 list of items in sequence without checking in between.
 
-## Exploratory mode
+## Exploratory mode {#exploratory-mode}
 
 **When work is exploratory** — a spike, a feasibility probe, a design sketch —
 propose the lighter prototyping bar. Enter exploratory mode only with the user's
@@ -314,10 +314,10 @@ Every session, without being asked:
   the current branch) or a wrong value would fail loudly on the next step, skip
   the confirming query; it costs a call, often a permission prompt, for no new
   information.
-- **Prefer `Edit` over `Write` for an existing file** — output tokens drive
-  cost, and `Edit` regenerates only the changed lines while `Write` regenerates
-  the whole file. `Edit` is cheaper for focused changes; `Write` for a
-  near-total rewrite or a large deletion. Pick whichever generates less.
+- **Prefer `Edit` over `Write` for an existing file** {#prefer-edit} — output
+  tokens drive cost, and `Edit` regenerates only the changed lines while `Write`
+  regenerates the whole file. `Edit` is cheaper for focused changes; `Write` for
+  a near-total rewrite or a large deletion. Pick whichever generates less.
 - **Resolve symlinks before editing** — `Edit` and `Write` reject symlink paths,
   wasting a round-trip. Use `readlink -f <path>` to get the real path first.
   Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
@@ -340,11 +340,11 @@ Every session, without being asked:
 - **Don't reflexively measure line width by hand where a formatter owns the
   file** — the reflow hooks settle it on every edit. Where no formatter runs,
   use `wc -L`; `awk length` counts bytes, overcounting every em dash.
-- **Prefer to search code with `rg`**: ripgrep for recursive searches. The
-  bundled `grep` shim (backed by ugrep) handles quick literal or piped lookups,
-  and is the better pick for compressed/archived logs and fuzzy matching — but
-  it runs in BRE mode: `|`, `+`, `(` are literal without `-E`. `rg` skips hidden
-  files and directories unless passed `--hidden`.
+- **Prefer to search code with `rg`** {#prefer-rg}: ripgrep for recursive
+  searches. The bundled `grep` shim (backed by ugrep) handles quick literal or
+  piped lookups, and is the better pick for compressed/archived logs and fuzzy
+  matching — but it runs in BRE mode: `|`, `+`, `(` are literal without `-E`.
+  `rg` skips hidden files and directories unless passed `--hidden`.
 - **Read files incrementally**: use `grep`/`find` to locate relevant sections,
   then read only those ranges with `offset`/`limit`. For edits, grep for the
   insertion point and read a small window around it — a full file read is rarely

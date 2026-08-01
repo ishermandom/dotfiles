@@ -105,7 +105,7 @@ couldn't infer in a future session; omit the rest. For longer rationale, a
 than deeply indented task bullets.
 
 When a decision is settled in the spec, the note is a pointer — e.g.
-`Note: settled — see spec.md (Session log).` — not a summary. A summary
+`Note: settled — see spec.md #session-log.` — not a summary. A summary
 duplicates the spec and drifts; keep only fragments the spec doesn't carry.
 
 ### When cross-referencing tasks

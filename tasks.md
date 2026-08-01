@@ -2,25 +2,6 @@
 
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
 
-- [ ] **Convert heading-text cross-references to slugs** —
-      `rules/claude-configuration.md` says to cite a section as the filename
-      plus a backticked slug, never the heading text, but the repo still cites
-      by heading text: `docs/design.md` in six places (e.g. "CLAUDE.md (Working
-      method)", "CLAUDE.md (Interaction style)"), all five
-      `docs/claude-md-notes.md` headings, and `skills/wrap-session/notes.md`
-      pointing at design.md the same way. Ratified 2026-07-29 — convert the
-      references rather than soften the rule.
-  - Note: the slugs land on roughly seven CLAUDE.md headings (Style, Git,
-    Working method, Interaction style, Review approach, Exploratory mode, Token
-    and context efficiency) plus `claude-configuration.md`'s "Maintainer
-    rationale" label — a small permanent cost in the always-loaded file.
-  - Note: `rules/markdown.md`'s tasks-note rule teaches the outlawed form in its
-    own example (`Note: settled — see spec.md (Session log).`); convert it in
-    the same pass.
-  - Note: `claude-configuration.md` also cites a heading in its own file ("When
-    recording maintainer rationale for a skill"). The rule covers cross-file
-    citation only, but a same-file citation goes stale the same way — in scope.
-
 - [ ] **Reconsider the "inline rationale: at most one clause" cap** — the cap in
       rules/claude-configuration.md served an earlier token-limiting goal; the
       current goal is focusing attention, which may warrant fuller rationale
