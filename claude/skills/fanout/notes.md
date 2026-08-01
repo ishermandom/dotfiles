@@ -3,11 +3,13 @@
 Maintainer rationale for the `fanout` skill.
 
 - **No appended system prompt and no tool restrictions**: agents are meant to
-  behave exactly as hand-started sessions, and CLAUDE.md already carries the
-  rules a fanout would otherwise restate — the dotfiles commit rule keeps agents
-  from committing, `CLAUDE.md #interaction-style` covers asking when blocked,
-  and `CLAUDE.md #review-axis` covers review. Adding `--append-system-prompt` or
-  `--disallowed-tools` would duplicate rules that already fire, which drifts.
+  behave exactly as hand-started sessions, so the launch passes nothing beyond
+  the task itself — `CLAUDE.md #interaction-style` already covers asking when
+  blocked, and `CLAUDE.md #review-axis` covers review. Committing is where the
+  premise thins: a background session carries its own instructions to commit,
+  push its branch, and open a pull request, which CLAUDE.md contradicts without
+  silencing, leaving each agent to resolve the clash alone. Overriding those
+  instructions is what would earn an appended prompt.
 
 - **The agent creates its own worktree, rather than the skill passing `-w`**:
   fewer moving parts in the skill, and worktree setup is ordinary work an agent
