@@ -2,6 +2,17 @@
 
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
 
+- [ ] **Stop `reflow_prose.py` stranding the closing quotes of a one-line
+      docstring** — when a line exceeds 80 only because the trailing `"""`
+      counts, the hook moves those three characters to a line of their own,
+      leaving a dangling quote no one would write by hand.
+  - Rationale: queued 2026-07-31, hit on four such docstrings in the bridge repo
+    during a repo-wide reflow, every one of them at exactly 81 columns.
+  - Note: the human fix is to reword the docstring to fit, which the hook cannot
+    do. So detecting the case and leaving the line untouched may beat splitting
+    it — a silent bad split is worse than a visible violation, which a width
+    check still catches.
+
 - [ ] **Reconsider the "inline rationale: at most one clause" cap** — the cap in
       rules/claude-configuration.md served an earlier token-limiting goal; the
       current goal is focusing attention, which may warrant fuller rationale
