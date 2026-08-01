@@ -70,9 +70,11 @@ done
 # exact remote URL git pushed to (with credential.useHttpPath, per-repo tokens
 # are split by path), and that URL is readable precisely only from the local
 # repo's remotes — not reconstructable from an OWNER/REPO string.
-if [ -z "$repo_argument" ] \
-  && [ -z "${GH_TOKEN:-}" ] \
-  && [ -z "${GH_ENTERPRISE_TOKEN:-}" ]; then
+#
+# Either variable counts as authentication, so concatenating them lets one
+# emptiness test stand in for both.
+environment_tokens="${GH_TOKEN:-}${GH_ENTERPRISE_TOKEN:-}"
+if [ -z "$repo_argument" ] && [ -z "$environment_tokens" ]; then
   gh auth status > /dev/null 2>&1
   gh_auth_status=$?
   if [ $gh_auth_status -ne 0 ]; then

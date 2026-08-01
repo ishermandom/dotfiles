@@ -11,14 +11,14 @@ IFS=$'\t' read -r model effort directory context_percentage \
   five_hour_percentage five_hour_resets_at \
   seven_day_percentage seven_day_resets_at <<< "$(
     jq -r '[.model.display_name,
-          (.effort.level // "-"),
-          (.workspace.current_dir // "."),
-          (.context_window.used_percentage // -1 | floor),
-          (.rate_limits.five_hour.used_percentage // -1 | floor),
-          (.rate_limits.five_hour.resets_at // -1 | floor),
-          (.rate_limits.seven_day.used_percentage // -1 | floor),
-          (.rate_limits.seven_day.resets_at // -1 | floor)]
-         | @tsv' <<< "$input"
+            (.effort.level // "-"),
+            (.workspace.current_dir // "."),
+            (.context_window.used_percentage // -1 | floor),
+            (.rate_limits.five_hour.used_percentage // -1 | floor),
+            (.rate_limits.five_hour.resets_at // -1 | floor),
+            (.rate_limits.seven_day.used_percentage // -1 | floor),
+            (.rate_limits.seven_day.resets_at // -1 | floor)]
+           | @tsv' <<< "$input"
   )"
 
 GREEN=$'\033[32m'
