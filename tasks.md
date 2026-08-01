@@ -260,6 +260,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     a wall of them. Probe an undocumented flag by triggering its validation (a
     nonexistent path) rather than by running it, and read whether the failure
     names the flag or the value.
+  - Note: search the bundle with a plain literal (`rg -a -c`) or `strings`. The
+    file is effectively one enormous line, so a regex carrying wide context —
+    `.{200}<literal>.{300}` — matches nothing even where the literal is present,
+    and the empty result reads as "the string isn't there".
   - Note: CLAUDE.md #working-method is the likely home, but that file is already
     long and carries a queued reorganization — weigh placement against
     #consolidation-recheck. The validate-live-not-from-docs auto-memory covers
@@ -296,16 +300,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: `fanout/notes.md` is the home. The skill never recommends assigning
     several tasks to one worker, so what is missing is maintainer rationale for
     the constraint behind that, not a change to the rules.
-
-- [ ] **Have a teardown session close itself instead of printing the command** —
-      `fanout-teardown`'s final step hands the user a `claude stop <id>` to run,
-      on the reasoning that a session cannot stop itself. Running the command
-      from inside the session in fact works (verified 2026-08-01), so the step
-      can simply do it.
-  - Worktree: teardown-self-close
-  - Note: the stated reasoning has to go with the behavior. Left in place,
-    "teardown is running inside that session, so it cannot stop itself" would
-    argue the change back out on the next edit.
 
 - [ ] **Stop worktree entry from blocking every fanned-out agent** — a
       fanned-out agent's first act is entering its worktree, and that raises a
