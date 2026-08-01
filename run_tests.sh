@@ -2,13 +2,13 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Test suite for the dotfiles repo — the unit tests under claude/hooks and
-# claude/scripts.
+# Test suite for the dotfiles repo — the Python unit tests under claude/hooks
+# and claude/scripts, plus the standalone shell tests sitting beside them.
 # Run directly, or via ~/.claude/scripts/quiet-tests.sh (which the Stop test
 # hook invokes). Honors PYTEST_ADDOPTS, which the quiet wrapper sets to
 # --tb=short. The import paths the test modules need live in the root
 # pyproject.toml. Arguments are forwarded to pytest; naming a path narrows the
-# run to that path.
+# run to that path, and to pytest alone — the shell tests take no arguments.
 
 # Resolve the test directories against the script's own location so the suite
 # runs identically regardless of the caller's working directory; per the
@@ -34,9 +34,24 @@ for argument in "$@"; do
   fi
 done
 
+shell_test_status=0
 if [ "$names_test_path" = false ]; then
+  # The shell tests are standalone executables, which pytest cannot collect,
+  # so the suite runs them itself. They go first so a passing run still ends
+  # on pytest's summary — the one line quiet-tests.sh keeps on success.
+  for shell_test in "$root"/claude/scripts/*-test.sh; do
+    # An unmatched glob stays literal in bash, so -e skips the pattern itself.
+    [ -e "$shell_test" ] || continue
+    "$shell_test" || shell_test_status=1
+  done
+
   # `set --` puts the suite's directories ahead of the caller's options.
   set -- "$root/claude/hooks" "$root/claude/scripts" "$@"
 fi
 
-exec python3 -m pytest "$@"
+python3 -m pytest "$@"
+pytest_status=$?
+
+# Either half failing fails the run.
+[ $shell_test_status -ne 0 ] && exit 1
+exit $pytest_status
