@@ -41,6 +41,12 @@ snapshot.
 - **Always use abstract collection types in signatures**: `Sequence` over `list`
   or `tuple`, `Mapping` over `dict`, `Iterable` where only iteration is needed.
   Implementations may use concrete types freely.
+  - **Exception — a collection field on a `frozen=True` dataclass**: annotate it
+    with the concrete immutable type (`tuple[X, ...]`, `frozenset[X]`), never
+    `Sequence` or `collections.abc.Set` — a `list` satisfies `Sequence`, so the
+    caller keeps a live handle and can mutate the field's contents after
+    construction, quietly unfreezing the instance. Python has no immutable
+    abstract collection type.
 - **Never silence type errors**: fix the underlying type issue instead of adding
   `# type: ignore` or `cast()`. If silencing genuinely seems like the right
   call, stop, explain the case to the user, and get explicit approval.
