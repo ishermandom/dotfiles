@@ -71,18 +71,21 @@ done
 # are split by path), and that URL is readable precisely only from the local
 # repo's remotes — not reconstructable from an OWNER/REPO string.
 if [ -z "$repo_argument" ] \
-   && [ -z "${GH_TOKEN:-}" ] \
-   && [ -z "${GH_ENTERPRISE_TOKEN:-}" ]; then
-  gh auth status >/dev/null 2>&1
+  && [ -z "${GH_TOKEN:-}" ] \
+  && [ -z "${GH_ENTERPRISE_TOKEN:-}" ]; then
+  gh auth status > /dev/null 2>&1
   gh_auth_status=$?
   if [ $gh_auth_status -ne 0 ]; then
     # The first https remote: only https remotes have a credential-store entry,
     # so ssh remotes (git@…) are skipped.
     remote_url=""
-    for remote_name in $(git remote 2>/dev/null); do
-      candidate_url=$(git remote get-url "$remote_name" 2>/dev/null)
+    for remote_name in $(git remote 2> /dev/null); do
+      candidate_url=$(git remote get-url "$remote_name" 2> /dev/null)
       case "$candidate_url" in
-        https://*) remote_url="$candidate_url"; break ;;
+        https://*)
+          remote_url="$candidate_url"
+          break
+          ;;
       esac
     done
 
@@ -92,7 +95,7 @@ if [ -z "$repo_argument" ] \
       # nothing is stored; 2>/dev/null drops helper chatter. An empty result is
       # fine — it just means no stored token, and the gh call below reports it.
       filled_credential=$(printf 'url=%s\n\n' "$remote_url" \
-        | GIT_TERMINAL_PROMPT=0 git credential fill 2>/dev/null)
+        | GIT_TERMINAL_PROMPT=0 git credential fill 2> /dev/null)
       # Keep only the filled-in password line — that is the token.
       store_token=$(echo "$filled_credential" | sed -n 's/^password=//p')
       if [ -n "$store_token" ]; then
@@ -117,7 +120,7 @@ if [ $status -ne 0 ]; then
   exit 1
 fi
 # -r keeps any backslashes in the input literal.
-read -r repo visibility <<<"$repo_info"
+read -r repo visibility <<< "$repo_info"
 
 # Compare case-insensitively: gh versions differ on the casing of the
 # visibility value ("private" vs the GraphQL enum "PRIVATE").
@@ -189,7 +192,7 @@ echo "gh-protect: $repo is not fully protected — no active all-branch" \
 # (rebase force-pushes to feature branches, deleting merged branches),
 # narrow the ruleset by changing ~ALL to ~DEFAULT_BRANCH, which tracks the
 # default branch across renames.
-cat <<JSON
+cat << JSON
 {
   "name": "gh-protect",
   "target": "branch",

@@ -14,7 +14,7 @@
 # already be there. Outside a git repo there's no root to anchor to, so run
 # in place.
 
-repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+repo_root=$(git rev-parse --show-toplevel 2> /dev/null)
 run_dir="${repo_root:-$PWD}"
 
 if [ ! -x "$run_dir/run_tests.sh" ]; then

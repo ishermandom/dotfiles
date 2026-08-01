@@ -18,16 +18,19 @@ else
   # extensions actually present.
   targets=()
   for pattern in '*.md' '*.js' '*.ts'; do
-    if [ -n "$(find . -name "$pattern" -print -quit 2>/dev/null)" ]; then
+    if [ -n "$(find . -name "$pattern" -print -quit 2> /dev/null)" ]; then
       targets+=("**/${pattern}")
     fi
   done
-  [ ${#targets[@]} -eq 0 ] && { echo "prettier: no formattable files"; exit 0; }
+  [ ${#targets[@]} -eq 0 ] && {
+    echo "prettier: no formattable files"
+    exit 0
+  }
 fi
 
 # Fall back to the global config when no project-level config exists.
 config_args=()
-if ! prettier --find-config-path ./placeholder >/dev/null 2>&1; then
+if ! prettier --find-config-path ./placeholder > /dev/null 2>&1; then
   config_args=(--config "$HOME/.prettierrc")
 fi
 

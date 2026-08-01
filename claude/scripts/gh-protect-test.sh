@@ -18,7 +18,7 @@ trap 'rm -rf "$test_root"' EXIT
 mkdir "$test_root/bin"
 # Quoted delimiter: the $GH_STUB_* references must survive into the stub and
 # resolve when it runs, not when this file is written.
-cat > "$test_root/bin/gh" <<'STUB'
+cat > "$test_root/bin/gh" << 'STUB'
 #!/usr/bin/env bash
 # Stubbed gh: emulates the read-only gh calls gh-protect.sh makes, driven by
 # GH_STUB_* environment variables, and logs every invocation to

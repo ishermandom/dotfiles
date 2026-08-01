@@ -28,7 +28,10 @@ is_dry_run=""
 while getopts ":n" opt; do
   case "$opt" in
     n) is_dry_run="yes" ;;
-    *) echo "Usage: $SCRIPT_NAME [-n]" >&2; exit 1 ;;
+    *)
+      echo "Usage: $SCRIPT_NAME [-n]" >&2
+      exit 1
+      ;;
   esac
 done
 
@@ -66,7 +69,7 @@ stow_package() {
   #     detaches the config from this repo. Folding links ~/.config/zed as a
   #     single directory symlink, so those renames land inside the repo.
   case "$package" in
-    claude|zed) no_folding="" ;;
+    claude | zed) no_folding="" ;;
     *) no_folding="--no-folding" ;;
   esac
   # stow's exit status is the function's, so the caller sees linking failures.
@@ -96,15 +99,15 @@ packages="
 # layout, and override only the files that must differ per account (e.g. git's
 # credential config, used for https token storage on the sandbox account
 # alone). An account with no overlay directory just gets the common packages.
-account_overlay="$DOTFILES_DIR/accounts/$(id -un)"  # id -un: current account
+account_overlay="$DOTFILES_DIR/accounts/$(id -un)" # id -un: current account
 
 # Packages are independent, so one failure shouldn't hide the state of the
 # rest: collect the names as they fail and report them together at the end.
 failed_packages=""
 
 for entry in $packages; do
-  package="${entry%%:*}"  # text before the first colon
-  target="${entry#*:}"    # text after the first colon
+  package="${entry%%:*}" # text before the first colon
+  target="${entry#*:}"   # text after the first colon
   stow_package "$DOTFILES_DIR" "$package" "$target" \
     || failed_packages="$failed_packages $package"
   # Layer this account's override for the package, when one exists.

@@ -25,11 +25,11 @@
 # excluded directory (like a scratch/ dir), where mypy treats "every file
 # excluded" as a hard error. Anchor to the repo root so the check spans the
 # whole repo.
-repo_root=$(git rev-parse --show-toplevel 2>/dev/null)
+repo_root=$(git rev-parse --show-toplevel 2> /dev/null)
 [ -n "$repo_root" ] && cd "$repo_root"
 
 # -print -quit stops find after the first match, for speed.
-has_python_files=$(find . -name "*.py" -print -quit 2>/dev/null)
+has_python_files=$(find . -name "*.py" -print -quit 2> /dev/null)
 [ -z "$has_python_files" ] && exit 0
 
 mypy_output=$("$HOME/.claude/scripts/quiet-mypy.sh" 2>&1)

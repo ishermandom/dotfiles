@@ -28,7 +28,7 @@ done
 # place when the target is not in a git repo.
 first_dir=${abs_paths[0]}
 [ -f "$first_dir" ] && first_dir=$(dirname "$first_dir")
-repo_root=$(cd "$first_dir" && git rev-parse --show-toplevel 2>/dev/null)
+repo_root=$(cd "$first_dir" && git rev-parse --show-toplevel 2> /dev/null)
 run_dir="${repo_root:-$PWD}"
 
 # Each cd runs in its command-substitution subshell, so the script's own

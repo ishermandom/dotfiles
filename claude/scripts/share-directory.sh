@@ -45,7 +45,7 @@ target_directory=$1
 
 for account in "${shared_accounts[@]}"; do
   if ! chmod -R +a "user:${account} allow ${permissions}" \
-      "$target_directory"; then
+    "$target_directory"; then
     echo "failed to apply ${account} ACL to ${target_directory}" >&2
     echo "(not the owner of some files? try with sudo)" >&2
     exit 1

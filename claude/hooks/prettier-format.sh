@@ -15,7 +15,7 @@ format_dir() {
   # delegated to the quiet-prettier wrapper so it lives in one place
   # (~/.claude/scripts/quiet-prettier.sh). Run from $dir so the wrapper's
   # globs are relative to it; formatting issues don't block the stop.
-  (cd "$dir" && "$HOME/.claude/scripts/quiet-prettier.sh" >/dev/null 2>&1 || true)
+  (cd "$dir" && "$HOME/.claude/scripts/quiet-prettier.sh" > /dev/null 2>&1 || true)
 }
 
 format_dir .
@@ -23,7 +23,7 @@ format_dir .
 # This script lives at claude/hooks/prettier-format.sh inside the dotfiles
 # repo. Resolve its real path and walk up three levels to find the repo root,
 # then format there too when the session is working in a different project.
-script_real=$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null)
+script_real=$(readlink -f "${BASH_SOURCE[0]}" 2> /dev/null)
 dotfiles_root=$(realpath "$(dirname "$(dirname "$(dirname "$script_real")")")")
 current_dir=$(realpath .)
 

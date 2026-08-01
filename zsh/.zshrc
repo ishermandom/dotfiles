@@ -4,9 +4,9 @@
 # share_history writes each command immediately and imports new commands from
 # other sessions before showing the prompt.
 setopt share_history
-setopt extended_history   # save timestamp and duration with each entry
-setopt hist_ignore_dups   # skip consecutive duplicates
-setopt hist_ignore_space  # commands prefixed with a space are not saved
+setopt extended_history  # save timestamp and duration with each entry
+setopt hist_ignore_dups  # skip consecutive duplicates
+setopt hist_ignore_space # commands prefixed with a space are not saved
 
 HISTFILE=~/.zsh_history
 HISTSIZE=50000
@@ -14,10 +14,10 @@ SAVEHIST=50000
 
 # Prompt colors — edit these values to restyle. Use color names (red, blue,
 # green, yellow, magenta, cyan, white) or 256-color indices (0–255).
-_pc_path='81'   # cyan-blue
-_pc_git='183'   # lavender
-_pc_time='252'  # light gray
-_pc_user='214'  # orange
+_pc_path='81'  # cyan-blue
+_pc_git='183'  # lavender
+_pc_time='252' # light gray
+_pc_user='214' # orange
 _pc_ok='green'
 _pc_err='red'
 
@@ -58,7 +58,7 @@ _build_prompt() {
 
   # Prompt char is green on success, red on failure.
   local char_color
-  (( exit_code == 0 )) && char_color=$_pc_ok || char_color=$_pc_err
+  ((exit_code == 0)) && char_color=$_pc_ok || char_color=$_pc_err
 
   PROMPT="%F{$_pc_time}%*%f ${user_seg}${path_seg}${git_seg}"$'\n'"%F{$char_color}\$%f "
 }

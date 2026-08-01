@@ -36,7 +36,7 @@ fi
 # is not in a git repo.
 first_dir=${targets[0]}
 [ -f "$first_dir" ] && first_dir=$(dirname "$first_dir")
-repo_root=$(cd "$first_dir" && git rev-parse --show-toplevel 2>/dev/null)
+repo_root=$(cd "$first_dir" && git rev-parse --show-toplevel 2> /dev/null)
 run_dir="${repo_root:-$PWD}"
 
 # Run mypy from run_dir. The cd is inside "$(...)", so it changes directory only
