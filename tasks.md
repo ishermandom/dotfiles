@@ -148,13 +148,11 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: depends on #stop-orchestrator — build it as a step in
     `stop_checks.sh`, not as another parallel Stop entry.
 
-- [ ] **Reconcile `gate_auto_tools_test.py` with the no-loop testing rule** —
-      its two tests loop over case tuples, which `rules/testing.md` prohibits in
-      favor of `parametrize`; the loops exist to support a no-pytest `main()`.
-      Either parametrize and drop the direct-run mode, or keep it and record the
-      exception as a maintainer comment. Deferred from the 2026-07 config
-      close-out.
-  - Worktree: gate-auto-tools-test
+- [ ] **Test `session_tokens.py`'s transcript-summing path** — `summed_usage`
+      reads files directly, so testing it per the I/O-boundary rule
+      (`rules/testing.md`) means restructuring it to accept streams, with a thin
+      path-opening wrapper. Deferred from the 2026-07 config close-out.
+  - Worktree: session-tokens-test
 
 - [ ] **Consider rotating `sessions.md` as part of the distillation skill** —
       `sessions.md` is the curated session log; it is deliberately _not_

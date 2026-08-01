@@ -2,10 +2,11 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Tests for the auto-tools gate. Run from the hooks directory, or with it on
-# PYTHONPATH: PYTHONPATH=~/.claude/hooks python3
-# ~/.claude/hooks/gate_auto_tools_test.py
+# Behavior spec for the auto-tools gate, exercised through its command-position
+# predicate, runs_gated_tool. Run with the hooks directory on PYTHONPATH:
+# PYTHONPATH=~/.claude/hooks pytest ~/.claude/hooks/gate_auto_tools_test.py
 
+import pytest
 from gate_auto_tools import runs_gated_tool
 
 # Commands that genuinely invoke a gated tool in command position.
@@ -36,24 +37,13 @@ ALLOWED: tuple[str, ...] = (
 )
 
 
-def test_gated_commands_are_denied() -> None:
-  """Every genuine in-command-position invocation is gated."""
-  for command in GATED:
-    assert runs_gated_tool(command), f'expected gated: {command!r}'
+@pytest.mark.parametrize('command', GATED)
+def test_tool_in_command_position_is_gated(command: str) -> None:
+  """A genuine invocation is gated, wherever it sits in the command."""
+  assert runs_gated_tool(command)
 
 
-def test_data_and_wrappers_pass() -> None:
-  """Wrappers, quoted args, heredoc bodies, and path fragments pass."""
-  for command in ALLOWED:
-    assert not runs_gated_tool(command), f'expected allowed: {command!r}'
-
-
-def main() -> None:
-  """Run the assertions directly (no pytest dependency required)."""
-  test_gated_commands_are_denied()
-  test_data_and_wrappers_pass()
-  print('all gate_auto_tools tests passed')
-
-
-if __name__ == '__main__':
-  main()
+@pytest.mark.parametrize('command', ALLOWED)
+def test_wrapper_or_data_occurrence_passes(command: str) -> None:
+  """A wrapper, quoted argument, heredoc body, or path fragment passes."""
+  assert not runs_gated_tool(command)
