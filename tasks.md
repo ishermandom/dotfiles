@@ -157,6 +157,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       applying the make-each-idea-separately-legible rule
       (rules/claude-configuration.md), so config prose stays legible as it lands
       rather than waiting for another sweep.
+  - Worktree: config-review-legibility
   - Note: the pass also self-applies — run it on any rule text the review itself
     adds or rewrites. Self-application caught four refinements in one pass
     during the legibility rule's own drafting (2026-07-04).
@@ -166,6 +167,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       committed) and `wrap-session` step 5 (withholds a durable chunk's commit
       pending the walkthrough) are now stricter than CLAUDE.md #review-axis:
       committing never waits on review; production code is reviewed before push.
+  - Worktree: review-gating
   - Rationale: queued 2026-07-07 when the Git-section edit decoupled review from
     committing. Pre-commit review remains a valid ordering, so the mismatch is
     posture, not breakage.
@@ -176,6 +178,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       Neither breaks the test-via-public-APIs rule, but sibling tests over
       near-identical PreToolUse gates shouldn't differ in depth without a stated
       reason.
+  - Worktree: gate-test-altitude
   - Rationale: queued 2026-07-31 during the `gate_auto_tools_test.py`
     parametrize pass, which left the difference alone as out of scope.
   - Note: converting means first giving `gate_auto_tools.main()` the
@@ -191,6 +194,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `rules/shell.md`'s conventions and the 80-column limit rest on manual care
       alone. `claude/hooks/prettier-format.sh` carries two over-length lines
       today.
+  - Worktree: shell-autoformat
   - Rationale: queued 2026-08-01, when a fix to that hook left the two long
     lines in place because tidying them by hand was out of the change's scope.
   - Note: neither `shfmt` nor `shellcheck` is installed, so this starts with
@@ -206,6 +210,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       no status machinery of its own, so what sets a session to `waiting` is
       load-bearing yet undocumented. Establish the rule, and whether a finished
       session can be told apart from a stalled one.
+  - Worktree: agents-status
   - Note: the sharpest question is `idle`, which covers both a session that
     finished and one that died mid-task. If nothing separates them, the fanout
     has no way to say which threads still owe work.
@@ -226,6 +231,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       section says to measure with `wc -L` because `awk length` counts bytes and
       overcounts every em dash. On macOS `wc -L` counts bytes too, so the
       recommended tool carries the exact flaw the rule warns about.
+  - Worktree: width-advice
   - Rationale: queued 2026-08-01, after `wc -L` flagged three over-80 lines in
     prettier-formatted markdown that were all within 80 characters — one em dash
     apiece. Repro under `LANG=en_US.UTF-8`: `wc -L` reports 7 for the
@@ -238,6 +244,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       installed CLI** — when work is blocked on what the harness itself does,
       the shipped bundle answers it directly, yet nothing in the always-loaded
       rules points there, so the default is to guess or queue an open question.
+  - Worktree: cli-behavior-rule
   - Rationale: queued 2026-08-01, after the fanout override task settled two
     blocking questions this way at one command each — whether cleanup can
     discard uncommitted worktree work, and whether `--append-system-prompt-file`
@@ -260,6 +267,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       names no mechanism for doing so. Writing the change into the main checkout
       is the only way to act on that instruction, and every session on the
       machine then executes it — unreviewed and uncommitted.
+  - Worktree: safe-config-validation
   - Rationale: queued 2026-08-01, after the reflow-hook agent copied its
     modified `reflow_prose.py` into the main checkout to exercise the live
     PostToolUse hook, leaving every concurrent session running that copy.
@@ -289,6 +297,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       on the reasoning that a session cannot stop itself. Running the command
       from inside the session in fact works (verified 2026-08-01), so the step
       can simply do it.
+  - Worktree: teardown-self-close
   - Note: the stated reasoning has to go with the behavior. Left in place,
     "teardown is running inside that session, so it cannot stop itself" would
     argue the change back out on the next edit.
