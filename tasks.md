@@ -303,3 +303,15 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Open question: whether to set `worktree.baseRef` to `head`. Raised twice on
     2026-08-01 and deferred both times. `head` would still miss uncommitted
     work, so it narrows the gap rather than closing it.
+
+- [ ] **Have Zed run the repo's formatters on save** — the formatting hooks fire
+      on Claude's `Edit` and `Write` only, so a file edited by hand in Zed
+      arrives unformatted and its wrapping gets settled later, by whoever next
+      thinks to run a formatter. `zed/zed/settings.json` configures no
+      `format_on_save` or `formatter` today.
+  - Rationale: queued 2026-08-01, after two rounds of hand edits to a skill file
+    each needed a formatter run afterwards to fix line wrapping.
+  - Note: prettier and ruff are ordinary formatters Zed can invoke, but Python
+    comment prose is reflowed by `claude/hooks/reflow_prose.py` — a bespoke
+    script rather than a standard formatter. Whether that belongs in the on-save
+    path, and how, is the unsettled part.
