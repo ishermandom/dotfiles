@@ -217,20 +217,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the comment prose among them could be automated instead — that is
     #shell-prose-reflow. The remainder is code, which no formatter wraps.
 
-- [ ] **Record how to fan out tasks that share a file** — one task per worktree
-      keeps each agent's review surface small, but two tasks touching the same
-      file cannot run as concurrent lanes without a landing conflict in the
-      messy sense. Sequencing them across separate fanouts is the resolution,
-      and nothing states it.
-  - Worktree: shared-file-fanout
-  - Rationale: queued 2026-08-01, after pairing two tasks into a single worktree
-    to dodge that collision. One lane handled the pairing; the other spent a
-    long stretch on a wrong solution, inside a diff too large to review
-    comfortably.
-  - Note: `fanout/notes.md` is the home. The skill never recommends assigning
-    several tasks to one worker, so what is missing is maintainer rationale for
-    the constraint behind that, not a change to the rules.
-
 - [ ] **Stop worktree entry from blocking every fanned-out agent** — a
       fanned-out agent's first act is entering its worktree, and that raises a
       permission prompt the user has to answer. Each lane stalls there until
