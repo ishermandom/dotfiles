@@ -103,6 +103,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       survive `claude/hooks/reflow_prose.py`, so the safe shapes get
       rediscovered by experiment each time. Find the right home — most likely
       that same bullet in `rules/python.md` — and write the behavior down there.
+  - Worktree: reflow-markdown-support
   - Note: verified empirically 2026-08-01. A space-indented list carrying no
     bullet marker is plain prose to the hook and gets merged into the preceding
     paragraph. Both `-` and `*` are recognized as lists and survive intact, as
@@ -193,25 +194,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       lists to `tasks.md` and checking in before starting. The content is sound
       but unrelated to review, so it reads as having drifted into the wrong
       section and dilutes what the heading promises.
+  - Worktree: multiple-tasks-rule
   - Note: surfaced 2026-08-01 while unifying the review rules; left alone as out
     of scope.
-
-- [ ] **Settle one test altitude for the two gate hooks** — `gate_git_test.py`
-      drives its gate through `main()` with a real hook payload, while
-      `gate_auto_tools_test.py` calls the `runs_gated_tool` predicate directly.
-      Neither breaks the test-via-public-APIs rule, but sibling tests over
-      near-identical PreToolUse gates shouldn't differ in depth without a stated
-      reason.
-  - Worktree: gate-test-altitude
-  - Rationale: queued 2026-07-31 during the `gate_auto_tools_test.py`
-    parametrize pass, which left the difference alone as out of scope.
-  - Note: converting means first giving `gate_auto_tools.main()` the
-    `stdin`/`stdout` parameters `gate_git.main()` already has — the auto-tools
-    gate reads `sys.stdin` directly today, against `rules/testing.md`'s
-    stream-injection rule.
-  - Note: the payload level covers behavior the predicate level cannot reach —
-    the fail-open path on an unparseable payload, and the shape of the emitted
-    deny decision. Both are untested today.
 
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
@@ -278,6 +263,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       file cannot run as concurrent lanes without a landing conflict in the
       messy sense. Sequencing them across separate fanouts is the resolution,
       and nothing states it.
+  - Worktree: shared-file-fanout
   - Rationale: queued 2026-08-01, after pairing two tasks into a single worktree
     to dodge that collision. One lane handled the pairing; the other spent a
     long stretch on a wrong solution, inside a diff too large to review
