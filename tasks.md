@@ -6,6 +6,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       docstring** — when a line exceeds 80 only because the trailing `"""`
       counts, the hook moves those three characters to a line of their own,
       leaving a dangling quote no one would write by hand.
+  - Worktree: reflow-hook
   - Rationale: queued 2026-07-31, hit on four such docstrings in the bridge repo
     during a repo-wide reflow, every one of them at exactly 81 columns.
   - Note: the human fix is to reword the docstring to fit, which the hook cannot
@@ -82,6 +83,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `pytest`; the two must be edited together. Updating only `pyproject.toml`
       leaves the Stop hook — which runs `run_tests.sh` — silently not covering a
       new test file.
+  - Worktree: test-paths
   - Note: the candidate fix is for `run_tests.sh` to pass no paths and pin the
     config instead (`pytest --rootdir="$root" -c "$root/pyproject.toml"`), so
     `testpaths` becomes the single source of truth. It passes paths today
@@ -96,6 +98,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `claude/hooks/reflow_prose.py` assumes 80 columns everywhere (see the TODO
       at `LINE_WIDTH`); read the target repo's ruff `line-length` or equivalent
       instead.
+  - Worktree: reflow-hook
   - Note: two accepted latency levers if the hook ever feels slow, both cheaper
     than a rewrite: a shell shim gating on file suffix before Python starts (~37
     ms saved per non-Python edit), and a filler-only mode dropping prettier (~75
@@ -197,6 +200,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       (never commit dotfiles unasked; "only `main` pushes") and the fanout
       workflow, which ends in a local `git land`. Each agent has to notice and
       resolve the conflict on its own.
+  - Worktree: fanout-harness
   - Rationale: queued 2026-07-31, after the zed-prettier agent hit the conflict
     and reasoned it out before reporting. The user confirmed the local workflow
     supersedes the harness default, and wants each worktree's work left as a
@@ -235,6 +239,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       never narrows the run — the full suite executes either way, silently. Have
       `run_tests.sh` fall back to the two directories only when given no
       arguments.
+  - Worktree: test-paths
   - Rationale: queued 2026-07-31 after a mid-turn check aimed at one test file
     ran all 252 tests and looked like it had worked.
   - Note: `-k <expression>` does narrow the run today — the workaround until the
