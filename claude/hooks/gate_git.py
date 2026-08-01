@@ -15,13 +15,13 @@
 # *not* blocked; the genuinely destructive step they enable — publishing the
 # rewrite with a force-push — is blocked here instead.
 #
-# Out of scope: a *malicious repository* that attacks through its own config —
-# a `core.pager`, custom diff driver, or textconv that runs code when git
-# renders content. This gate assumes the repos it runs in are trusted; defense
-# against hostile repo contents is the sandbox's job, not this hook's.
-# Auto-allow still refuses the *explicit* exec / file-write flags (`--ext-diff`,
-# `--output`, `-c`, a forced `--paginate`); it does not neutralize config that
-# fires during ordinary read rendering.
+# Out of scope: a *malicious repository* that attacks through its own config — a
+# `core.pager`, custom diff driver, or textconv that runs code when git renders
+# content. This gate assumes the repos it runs in are trusted; defense against
+# hostile repo contents is the sandbox's job, not this hook's. Auto-allow still
+# refuses the *explicit* exec / file-write flags (`--ext-diff`, `--output`,
+# `-c`, a forced `--paginate`); it does not neutralize config that fires during
+# ordinary read rendering.
 #
 # Why this can't live in settings.json
 # -------------------------------------
@@ -41,9 +41,9 @@
 # redirections, or substitutions), carries no config-injecting or pager-forcing
 # global, and names a read-only subcommand whose every flag is on a curated
 # safe-flag allowlist — anything unrecognized DEFERs. On any uncertainty —
-# bashlex missing or unable to parse,
-# a compound shape, a dynamic word — the gate neither allows nor denies on a
-# guess: it DEFERs, letting settings.json and the normal prompt decide.
+# bashlex missing or unable to parse, a compound shape, a dynamic word — the
+# gate neither allows nor denies on a guess: it DEFERs, letting settings.json
+# and the normal prompt decide.
 #
 # Intentional redundancy with settings.json
 # ------------------------------------------
@@ -88,9 +88,9 @@ class _Node(Protocol):
   non-optional rather than `| None`: where present they are always set (a
   `list`, a `str`); on other kinds the attribute is absent entirely, not None —
   a case `| None` would mismodel. What makes access safe is the `kind` guard
-  before every `parts`/`word` use, not a None-check. The cost of this loose
-  view is that mypy can't catch an unguarded access (it can't narrow on a
-  runtime `kind` value); the guards and tests cover that instead.
+  before every `parts`/`word` use, not a None-check. The cost of this loose view
+  is that mypy can't catch an unguarded access (it can't narrow on a runtime
+  `kind` value); the guards and tests cover that instead.
   """
 
   kind: str
@@ -98,7 +98,7 @@ class _Node(Protocol):
   word: str
 
 
-class Decision(enum.Enum):
+class _Decision(enum.Enum):
   """Outcome of classifying a Bash command for the git permission gate."""
 
   DENY = 'deny'  # hard-block: an unrecoverable destructive git operation
@@ -147,7 +147,8 @@ READ_ONLY_SUBCOMMANDS = frozenset({'status', 'log', 'diff', 'show'})
 # Global flags that, even before a read-only subcommand, can run arbitrary code
 # or inject config: `-c`/`--config-env` set config (pager, alias, diff driver),
 # `--exec-path` redirects where git resolves its programs (and is prepended to
-# PATH), and `-p`/`--paginate` force the pager. Their presence blocks auto-allow.
+# PATH), and `-p`/`--paginate` force the pager. Their presence blocks
+# auto-allow.
 ALLOW_BLOCKING_GLOBALS = frozenset(
   {'-c', '--config-env', '--exec-path', '-p', '--paginate'}
 )
@@ -251,15 +252,15 @@ SAFE_READ_FLAGS = frozenset(
 # short-flag token mixes these freely (`-sb` is `-s -b`); each is a display- or
 # filter-only toggle whose output is read-only — none writes a file, runs a
 # program, or mutates state:
-#   s  status: short format
-#   b  status: show branch
-#   z  status: NUL-terminated records
-#   p  log/diff/show: show the patch (content display)
-#   w  diff: ignore all whitespace
-#   i  log: case-insensitive --grep
-#   E  log: extended-regexp --grep
-#   F  log: fixed-string --grep
-#   R  diff: reverse the diff
+# * `s` — status: short format
+# * `b` — status: show branch
+# * `z` — status: NUL-terminated records
+# * `p` — log/diff/show: show the patch (content display)
+# * `w` — diff: ignore all whitespace
+# * `i` — log: case-insensitive `--grep`
+# * `E` — log: extended-regexp `--grep`
+# * `F` — log: fixed-string `--grep`
+# * `R` — diff: reverse the diff
 SAFE_READ_BOOLEAN_SHORT_FLAGS = frozenset('sbzpwiEFR')
 
 # The value-taking single-letter SAFE_READ_FLAGS, as bare letters. git parses a
@@ -267,13 +268,13 @@ SAFE_READ_BOOLEAN_SHORT_FLAGS = frozenset('sbzpwiEFR')
 # as its value (`-U5` is `-U` with value `5`; `-pU5` is `-p` then `-U5`), so one
 # can end a cluster but no flag hides behind it. Each takes a read-only value —
 # a count, a search pattern, or a rename/copy threshold:
-#   u  status: --untracked-files mode
-#   n  log: --max-count
-#   S  log: pickaxe string
-#   G  log: pickaxe regex
-#   U  diff: --unified context lines
-#   M  diff: --find-renames threshold
-#   C  diff: --find-copies threshold
+# * `u` — status: `--untracked-files` mode
+# * `n` — log: `--max-count`
+# * `S` — log: pickaxe string
+# * `G` — log: pickaxe regex
+# * `U` — diff: `--unified` context lines
+# * `M` — diff: `--find-renames` threshold
+# * `C` — diff: `--find-copies` threshold
 SAFE_READ_VALUE_SHORT_FLAGS = frozenset('unSGUMC')
 
 # Read-only `git branch` listing flags. branch auto-allows only when *every*
@@ -318,7 +319,7 @@ DISCARD_WARNING = (
 
 
 @dataclass(frozen=True)
-class GitInvocation:
+class _GitInvocation:
   """A single `git` command, split into subcommand and its arguments.
 
   `fully_recognized` is False when an unrecognized global flag appeared before
@@ -347,9 +348,9 @@ def _safe_parse(command: str) -> Sequence[_Node] | None:
     # returns a typed value instead of leaking Any to every caller.
     trees: list[_Node] = bashlex.parse(command)
   except (bashlex.errors.ParsingError, NotImplementedError):
-    # ParsingError also covers tokenizer failures (unmatched quotes, an
-    # unclosed `$(`) which subclass it; NotImplementedError covers a construct
-    # bashlex doesn't model. All are "uncertain" → DEFER.
+    # ParsingError also covers tokenizer failures (unmatched quotes, an unclosed
+    # `$(`) which subclass it; NotImplementedError covers a construct bashlex
+    # doesn't model. All are "uncertain" → DEFER.
     return None
   return trees
 
@@ -387,11 +388,11 @@ def _words_of(command_node: _Node) -> Sequence[str]:
   return [part.word for part in command_node.parts if part.kind == 'word']
 
 
-def _parse_invocation(words: Sequence[str]) -> GitInvocation | None:
+def _parse_invocation(words: Sequence[str]) -> _GitInvocation | None:
   """Split a `git ...` word list into subcommand + args, skipping globals.
 
-  Assumes words[0] is the git program. Returns None if no subcommand follows
-  the global options.
+  Assumes words[0] is the git program. Returns None if no subcommand follows the
+  global options.
   """
   index = 1  # past the `git` program word
   fully_recognized = True
@@ -412,7 +413,7 @@ def _parse_invocation(words: Sequence[str]) -> GitInvocation | None:
       fully_recognized = False
       index += 1
     else:
-      return GitInvocation(
+      return _GitInvocation(
         subcommand=token,
         args=tuple(words[index + 1 :]),
         fully_recognized=fully_recognized,
@@ -421,8 +422,8 @@ def _parse_invocation(words: Sequence[str]) -> GitInvocation | None:
   return None
 
 
-def _git_invocation_of(command_node: _Node) -> GitInvocation | None:
-  """The GitInvocation for a command node, or None if it isn't a git call."""
+def _git_invocation_of(command_node: _Node) -> _GitInvocation | None:
+  """The parsed invocation, or None if the command node isn't a git call."""
   words = _words_of(command_node)
   if not words or Path(words[0]).name != 'git':
     return None
@@ -515,7 +516,7 @@ def _subcommand_verb(args: Sequence[str]) -> str | None:
   return None
 
 
-def _is_dangerous(invocation: GitInvocation) -> bool:
+def _is_dangerous(invocation: _GitInvocation) -> bool:
   """Whether the invocation is an unrecoverable destructive operation."""
   subcommand = invocation.subcommand
   args = invocation.args
@@ -530,9 +531,9 @@ def _is_dangerous(invocation: GitInvocation) -> bool:
   if subcommand == 'checkout':
     # Only the force form is hard-denied. A pathspec checkout
     # (`git checkout -- <path>` / `git checkout .`) also discards uncommitted
-    # changes, but it cannot be reliably told apart from a branch switch
-    # without repo state, so it is deferred-with-a-warning rather than blocked
-    # on a guess — see _pathspec_checkout_warning and DISCARD_WARNING.
+    # changes, but it cannot be reliably told apart from a branch switch without
+    # repo state, so it is deferred-with-a-warning rather than blocked on a
+    # guess — see _pathspec_checkout_warning and DISCARD_WARNING.
     return _has_short_flag(args, 'f') or '--force' in args
   if subcommand == 'switch':
     return (
@@ -653,7 +654,7 @@ def _read_only_args_are_safe(args: Sequence[str]) -> bool:
   return True
 
 
-def _is_auto_allowable(invocation: GitInvocation) -> bool:
+def _is_auto_allowable(invocation: _GitInvocation) -> bool:
   """Whether a single git invocation is safe to auto-approve without a prompt.
 
   Requires fully-recognized globals with none that inject config or force a
@@ -669,18 +670,18 @@ def _is_auto_allowable(invocation: GitInvocation) -> bool:
   return False
 
 
-def _classify(trees: Sequence[_Node]) -> Decision:
-  """Classify already-parsed command trees into a gate Decision.
+def _classify(trees: Sequence[_Node]) -> _Decision:
+  """Classify already-parsed command trees into a gate decision.
 
   DENY if any git call (including inside a substitution) is destructive; ALLOW
   if the whole command is one plain auto-allowable git call; else DEFER.
   """
-  # Deny scan first — deny takes precedence, and it covers every git call,
-  # even one hidden in a later compound clause or a substitution.
+  # Deny scan first — deny takes precedence, and it covers every git call, even
+  # one hidden in a later compound clause or a substitution.
   for node in _command_nodes(trees):
     invocation = _git_invocation_of(node)
     if invocation is not None and _is_dangerous(invocation):
-      return Decision.DENY
+      return _Decision.DENY
 
   # Allow only the simplest provable shape: one plain command whose globals,
   # subcommand, and flags are all known-safe (see _is_auto_allowable). (Not
@@ -688,9 +689,9 @@ def _classify(trees: Sequence[_Node]) -> Decision:
   if len(trees) == 1 and _is_plain_command(trees[0]):
     invocation = _git_invocation_of(trees[0])
     if invocation is not None and _is_auto_allowable(invocation):
-      return Decision.ALLOW
+      return _Decision.ALLOW
 
-  return Decision.DEFER
+  return _Decision.DEFER
 
 
 def _pathspec_checkout_warning(trees: Sequence[_Node]) -> str | None:
@@ -741,10 +742,10 @@ def main(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout) -> None:
   # Parse once and reuse the trees for both the decision and the discard
   # warning, rather than parsing for each — this runs on every Bash call.
   trees = _safe_parse(command) if 'git' in command else None
-  decision = _classify(trees) if trees is not None else Decision.DEFER
-  if decision is Decision.DENY:
+  decision = _classify(trees) if trees is not None else _Decision.DEFER
+  if decision is _Decision.DENY:
     _emit(stdout, 'deny', DENY_REASON)
-  elif decision is Decision.ALLOW:
+  elif decision is _Decision.ALLOW:
     _emit(stdout, 'allow')
   elif trees is not None and 'checkout' in command:
     warning = _pathspec_checkout_warning(trees)

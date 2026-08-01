@@ -91,6 +91,28 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     deliberately omitted, which is why this pass is manual — files changed by
     Bash or scripts stay un-reflowed until their next Edit. Revisit only if that
     gap bites in practice.
+  - Note: the first reflow of an un-reflowed file destroys structure, not just
+    wrapping — two flag legends and both test-header run commands in the gate
+    hooks were flattened into paragraphs on 2026-08-01. Scan each file for
+    indented comment structure before reflowing it and convert that structure to
+    markdown first; which constructs survive is in #reflow-markdown-support.
+
+- [ ] **Document which markdown the Python reflow hook preserves**
+      {#reflow-markdown-support} — `rules/python.md` directs comment prose to
+      "express structure as markdown" but never says which constructs actually
+      survive `claude/hooks/reflow_prose.py`, so the safe shapes get
+      rediscovered by experiment each time. Find the right home — most likely
+      that same bullet in `rules/python.md` — and write the behavior down there.
+  - Note: verified empirically 2026-08-01. A space-indented list carrying no
+    bullet marker is plain prose to the hook and gets merged into the preceding
+    paragraph. Both `-` and `*` are recognized as lists and survive intact, as
+    does a fenced block around a copy-pasteable command. Re-rendering a chunk
+    inserts a blank line before a `-` list but not before a `*` list, so `*`
+    keeps a compact legend compact. Every shape was idempotent across three
+    passes.
+  - Note: the gate hooks' short-flag legends use `*` for that reason, diverging
+    from the `-` bullets `rules/python.md` names — settle which marker the rule
+    should endorse as part of writing this up.
 
 - [ ] **Build a license-header Stop lint** — a Stop-hook check flagging source
       files that lack the license block (copyright line + SPDX identifier, per
@@ -173,23 +195,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       section and dilutes what the heading promises.
   - Note: surfaced 2026-08-01 while unifying the review rules; left alone as out
     of scope.
-
-- [ ] **Settle one test altitude for the two gate hooks** — `gate_git_test.py`
-      drives its gate through `main()` with a real hook payload, while
-      `gate_auto_tools_test.py` calls the `runs_gated_tool` predicate directly.
-      Neither breaks the test-via-public-APIs rule, but sibling tests over
-      near-identical PreToolUse gates shouldn't differ in depth without a stated
-      reason.
-  - Worktree: gate-test-altitude
-  - Rationale: queued 2026-07-31 during the `gate_auto_tools_test.py`
-    parametrize pass, which left the difference alone as out of scope.
-  - Note: converting means first giving `gate_auto_tools.main()` the
-    `stdin`/`stdout` parameters `gate_git.main()` already has — the auto-tools
-    gate reads `sys.stdin` directly today, against `rules/testing.md`'s
-    stream-injection rule.
-  - Note: the payload level covers behavior the predicate level cannot reach —
-    the fail-open path on an unparseable payload, and the shape of the emitted
-    deny decision. Both are untested today.
 
 - [ ] **Autoformat shell scripts** {#shell-autoformat} — Markdown, JavaScript,
       and Python each have a formatter wired into the edit or Stop hooks; shell

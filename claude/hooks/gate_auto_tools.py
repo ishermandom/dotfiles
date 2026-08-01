@@ -27,10 +27,11 @@
 import json
 import re
 import sys
+from typing import TextIO
 
 # A heredoc opener. The body that follows on subsequent lines is stdin data, so
-# strip_heredoc_bodies removes it before matching.
-HEREDOC_OPENER = re.compile(
+# _strip_heredoc_bodies removes it before matching.
+_HEREDOC_OPENER = re.compile(
   r"""
   <<            # the heredoc operator
   (-?)          # group 1: '-' lets the closing delimiter be tab-indented
@@ -42,8 +43,8 @@ HEREDOC_OPENER = re.compile(
 )
 
 # A single- or double-quoted string. Its contents are an argument, never a
-# command, so strip_quoted_strings removes the whole span before matching.
-QUOTED_STRING = re.compile(
+# command, so _strip_quoted_strings removes the whole span before matching.
+_QUOTED_STRING = re.compile(
   r"""
     "                  # opening double quote
     (?: \\. | [^"\\] )* # body: an escaped pair (\\. spans \" etc.) or any
@@ -59,7 +60,7 @@ QUOTED_STRING = re.compile(
 
 # A gated tool in command position. The matcher runs after quotes and heredoc
 # bodies are stripped, so any separator here is a real one.
-COMMAND_POSITION = re.compile(
+_COMMAND_POSITION = re.compile(
   r"""
   (?: ^ | [;|&] )            # a line start, or just after a separator
                              #   (& covers && and a background &; | covers ||)
@@ -77,7 +78,7 @@ COMMAND_POSITION = re.compile(
   re.VERBOSE | re.MULTILINE,  # MULTILINE: ^ matches the start of every line
 )
 
-DENY_REASON = (
+_DENY_REASON = (
   'pytest, ruff, mypy, and prettier run automatically at Stop — do not re-run '
   'them reflexively mid-turn. If this run adds value (e.g. confirming an '
   'intermediate state lets more work land this turn), use the token-lean '
@@ -86,7 +87,7 @@ DENY_REASON = (
 )
 
 
-def strip_heredoc_bodies(command: str) -> str:
+def _strip_heredoc_bodies(command: str) -> str:
   """Drop heredoc bodies, which are stdin data rather than commands.
 
   Opener lines (which carry the real command) and anything after a closing
@@ -105,39 +106,52 @@ def strip_heredoc_bodies(command: str) -> str:
         pending.pop(0)  # closing delimiter line — drop it too
       continue  # body or close line: never a command, so drop it
     kept_lines.append(line)  # opener or ordinary line: keep it
-    for indent, delimiter in HEREDOC_OPENER.findall(line):
+    for indent, delimiter in _HEREDOC_OPENER.findall(line):
       pending.append((delimiter, indent == '-'))
   return '\n'.join(kept_lines)
 
 
-def strip_quoted_strings(command: str) -> str:
+def _strip_quoted_strings(command: str) -> str:
   """Remove single- and double-quoted spans — arguments, never commands."""
-  return QUOTED_STRING.sub('', command)
+  return _QUOTED_STRING.sub('', command)
 
 
-def runs_gated_tool(command: str) -> bool:
+def _runs_gated_tool(command: str) -> bool:
   """Whether the command invokes a gated tool in command position."""
-  data_free = strip_quoted_strings(strip_heredoc_bodies(command))
-  return COMMAND_POSITION.search(data_free) is not None
+  data_free = _strip_quoted_strings(_strip_heredoc_bodies(command))
+  return _COMMAND_POSITION.search(data_free) is not None
 
 
-def main() -> None:
-  """Read the hook payload from stdin; emit a deny decision when gated."""
+def main(stdin: TextIO = sys.stdin, stdout: TextIO = sys.stdout) -> None:
+  """Read the hook payload from `stdin`; emit any deny decision to `stdout`.
+
+  Emits nothing when the command runs no gated tool, so the call falls through
+  to settings.json and the normal prompt. The streams are parameters so the gate
+  can be driven in memory from tests.
+  """
   try:
-    payload = json.load(sys.stdin)
+    payload = json.load(stdin)
   except json.JSONDecodeError:
     return  # unparseable payload: fail open — this is an ergonomic gate
-  command = payload.get('tool_input', {}).get('command', '')
-  if not runs_gated_tool(command):
+
+  # A payload the gate cannot read a command out of fails open for the same
+  # reason: an ergonomic guard never blocks a call whose shape it can't parse.
+  tool_input = payload.get('tool_input') if isinstance(payload, dict) else None
+  command = tool_input.get('command') if isinstance(tool_input, dict) else None
+  if not isinstance(command, str):
     return
+
+  if not _runs_gated_tool(command):
+    return
+
   decision = {
     'hookSpecificOutput': {
       'hookEventName': 'PreToolUse',
       'permissionDecision': 'deny',
-      'permissionDecisionReason': DENY_REASON,
+      'permissionDecisionReason': _DENY_REASON,
     }
   }
-  json.dump(decision, sys.stdout, ensure_ascii=False)
+  json.dump(decision, stdout, ensure_ascii=False)
 
 
 if __name__ == '__main__':

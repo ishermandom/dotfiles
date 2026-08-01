@@ -5,7 +5,10 @@
 # Behavior spec for the git permission gate, exercised through its only public
 # entry point — main() reading a hook payload from stdin and writing a decision
 # to stdout. Run with the hooks directory on PYTHONPATH:
-#   PYTHONPATH=~/.claude/hooks pytest ~/.claude/hooks/gate_git_test.py
+#
+# ```
+# PYTHONPATH=~/.claude/hooks pytest ~/.claude/hooks/gate_git_test.py
+# ```
 
 import io
 import json
@@ -111,8 +114,8 @@ DENYLISTED: tuple[str, ...] = (
   'git remote remove origin',
   'git remote rm upstream',
   'git remote -v remove origin',  # a flag before the verb must not bypass
-  # Found by traversal — a later compound clause, or inside a substitution;
-  # both execute, so neither can smuggle a destructive op past the gate.
+  # Found by traversal — a later compound clause, or inside a substitution; both
+  # execute, so neither can smuggle a destructive op past the gate.
   'git status && git reset --hard',
   'echo done; git -C /r clean -fd',
   'echo $(git reset --hard)',
@@ -312,8 +315,8 @@ def test_cluster_short_flags_partition_single_letter_safe_flags() -> None:
 
 # --- pathspec checkout is not denied, but is flagged with a discard warning ---
 
-# `git checkout <pathspec>` discards uncommitted changes irreversibly, yet
-# can't be told apart from a branch switch without repo state — so it is not
+# `git checkout <pathspec>` discards uncommitted changes irreversibly, yet can't
+# be told apart from a branch switch without repo state — so it is not
 # hard-denied; the gate surfaces a warning by turning it into an "ask".
 CHECKOUT_DISCARDS: tuple[str, ...] = (
   'git checkout -- file.txt',
@@ -375,9 +378,21 @@ def test_ask_carries_the_discard_warning() -> None:
   assert 'discard' in output['permissionDecisionReason']
 
 
-def test_malformed_payload_emits_nothing() -> None:
-  assert _run_gate_on_raw_stdin('not json at all') == ''
+# --- a payload the gate can't read a command out of defers ---
+
+# Shapes carrying no readable command. Each emits nothing, leaving settings.json
+# and the prompt to decide — the gate never guesses a decision from a payload it
+# could not parse.
+UNREADABLE_PAYLOADS: tuple[str, ...] = (
+  'not json at all',
+  '[]',  # valid JSON, but not an object
+  '{}',  # an object with no tool_input
+  '{"tool_input": null}',  # tool_input present but not an object
+  '{"tool_input": {"command": 123}}',  # command present but not a string
+)
 
 
-def test_non_string_command_emits_nothing() -> None:
-  assert _run_gate_on_raw_stdin('{"tool_input": {"command": 123}}') == ''
+@pytest.mark.parametrize('stdin_text', UNREADABLE_PAYLOADS)
+def test_unreadable_payload_emits_nothing(stdin_text: str) -> None:
+  """A payload with no readable command falls through to the prompt."""
+  assert _run_gate_on_raw_stdin(stdin_text) == ''
