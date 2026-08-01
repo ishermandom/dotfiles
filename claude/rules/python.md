@@ -18,6 +18,9 @@ snapshot.
   `fmt:`, `type:`), license tag lines, `fmt: off` regions, trailing comments,
   tab-indented comments, and a docstring's `Args:`-style section or doctest tail
   (the prose head above it still reflows)
+  <!-- Which markdown shapes survive, and the machinery behind the reflow — two
+  engines, a character-preservation check, and the shapes prettier merges or
+  rewrites — is written up in `hooks/reflow_prose.py`'s module header. -->
 - ruff enforces formatting (2-space indentation, single quotes), configured
   globally in `~/.config/ruff/pyproject.toml`; mypy enforces types via
   `--strict` in `~/.claude/scripts/quiet-mypy.sh` plus each project's own

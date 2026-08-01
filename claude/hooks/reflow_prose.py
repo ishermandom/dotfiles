@@ -15,9 +15,23 @@
 #
 # The contract that makes this safe:
 #
-# - Comment prose is markdown. A blank comment line separates paragraphs;
-#   bullets, backticked code, and indented blocks are structure that prettier
-#   preserves. Adjacent plain lines are one paragraph and will merge.
+# - Comment prose is markdown, and a chunk is a run of adjacent `# ` lines: a
+#   blank comment line ends the chunk, so paragraphs are separated by being
+#   formatted as separate documents. Adjacent plain lines are one paragraph and
+#   will merge. Bullets are `-`: prettier rewrites `*` and `+` to `-`, which
+#   trips the word-preservation check below and drops the whole chunk to the
+#   plain filler.
+# - Structure that survives reflow intact: `-` bullet lists (continuations wrap
+#   under a hanging indent), ordered lists numbered from `1.`, fenced blocks,
+#   tables, headings, and blockquotes. Nested bullets survive too, reindented to
+#   two spaces. Two shapes do not: an indented block merges into the paragraph
+#   above and loses its internal spacing unless a blank comment line precedes
+#   it, and an ordered list numbered from anything but `1.` merges as well,
+#   since only `1.` may interrupt a paragraph.
+# - Reflow never changes a chunk's line density. A chunk holds no blank line, so
+#   every blank line prettier emits is structure it added — splitting a list off
+#   the paragraph that introduces it, say — and is dropped. Density stays the
+#   author's call, expressed by the blank comment lines bounding the chunk.
 # - Reflow may only move whitespace. A markdown formatter assumes a renderer
 #   will absorb its notation changes — in a .md file, an escaped `\*` renders
 #   back to `*`, so the rewrite is invisible. Source text has no rendering step:
@@ -655,6 +669,18 @@ def _fill_chunk(chunk: ProseChunk) -> str:
   return fill_prose(chunk.markdown, chunk.reflow_width())
 
 
+def _drop_blank_lines(markdown: str) -> str:
+  """Strip the blank lines a markdown formatter inserted between blocks.
+
+  A comment chunk carries no blank line of its own — a bare `#` ends the chunk —
+  so every blank line here is one the formatter added to set a block apart from
+  the paragraph above it. Dropping them keeps a flag legend tight against its
+  introducing line; an author wanting the break writes the bare `#`, which
+  splits the chunk in two and separates the paragraphs that way.
+  """
+  return '\n'.join(line for line in markdown.split('\n') if line.strip())
+
+
 def _reflow_comment_group(
   chunks: Sequence[ProseChunk],
   indices: Sequence[int],
@@ -671,13 +697,13 @@ def _reflow_comment_group(
   separator = f'\n\n{_CHUNK_SEPARATOR}\n\n'
   combined = separator.join(chunks[i].markdown for i in indices)
   formatted = format_comment_markdown(combined, width)
-  parts = [part.strip('\n') for part in formatted.split(_CHUNK_SEPARATOR)]
+  parts = formatted.split(_CHUNK_SEPARATOR)
   if len(parts) != len(indices):
     parts = [
-      format_comment_markdown(chunks[i].markdown, width).strip('\n')
-      for i in indices
+      format_comment_markdown(chunks[i].markdown, width) for i in indices
     ]
-  return parts
+  # Dropping blank lines also sheds the newlines surrounding the separator.
+  return [_drop_blank_lines(part) for part in parts]
 
 
 def _reflow_chunks(

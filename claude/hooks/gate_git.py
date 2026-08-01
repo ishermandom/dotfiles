@@ -252,15 +252,15 @@ SAFE_READ_FLAGS = frozenset(
 # short-flag token mixes these freely (`-sb` is `-s -b`); each is a display- or
 # filter-only toggle whose output is read-only — none writes a file, runs a
 # program, or mutates state:
-# * `s` — status: short format
-# * `b` — status: show branch
-# * `z` — status: NUL-terminated records
-# * `p` — log/diff/show: show the patch (content display)
-# * `w` — diff: ignore all whitespace
-# * `i` — log: case-insensitive `--grep`
-# * `E` — log: extended-regexp `--grep`
-# * `F` — log: fixed-string `--grep`
-# * `R` — diff: reverse the diff
+# - `s` — status: short format
+# - `b` — status: show branch
+# - `z` — status: NUL-terminated records
+# - `p` — log/diff/show: show the patch (content display)
+# - `w` — diff: ignore all whitespace
+# - `i` — log: case-insensitive `--grep`
+# - `E` — log: extended-regexp `--grep`
+# - `F` — log: fixed-string `--grep`
+# - `R` — diff: reverse the diff
 SAFE_READ_BOOLEAN_SHORT_FLAGS = frozenset('sbzpwiEFR')
 
 # The value-taking single-letter SAFE_READ_FLAGS, as bare letters. git parses a
@@ -268,13 +268,13 @@ SAFE_READ_BOOLEAN_SHORT_FLAGS = frozenset('sbzpwiEFR')
 # as its value (`-U5` is `-U` with value `5`; `-pU5` is `-p` then `-U5`), so one
 # can end a cluster but no flag hides behind it. Each takes a read-only value —
 # a count, a search pattern, or a rename/copy threshold:
-# * `u` — status: `--untracked-files` mode
-# * `n` — log: `--max-count`
-# * `S` — log: pickaxe string
-# * `G` — log: pickaxe regex
-# * `U` — diff: `--unified` context lines
-# * `M` — diff: `--find-renames` threshold
-# * `C` — diff: `--find-copies` threshold
+# - `u` — status: `--untracked-files` mode
+# - `n` — log: `--max-count`
+# - `S` — log: pickaxe string
+# - `G` — log: pickaxe regex
+# - `U` — diff: `--unified` context lines
+# - `M` — diff: `--find-renames` threshold
+# - `C` — diff: `--find-copies` threshold
 SAFE_READ_VALUE_SHORT_FLAGS = frozenset('unSGUMC')
 
 # Read-only `git branch` listing flags. branch auto-allows only when *every*

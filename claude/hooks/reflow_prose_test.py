@@ -778,6 +778,62 @@ def test_prettier_wraps_bullets_with_hanging_indent() -> None:
   assert lines[1].startswith('#   ')  # continuation under the marker
 
 
+def test_a_list_stays_tight_against_its_introducing_line() -> None:
+  """prettier sets a list off with a blank line; that added line is dropped."""
+  # The introducing line has to be overlong, or the chunk sits at the reflow
+  # fixed point and never reaches prettier for the blank line to be added.
+  source = (
+    '# An introducing line that runs well past the eighty column limit and so'
+    ' has to be rewrapped:\n'
+    '# - first item\n'
+    '# - second item\n'
+    'x = 1\n'
+  )
+
+  result = reflow_source(source, run_prettier)
+
+  assert result == (
+    '# An introducing line that runs well past the eighty column limit and so'
+    ' has to\n'
+    '# be rewrapped:\n'
+    '# - first item\n'
+    '# - second item\n'
+    'x = 1\n'
+  )
+
+
+def test_tight_list_reflow_is_idempotent() -> None:
+  """Re-reflowing settles: prettier re-adds the blank line, reflow drops it."""
+  source = (
+    '# An introducing line that runs well past the eighty column limit and so'
+    ' has to be rewrapped:\n'
+    '# - first item\n'
+    'x = 1\n'
+  )
+
+  once = reflow_source(source, run_prettier)
+  twice = reflow_source(once, run_prettier)
+
+  assert twice == once
+
+
+def test_a_bare_comment_line_still_separates_a_list_from_its_intro() -> None:
+  """Dropping prettier's blank lines leaves the author's own break intact."""
+  source = (
+    '# An introducing line that runs well past the eighty column limit and so'
+    ' has to be rewrapped:\n'
+    '#\n'
+    '# - first item\n'
+    'x = 1\n'
+  )
+
+  result = reflow_source(source, run_prettier)
+
+  # The bare `#` ends the chunk, so the paragraphs are formatted separately and
+  # the break survives — density stays whatever the author wrote.
+  assert '# be rewrapped:\n#\n# - first item\n' in result
+
+
 def test_setext_heading_underline_survives_the_filler_fallback() -> None:
   """A dash-run underline is structure even when emphasis forces the filler."""
   # The *emphasis* makes real prettier rewrite characters, so the whole chunk
