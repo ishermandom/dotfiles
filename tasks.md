@@ -228,28 +228,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     the same either way, and doing it first means the formatter's own first
     contact with each file produces no diff.
 
-- [ ] **Determine what makes `claude agents` flag a thread as needing input** —
-      the fanout workflow routes attention entirely through that view and keeps
-      no status machinery of its own, so what sets a session to `waiting` is
-      load-bearing yet undocumented. Establish the rule, and whether a finished
-      session can be told apart from a stalled one.
-  - Worktree: agents-status
-  - Note: the sharpest question is `idle`, which covers both a session that
-    finished and one that died mid-task. If nothing separates them, the fanout
-    has no way to say which threads still owe work.
-  - Note: partial findings from CLI 2.1.220, worth re-confirming rather than
-    trusting — `claude agents --json` reports `status` as `busy`, `idle`, or
-    `waiting` alongside a `waitingFor` reason, and live session state sits in
-    `~/.claude/sessions/<pid>.json`. `waiting` appeared to track whichever
-    dialog is open, with a per-dialog reason defaulting to "permission prompt".
-  - Note: `state`, `detail`, and `tempo` are populated for local background
-    jobs, living in `~/.claude/jobs/<id>/state.json` rather than in the session
-    file — observed on CLI 2.1.220, with `state` taking `working`, `done`, and
-    `blocked`, and `detail` carrying free text such as "starting…".
-    `claude agents --json` surfaces `state` beside `status` but never `detail`,
-    so a row reading `idle done` against `idle blocked` may be the separation
-    this task wants — one reading each, so confirm before relying on it.
-
 - [ ] **Give config work a safe way to validate against the live harness** —
       `/fanout` tells an agent whose task changes hooks, `settings.json`, or
       anything else behind `~/.claude` to validate in the main checkout, but
