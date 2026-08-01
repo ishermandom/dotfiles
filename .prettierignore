@@ -1,0 +1,4 @@
+# Zed's configs are JSONC: they carry comments and trailing commas, which Zed
+# both accepts and writes. Prettier parses the files as strict JSON and strips
+# the trailing commas, so a repo-wide run reverts what Zed wrote.
+zed/
