@@ -42,6 +42,20 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: validate after wiring per the hooks rule — one deliberate mypy-failure
     Stop cycle (failure surfaces to the user), then a clean pass.
 
+- [ ] **Stop a worktree session from formatting the main checkout** —
+      `prettier-format.sh` formats the current directory, then formats the
+      dotfiles root too whenever the two differ, so a session in another project
+      still tidies dotfiles. A worktree of this repo meets that condition as
+      well, so every fanned-out agent reformats the user's main working copy on
+      each Stop (verified 2026-07-31 from the zed-prettier worktree).
+  - Note: during a fanout, several agents then write into one checkout at once —
+    the concurrent-rewrite hazard #stop-orchestrator describes, without the
+    single-session assumption that makes it rare there.
+  - Note: the condition wants "a different project", not "a different
+    directory". Testing whether the working directory sits anywhere inside the
+    dotfiles repo, worktrees included, would keep the cross-project behavior and
+    drop the self-formatting.
+
 - [ ] **Surface ruff lint failures at Stop, and clear the open ones** —
       `claude/hooks/reflow_prose.py` carries two `B905` errors (`zip()` without
       an explicit `strict=`). `~/.claude/scripts/quiet-ruff.sh` reports them,
