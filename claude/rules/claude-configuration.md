@@ -126,7 +126,7 @@ stripped: they bill tokens and attention on every message, so rationale beyond a
 one-clause inline why goes to CLAUDE.md's companion notes file,
 `docs/claude-md-notes.md`, never a comment. `SKILL.md` and docs never strip
 either; for a skill, keep the editing-time why in a companion notes file — see
-`#skill-rationale` below.
+#skill-rationale below.
 
 **Specificity floor**: Give every rule a concrete, detectable trigger — the
 primary way to pass the checks above. "Write clear names" doesn't fire. "When
@@ -223,18 +223,6 @@ pull it in and defeat the purpose.
 **When rationale spans multiple skills**: keep it in the most foundational
 skill's `notes.md` and cross-reference it from the other skills' notes — one
 home, no drift.
-
-## When cross-referencing a section
-
-**When citing a section**: add a short descriptive slug to the heading —
-`## Heading {#slug}` — or, when the target is one bullet in a list, to its bold
-label: `- **Label** {#slug}: …`. Cite it as the filename plus the backticked
-slug, never the heading text: CLAUDE.md `#disprefer-memory`; within the same
-file, the backticked slug alone. A slug survives rewording; a quoted heading
-goes stale silently. Add slugs lazily — only when actively needed for
-cross-links.
-
-**When renaming a slug**: check for stale references and update them to match.
 
 ## When editing `settings.json` or wiring hooks
 

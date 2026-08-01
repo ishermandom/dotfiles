@@ -13,7 +13,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     rationale before trimming; second independent data point.
 
 - [ ] **Sequence the Stop hooks through one orchestrator wrapper**
-      #stop-orchestrator — same-event hooks run in parallel (verified live
+      {#stop-orchestrator} — same-event hooks run in parallel (verified live
       2026-07-03: two probe Stop hooks started 0.8 ms apart with fully
       overlapping 2 s sleeps; hooks-guide.md documents parallel execution and
       recommends a wrapper for ordering), so the Stop array's
@@ -104,25 +104,22 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 
 - [ ] **Build a license-header Stop lint** — a Stop-hook check flagging source
       files that lack the license block (copyright line + SPDX identifier, per
-      CLAUDE.md `#license`). Once it exists and holds, shrink the CLAUDE.md
-      `#license` rule to a pointer, per the graduation policy. Queued from the
+      CLAUDE.md #license). Once it exists and holds, shrink the CLAUDE.md
+      #license rule to a pointer, per the graduation policy. Queued from the
       2026-07 adversarial review (cluster F2, ratified 2026-07-04).
   - Note: depends on #stop-orchestrator — build the check as a step in
     `stop_checks.sh`, not as another parallel Stop entry.
 
 - [ ] **Lint slug anchors against their citations** — the cross-reference
       convention now spans CLAUDE.md, `rules/`, `docs/`, `skills/`, and
-      `tasks.md`, but the "check for stale references" instruction in
-      `rules/claude-configuration.md` is manual, so a renamed or deleted anchor
-      leaves a dangling citation that nothing catches. Compare `{#slug}`
-      definitions against backticked `#slug` citations and report both
-      directions — dangling citations, and anchors nothing cites (the rule says
-      to add slugs lazily, so an uncited anchor is also a defect).
-  - Note: two `rg` passes plus a set comparison suffice; the 2026-07-31 session
-    ran the check ad hoc while converting the citations.
-  - Note: illustrative placeholders must not trip it — `#slug` in
-    `claude-configuration.md`'s own template, and `#smoke-test` and
-    `#session-log` in `rules/markdown.md`'s examples.
+      `tasks.md`, but the rename-and-removal upkeep CLAUDE.md #cross-references
+      calls for is manual, so a renamed or deleted anchor leaves a dangling
+      citation that nothing catches. Compare braced definitions against bare
+      citations and report both directions — dangling citations, and anchors
+      nothing cites (anchoring is meant to be lazy, so an uncited anchor is also
+      a defect).
+  - Note: a throwaway pass over every `*.md` ran clean in both directions on
+    2026-07-31, so the convention holds today; nothing was kept.
   - Note: depends on #stop-orchestrator — build it as a step in
     `stop_checks.sh`, not as another parallel Stop entry.
 
@@ -151,7 +148,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `sessions.md` its own caps if rotation is chosen.
 
 - [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities**
-      #consolidation-recheck — the 2026-07 close-out's consolidation sweep was
+      {#consolidation-recheck} — the 2026-07 close-out's consolidation sweep was
       an inline self-review by the session that wrote several of the candidate
       rules, and it found no folds; sympathetic review under-finds, so
       cross-check with a cold agent hunting overlapping or foldable rules across
@@ -189,7 +186,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 - [ ] **Align skill review-gating with the review-is-a-separate-axis rule** —
       `ownership-walkthrough` (frames review as settled before anything is
       committed) and `wrap-session` step 5 (withholds a durable chunk's commit
-      pending the walkthrough) are now stricter than CLAUDE.md `#review-axis`:
+      pending the walkthrough) are now stricter than CLAUDE.md #review-axis:
       committing never waits on review; production code is reviewed before push.
   - Rationale: queued 2026-07-07 when the Git-section edit decoupled review from
     committing. Pre-commit review remains a valid ordering, so the mismatch is

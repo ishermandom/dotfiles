@@ -76,7 +76,7 @@ design decisions:
 
 ## Token and context-health quantification
 
-The system-level efficiency model lives in `docs/design.md` `#token-health`. The
+The system-level efficiency model lives in `docs/design.md` #token-health. The
 measurement machinery — how the session log records token cost — is
 wrap-session-scoped and lives here. The hook `hooks/session_tokens.py` (whose
 read-only `--print` mode feeds the wrap-time reflection) and `SKILL.md` are the

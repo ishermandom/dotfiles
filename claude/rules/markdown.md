@@ -43,7 +43,7 @@ never the reverse.
   or reviewed from the document alone.
 - **Record decisions, not operative details**: a spec records the decision and
   its rationale; the operative detail stays wherever it lives and evolves. See
-  CLAUDE.md `#canonical-location` for the split and why mirroring drifts.
+  CLAUDE.md #canonical-location for the split and why mirroring drifts.
 - **Create the file** when design decisions need a durable record; otherwise
   keep the spec inline in conversation.
 
@@ -110,13 +110,14 @@ duplicates the spec and drifts; keep only fragments the spec doesn't carry.
 
 ### When cross-referencing tasks
 
-Prefer to omit task IDs. Add a `#slug` to a task only when another task needs to
-reference it explicitly. Slugs are semantic (`#smoke-test`, not `1a`), so they
-stay stable when tasks are reordered or inserted.
+Prefer to omit task IDs. A task anchors and is cited like any other passage —
+see CLAUDE.md #cross-references — with the braces going after its bold title.
+Name slugs semantically (`#smoke-test`, not `1a`) so they stay stable when tasks
+are reordered or inserted.
 
-Cross-reference explicitly: "Depends on #slug" at the end of the task line or in
-its notes. Implicit ordering (listing tasks in dependency order) is fine when no
-cross-phase references are needed.
+Cross-reference explicitly: `Depends on #smoke-test` at the end of the task line
+or in its notes. Implicit ordering (listing tasks in dependency order) is fine
+when no cross-phase references are needed.
 
 ### When pruning completed work
 

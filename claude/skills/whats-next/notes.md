@@ -1,7 +1,7 @@
 # whats-next — maintainer notes
 
 This skill is the canonical home for the session-start resume protocol.
-markdown.md `#resume-protocol` points here instead of duplicating the steps —
+markdown.md #resume-protocol points here instead of duplicating the steps —
 single source of truth.
 
 The skill is meant to fire on natural-language "what's next" / "what should I

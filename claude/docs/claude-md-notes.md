@@ -7,7 +7,7 @@ CLAUDE.md injection does not strip HTML comments (verified 2026-07-03), so
 rationale cannot ride in the file for free; anything beyond a one-clause inline
 why lands here, keyed by rule.
 
-## Pronouns and demonstratives (CLAUDE.md `#pronouns`)
+## Pronouns and demonstratives (CLAUDE.md #pronouns)
 
 Two elements were drafted into this rule and cut; both are tempting to re-add.
 
@@ -30,7 +30,7 @@ defect cannot demonstrate itself: stripped of the preceding sentence,
 the referent could be a noun that simply is not shown. Such an example needs
 both halves to teach anything.
 
-## License (CLAUDE.md `#license`)
+## License (CLAUDE.md #license)
 
 Beyond the inline shareability clause: applying the block uniformly across code
 — not just to files likely to be shared — also keeps the professional habit
@@ -45,7 +45,7 @@ Linux, Kubernetes, and Apache repos all leave docs bare. The every-file
 alternative is the REUSE specification, which trades the noise for
 machine-verifiable per-file licensing; curl follows it.
 
-## Prefer Edit over Write (CLAUDE.md `#prefer-edit`)
+## Prefer Edit over Write (CLAUDE.md #prefer-edit)
 
 Cost driver: output-token generation at call time. Taking input as the 1x
 baseline, per-token rates are uniform across Claude models: output 5x, cache
@@ -60,9 +60,22 @@ per-operation gap is small (a ~500-line file is a few thousand output tokens vs.
 model at $50/MTok output, as of June 2026) — a
 soft default, not worth a confirmation round-trip.
 
-## Prefer to search code with rg (CLAUDE.md `#prefer-rg`)
+## Prefer to search code with rg (CLAUDE.md #prefer-rg)
 
 The inline clause carries the misfire risk (BRE mode). The fuller picture: the
 `grep` shim runs ugrep with `-G`, so `|`, `+`, `(` are literal without `-E`; rg
 defaults to recursive, smart-case, gitignore-aware search with an ERE-ish flavor
 that matches how patterns are typically written.
+
+## Cross-references (CLAUDE.md #cross-references)
+
+The goal is anchor stability, not navigation. Nothing resolves these anchors,
+and the audience is Claude or the user reading the text.
+
+Three spellings carry three meanings, and the distinction to hold is definition
+versus reference:
+
+- `{#slug}` defines, once.
+- A bare slug references.
+- A backticked slug is prose about the token itself. This lets the rules state
+  their own templates and examples without those becoming citations.

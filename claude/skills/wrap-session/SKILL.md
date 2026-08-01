@@ -52,7 +52,7 @@ file.) In addition to the shared routing:
   history already record these.
 - If a `~/.claude/docs/` file needs updating, flag it and ask before editing.
 
-Sharpen the `#debt-scan` for session close — "nothing comes to mind" is not a
+Sharpen the #debt-scan for session close — "nothing comes to mind" is not a
 pass; look at what actually changed. Classify each finding by when to act, not
 by severity:
 

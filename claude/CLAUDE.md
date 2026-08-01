@@ -390,6 +390,18 @@ Every session, without being asked:
     first to be intelligible. Prefer naming the symbol or section over restating
     a summary of it — a summary is a copy too, and drifts like one.
 
+### Cross-references {#cross-references}
+
+- **Cite a passage by its slug, never by its wording**: a slug survives
+  rewording where quoted text goes stale silently. Write the filename plus the
+  bare slug — `spec.md #session-log` — or, within one file, the bare slug alone.
+  Cite this way from every file type, code comments included.
+- **Anchor a passage once something cites it**: mark the target with braces —
+  for example: `## Heading {#slug}`, `- **Bullet label** {#slug}: …`. Anchor
+  lazily, never in advance.
+- **When renaming or removing an anchor**: update its citations in the same
+  edit, to prevent silent drift between an anchor and the text pointing at it.
+
 ## Git
 
 - **Default**: commit directly to `main`; don't branch first. The user works one

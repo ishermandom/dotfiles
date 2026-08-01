@@ -84,8 +84,8 @@ earlier over-generalization of the rules-file result — so CLAUDE.md rationale 
 either a one-clause inline why or lives in CLAUDE.md's companion notes file
 (`docs/claude-md-notes.md`, mirroring the skills pattern). Docs and `SKILL.md`
 enter context verbatim as well. Operative convention:
-`rules/claude-configuration.md` `#maintainer-rationale`; skill rationale goes in
-a companion `notes.md`.
+`rules/claude-configuration.md` #maintainer-rationale; skill rationale goes in a
+companion `notes.md`.
 
 **Cross-language style stays in CLAUDE.md** (evaluated and rejected moving it to
 a path-scoped `code-style.md`): in a coding session a path-scoped file loads
@@ -201,7 +201,7 @@ model is a post-hoc, attention-routing walkthrough:
   review was rejected as producing a messy log). The unit partition is an
   attention lens, not a commit-structuring device.
 
-Operative wording lives in CLAUDE.md `#review-approach` and the
+Operative wording lives in CLAUDE.md #review-approach and the
 `ownership-walkthrough` skill. The exploratory→production graduation runs this
 same flow.
 
@@ -241,11 +241,11 @@ if strict linearity's per-landing friction proves higher than expected.
 
 ### Scope, disagreement, ambiguity
 
-Operative rules live in CLAUDE.md — scope in `#review-approach`, pushback in
-`#disagreement`. The design stance: adjacent changes are never silently
-included; pushback is raised at planning time, before code, calibrated by
-consequence; low-ambiguity reversible work proceeds on a stated assumption,
-everything else clarifies first.
+Operative rules live in CLAUDE.md — scope in #review-approach, pushback in
+#disagreement. The design stance: adjacent changes are never silently included;
+pushback is raised at planning time, before code, calibrated by consequence;
+low-ambiguity reversible work proceeds on a stated assumption, everything else
+clarifies first.
 
 ### Session flow and planning
 
@@ -293,7 +293,7 @@ Two distinct runaway cases, handled differently:
 Recovery should be cheap enough that taking it is easy: commit the working state
 before exploring risky territory; debug in place for shallow problems, fresh
 session for deep confusion. The two-failed-attempts diagnosis rule is operative
-in CLAUDE.md `#working-method`.
+in CLAUDE.md #working-method.
 
 **Known failure modes** (watch for these): dead code accumulating across
 rewrites; premature abandonment of large tasks (mitigate with explicit success
@@ -331,7 +331,7 @@ Structured `AskUserQuestion` rounds (max 4 questions, grouped, write-in
 fallback) beat open-ended back-and-forth for decisions and preferences; the
 pattern that works for requirements: brainstorm dimensions, gather preferences
 via structured questions, build requirements, research, capture. Operative rule
-in CLAUDE.md `#interaction-style`.
+in CLAUDE.md #interaction-style.
 
 ---
 
@@ -368,7 +368,7 @@ structural `/prototype` worktree-plus-branch layer with hook enforcement — the
 failure it guards (committing throwaway code as production) is rare in solo
 hobby work and not worth a mandatory worktree, a branch flag, and a three-way
 exit skill. Built-in `EnterWorktree` covers the occasional genuine isolation
-need. Operative wording in CLAUDE.md `#exploratory-mode`.
+need. Operative wording in CLAUDE.md #exploratory-mode.
 
 ### Build vs. buy
 

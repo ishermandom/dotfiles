@@ -36,7 +36,7 @@ deferred concern not written down this turn is lost.
 
 ## Memory routing
 
-See CLAUDE.md `#disprefer-memory` for when auto-memory is the right destination
+See CLAUDE.md #disprefer-memory for when auto-memory is the right destination
 instead of a tracked file. Hint: auto-memory is rarely the right fit.
 
 ## Open questions
