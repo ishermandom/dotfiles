@@ -18,6 +18,12 @@ paths:
   chaining transformations — assign each step to a named variable
   (`output=$(cmd 2>&1)`, `exit_code=$?`). Capture `$?` on the very next line —
   it is overwritten by every subsequent command.
+- **When an `if` or `while` condition does not fit on one line, name an
+  intermediate value rather than wrapping with `\`**: shfmt indents a
+  continuation to the same depth as the block body, so a wrapped condition reads
+  as part of what it guards. Folding the operands into one named value ahead of
+  the `if` — `combined="${primary:-}${fallback:-}"`, then a single `-z` test —
+  usually shortens the condition enough to fit.
 - **Comment script-isms and opaque commands, not everyday syntax**: assume
   command-line fluency but not script-writing fluency. Comment _script-isms_ —
   constructs met only when writing scripts (positional parameters `$#`/`$@`,
