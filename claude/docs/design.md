@@ -241,14 +241,6 @@ on familiarity grounds — strict linearity matches the user's Chromium/Piper-
 trained instincts — not because it's structurally worse; the explicit fallback
 if strict linearity's per-landing friction proves higher than expected.
 
-### Scope, disagreement, ambiguity
-
-Operative rules live in CLAUDE.md — scope in #review-approach, pushback in
-#disagreement. The design stance: adjacent changes are never silently included;
-pushback is raised at planning time, before code, calibrated by consequence;
-low-ambiguity reversible work proceeds on a stated assumption, everything else
-clarifies first.
-
 ### Session flow and planning
 
 **Default flow**: gather requirements → spec → task queue → execute end-to-end →

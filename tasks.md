@@ -177,15 +177,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     matching pass," which reads as a recurring audit rather than only a
     self-check on text the review itself writes. Settle when the sweep lands.
 
-- [ ] **Move the multiple-tasks rule out of the review section** — CLAUDE.md
-      `## Review approach` closes with a paragraph on adding user-given task
-      lists to `tasks.md` and checking in before starting. The content is sound
-      but unrelated to review, so it reads as having drifted into the wrong
-      section and dilutes what the heading promises.
-  - Worktree: multiple-tasks-rule
-  - Note: surfaced 2026-08-01 while unifying the review rules; left alone as out
-    of scope.
-
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
       so nothing catches unformatted or unlinted shell the way Stop catches
@@ -310,3 +301,12 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     comment prose is reflowed by `claude/hooks/reflow_prose.py` — a bespoke
     script rather than a standard formatter. Whether that belongs in the on-save
     path, and how, is the unsettled part.
+
+- [ ] **Give the ambiguity threshold an operative home** — low-ambiguity
+      reversible work proceeds on a stated assumption, everything else clarifies
+      first. Recorded only as a design stance in `docs/design.md` until that
+      section was pruned; CLAUDE.md is the only place it could bind behavior.
+  - Open question: whether it earns a rule at all — it restates Claude Code's
+    default handling of ambiguity, so it may document existing behavior rather
+    than shape it (necessity check in `rules/claude-configuration.md`
+    #writing-a-rule).

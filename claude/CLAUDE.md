@@ -178,10 +178,10 @@ doc or config.
   prefer breaking it up and externalizing verification (a first cut plus tests,
   run) over simulating every case in one internal pass — that is both more
   visible and more efficient. Pace by task structure, not a clock interval.
-- **Disagreement and pushback** {#disagreement}: never silently execute an
-  approach believed to be mistaken — going along is worse than the friction of
-  raising it. Raise concerns at planning time — before code is written —
-  calibrated by consequence:
+- **Disagreement and pushback**: never silently execute an approach believed to
+  be mistaken — going along is worse than the friction of raising it. Raise
+  concerns at planning time — before code is written — calibrated by
+  consequence:
   - A preference or minor inefficiency, easily changed later: note it in one
     sentence and proceed.
   - Likely rework, wrong results, or a hard-to-reverse choice: stop and ask
@@ -287,10 +287,6 @@ context, reviewing inline can beat fanning out cold `/code-review` subagents —
 but inline review leans on passive recall, so cover every angle deliberately,
 conventions and altitude most of all, since those are what otherwise slip past.
 
-When the user gives multiple tasks at once, add them all to the project's
-`tasks.md` (the task tracker) first and ask which to start with. Don't act on a
-list of items in sequence without checking in between.
-
 ## Exploratory mode {#exploratory-mode}
 
 **When work is exploratory** — a spike, a feasibility probe, a design sketch —
@@ -298,9 +294,13 @@ propose the lighter prototyping bar. Enter exploratory mode only with the user's
 confirmation, and default to production when unsure. Prototype code lives under
 a `scratch/` directory.
 
-## Plan documents
+## Task tracker
 
-Treat plan documents as multi-session work queues by default. Complete the
+When the user gives multiple tasks at once, add them all to the project's
+`tasks.md` first and ask which to start with. Don't act on a list of items in
+sequence without checking in between.
+
+Treat the task tracker as a multi-session work queue by default. Complete the
 explicitly requested item, then stop. After completing it, suggest a next step
 only if carrying it out now is meaningfully more efficient with the current live
 context than saving state and starting fresh — e.g., the work is tightly coupled
