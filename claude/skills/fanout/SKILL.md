@@ -10,8 +10,14 @@ working in its own git worktree. Work the steps in order.
 ## Steps
 
 1. **Take the task set from the user**: which tasks to fan out is the user's
-   call. Ask for clarification when a choice is ambiguous, when two tasks edit
-   the same files, or when one task depends on work that doesn't exist yet.
+   call. Ask for clarification when a choice is ambiguous or when tasks are
+   coupled — when either task's correct answer depends on how the other turns
+   out. Coupling usually takes one of two shapes: one task needs work that isn't
+   done yet, or two tasks would settle the same open question — which convention
+   to adopt, which helper to introduce, where a new rule lives. Coupled tasks go
+   in consecutive fanouts, the first landing before the second starts. Two tasks
+   that merely edit the same file are fine as concurrent lanes; the conflict is
+   ordinary work at landing.
 
 2. **Check what the worktrees will branch from**: with `worktree.baseRef` unset,
    a new worktree starts from `origin/main`, so unpushed commits and uncommitted

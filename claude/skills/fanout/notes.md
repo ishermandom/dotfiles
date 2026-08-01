@@ -72,11 +72,35 @@ Maintainer rationale for the `fanout` skill.
   with the built-in `claude` agent type, which a bare `claude --bg` launch does
   not apply (verified in CLI 2.1.220).
 
-- **Fanout width is bounded by file clusters, not by task count**: tracker tasks
-  tend to cluster on the same files, and a fanout wider than those clusters just
-  moves the conflict from the worktrees to the landing. The user's review
-  attention is the tighter limit in practice, since finished branches queue for
-  it serially.
+- **File overlap is a poor stand-in for coupling**: a textual collision is
+  mechanical work, since the agent resolving it at landing holds both sides and
+  the surrounding file. What no resolution recovers is a lane that needed
+  another lane's outcome and never saw it, because the information sat in
+  neither diff. Overlap misses coupling in both directions — it fires on lanes
+  editing neighboring tracker entries, where merging is bookkeeping, and stays
+  silent where two lanes share no file at all, one introducing the helper the
+  other should have used.
+
+- **Sequencing coupled tasks beats pairing them in one worktree**: a consecutive
+  fanout costs a round of latency and nothing else. Pairing is right only where
+  the two tasks are genuinely one decision and splitting them would yield two
+  half-answers; pairing to dodge a file collision buys nothing and costs review
+  surface. The lane that landed `c182c8a` through `6846c88` paired the two shell
+  tasks for that reason and reached nineteen files across five commits, past
+  what one review pass reads comfortably. Review attention is the practical
+  bound on how wide a fanout goes, since finished branches queue for review
+  serially.
+
+- **A tracker conflict is the exception, because the tracker logs state living
+  elsewhere**: code carries enough of itself that a conflict is resolvable on
+  inspection, whereas a deleted `tasks.md` entry says nothing about whether the
+  task was finished or dropped, so a merged tracker can read as consistent and
+  still be false. Neighboring entries collide by construction — deleting a
+  finished task removes the blank line below the entry, leaving the deletion
+  flush against the next task's first line, and git fuses changes that touch.
+  `c182c8a` landed a tracker reviving a task that `954bb36` had already
+  implemented and pruned. Keeping a tracker merge honest belongs to
+  `fanout-teardown`, which owns the landing.
 
 - **`.claude/worktrees/` needs a gitignore entry**: a worktree directory shows
   up as untracked in the repo that hosts it, which would otherwise make the
