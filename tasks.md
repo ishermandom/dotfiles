@@ -190,9 +190,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     self-check on text the review itself writes. Settle when the sweep lands.
 
 - [ ] **Share the shell tests' assertion helpers** — `expect` and `contains` are
-      hand-copied into `gh-protect-test.sh`, `quiet-shell-test.sh`, and
-      `stop_checks-test.sh`, so a fourth shell test starts by copying them
-      again.
+      hand-copied into every shell test in the repo, so each new one starts by
+      copying them again.
   - Note: pytest plays this role for the Python tests; shell has no runner, so
     these helpers are the de facto framework. A sourced file beside them is the
     obvious home — check that its name stays clear of the `*-test.sh` discovery
@@ -223,25 +222,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: take comment positions from `shfmt --to-json` rather than a line-based
     scan. `claude/scripts/gh-protect.sh` heredocs JSON and `gh-protect-test.sh`
     heredocs a stub script, both carrying `#` lines that are not comments.
-
-- [ ] **Cover `statusline.sh` with a test** {#statusline-test} — the repo tests
-      `gh-protect.sh` and `quiet-shell.sh` through `claude/scripts/*-test.sh`,
-      which `run_tests.sh` picks up, but the script carrying the most logic —
-      pace coloring, reset formatting, quota assembly, absent jq fields — has
-      none.
-  - Worktree: statusline-test
-  - Rationale: queued 2026-08-01, when the 80-column rewrap restructured the
-    quota blocks into a `quota_segment` helper. That edit was verified
-    differentially against the pre-change script, which is a check that dies
-    with the change it covers.
-  - Note: the script reads one JSON object on stdin and prints one line, so
-    golden input/output pairs fit. The cases worth pinning are the thresholds
-    the color functions turn on, and the absent-field paths — `rate_limits` is
-    missing on API-key accounts, `used_percentage` null right after `/compact`.
-  - Note: `_build_prompt` in `zsh/.zshrc` is testable the same way and is
-    riskier to break, since a bad `.zshrc` hits every login. A prompt-builder
-    test needs a zsh harness rather than the bash `*-test.sh` shape, so weigh it
-    separately.
 
 - [ ] **Stop worktree entry from blocking every fanned-out agent** — a
       fanned-out agent's first act is entering its worktree, and that raises a
