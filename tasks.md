@@ -223,24 +223,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     scan. `claude/scripts/gh-protect.sh` heredocs JSON and `gh-protect-test.sh`
     heredocs a stub script, both carrying `#` lines that are not comments.
 
-- [ ] **Stop worktree entry from blocking every fanned-out agent** — a
-      fanned-out agent's first act is entering its worktree, and that raises a
-      permission prompt the user has to answer. Each lane stalls there until
-      they do, which costs a background fanout most of what makes it background.
-  - Worktree: worktree-entry-prompt
-  - Rationale: queued 2026-08-01, after most of a nine-lane fanout raised the
-    prompt at once.
-  - Note: the prompt names the worktree path, then calls it "a model-supplied
-    worktree outside `.claude/worktrees/`" — a path that sits inside
-    `.claude/worktrees/`. Its wording and its own argument disagree, on CLI
-    2.1.220. Full text:
-
-    ```text
-    permission-root relocation to
-    "<repo>/.claude/worktrees/<slug>" — a model-supplied worktree
-    outside .claude/worktrees/
-    ```
-
 - [ ] **Decide what a new worktree should branch from** — `worktree.baseRef` is
       unset, so every worktree starts from `origin/main`, and a fanout has to
       commit and push the tracker before launching anything. `/fanout`'s step 2
