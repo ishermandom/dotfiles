@@ -64,7 +64,10 @@ Maintainer rationale for the `fanout` skill.
   can do. Note that agent-driven entry does not dodge the `origin/main` base —
   `EnterWorktree` reads the same `worktree.baseRef` setting `claude -w` does, so
   only changing that setting (or branching from local HEAD by hand) moves the
-  base.
+  base. The setting stays unset deliberately: `head` would carry unpushed
+  commits into a lane but still miss uncommitted ones, so step 2's base check
+  earns its place either way — and step 3 pushes the claim before any launch,
+  leaving `head` nothing to add in practice.
 
   Entry goes through `name` rather than `path` because `EnterWorktree` approves
   the `name` form outright, while a `path` that does not resolve to an existing

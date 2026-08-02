@@ -192,6 +192,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 - [ ] **Share the shell tests' assertion helpers** — `expect` and `contains` are
       hand-copied into every shell test in the repo, so each new one starts by
       copying them again.
+  - Worktree: shell-test-helpers
   - Note: pytest plays this role for the Python tests; shell has no runner, so
     these helpers are the de facto framework. A sourced file beside them is the
     obvious home — check that its name stays clear of the `*-test.sh` discovery
@@ -214,6 +215,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 - [ ] **Reflow shell comment prose to 80 columns** {#shell-prose-reflow} —
       `reflow_prose.py` wraps comment and docstring prose for Python only, and
       shfmt will never do it for shell, so shell comments are hand-fitted.
+  - Worktree: shell-prose-reflow
   - Rationale: extending the existing reflow hook is preferred over adding a
     second mechanism for the same job.
   - Note: weigh the payoff before building — exactly 2 shell lines exceed 80
@@ -222,14 +224,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: take comment positions from `shfmt --to-json` rather than a line-based
     scan. `claude/scripts/gh-protect.sh` heredocs JSON and `gh-protect-test.sh`
     heredocs a stub script, both carrying `#` lines that are not comments.
-
-- [ ] **Decide what a new worktree should branch from** — `worktree.baseRef` is
-      unset, so every worktree starts from `origin/main`, and a fanout has to
-      commit and push the tracker before launching anything. `/fanout`'s step 2
-      exists only to guard that gap.
-  - Open question: whether to set `worktree.baseRef` to `head`. Raised twice on
-    2026-08-01 and deferred both times. `head` would still miss uncommitted
-    work, so it narrows the gap rather than closing it.
 
 - [ ] **Have Zed run the repo's formatters on save** — the formatting hooks fire
       on Claude's `Edit` and `Write` only, so a file edited by hand in Zed
