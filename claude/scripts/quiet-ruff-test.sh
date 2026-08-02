@@ -76,6 +76,19 @@ expect "and says so in its own words" \
 expect "rather than passing ruff's warning through" \
   lacks "$no_python_output" "No Python files found under"
 
+# --- a path that does not exist is not a clean run --------------------------
+
+# The no-Python-files short circuit must not swallow a stale or typo'd path,
+# which would be the same silent success the level scale exists to prevent.
+project=$(make_project)
+missing_path_output=$("$quiet_ruff" "$project/gone.py" 2>&1)
+missing_path_status=$?
+
+expect "a path that does not exist is breakage, not a finding" \
+  test "$missing_path_status" -ge 2
+expect "and the message names the path rather than its remains" \
+  contains "$missing_path_output" "gone.py"
+
 # --- a clean project reports success -----------------------------------------
 
 project=$(make_project)

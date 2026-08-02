@@ -17,9 +17,19 @@
 paths=("$@")
 [ ${#paths[@]} -eq 0 ] && paths=(.)
 
+# A path that does not exist is caught here rather than downstream, where
+# realpath yields an empty string that then reads as a missing argument by the
+# time ruff sees it. Naming the path beats three messages about its remains.
+for path in "${paths[@]}"; do
+  if [ ! -e "$path" ]; then
+    echo "ruff: no such path: $path" >&2
+    exit 2
+  fi
+done
+
 # Ruff warns "No Python files found under the given path(s)" and exits 0 when
-# there is nothing to check, which is noise rather than a result. -print -quit
-# stops find after the first match, for speed.
+# there is nothing to check, which is noise rather than a result.
+# -print -quit stops find after the first match, for speed.
 has_python_files=$(find "${paths[@]}" -name "*.py" -print -quit 2> /dev/null)
 [ -z "$has_python_files" ] && {
   echo "ruff: no Python files"

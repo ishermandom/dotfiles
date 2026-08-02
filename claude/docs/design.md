@@ -134,10 +134,9 @@ only the durable design choices behind it:
   a file while mypy and pytest read it. Edit-time formatting means most files
   reach Stop already formatted, so the race is rare, but nothing bounds it.
   `stop_checks.sh` runs the steps in order and stops at the first failure. A
-  formatter's findings are dropped, since they would garble the verdict, and a
-  formatter script that will not run halts the turn. The open gap is an absent
-  tool: both formatters end their tool invocation with `|| true`, so a missing
-  ruff exits 0 and formatting stops with nothing said.
+  formatter's findings are dropped, since they would garble the verdict, while
+  anything that keeps a tool from running at all — the step script missing, or
+  the tool itself absent or broken — halts the turn with its reason on stderr.
 - **Stop-hook failures surface to the user** (`continue: false`), not as a
   `decision: block` auto-re-invoke: a block can spin forever when Claude cannot
   fix the failure, guarding that is out of scope for now, and the user-prod

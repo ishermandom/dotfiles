@@ -77,8 +77,9 @@ dotfiles_root=$(cd "$hooks_dir" && git rev-parse --show-toplevel 2> /dev/null)
 [ -n "$dotfiles_root" ] || exit 0
 
 # A session at or below the root already covers the repo by formatting the
-# current directory, worktrees included. Matching the root with a trailing
-# slash keeps a sibling such as dotfiles-backup out.
+# current directory — including a session inside a worktree, which is a
+# checkout of its own. Matching the root with a trailing slash keeps a sibling
+# such as dotfiles-backup out.
 case "$(realpath .)" in
   "$dotfiles_root" | "$dotfiles_root"/*) exit 0 ;;
 esac
