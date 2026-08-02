@@ -46,5 +46,5 @@ working in its own git worktree. Work the steps in order.
    For a task changing hooks, `settings.json`, or anything else reached through
    `~/.claude`, say so in the prompt: those paths symlink to the main checkout,
    so an agent can otherwise mistake its worktree's config for the one its own
-   session runs. `rules/claude-configuration.md` #live-validation covers firing
-   the worktree's copy safely.
+   session runs. `rules/claude-configuration.md` #worktree-live-validation
+   covers firing the worktree's copy safely.

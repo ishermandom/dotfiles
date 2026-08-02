@@ -48,8 +48,8 @@ Maintainer rationale for the `fanout` skill.
   every concurrent session an unreviewed hook. A throwaway session started from
   the worktree's own settings covers the firing instead, so the skill needs no
   routing rule for config tasks. The mechanism lives in
-  `rules/claude-configuration.md` #live-validation rather than here, because
-  that file loads whenever a session touches a hook or `settings.json` —
+  `rules/claude-configuration.md` #worktree-live-validation rather than here,
+  because that file loads whenever a session touches a hook or `settings.json` —
   including the sessions this skill never launched.
 
 - **Leaving the work uncommitted risks nothing**: both automatic worktree

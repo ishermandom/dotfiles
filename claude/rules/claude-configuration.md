@@ -247,11 +247,15 @@ home, no drift.
 - **Test hooks run on Stop**: a single turn often has multiple interdependent
   edits; running tests after each edit produces false failures mid-turn. Wire
   test hooks to `Stop` so they run once, after all edits have landed.
-- **Validate after adding** {#live-validation}: after wiring up a new hook,
-  trigger the expected behavior and confirm the hook fires correctly — e.g.
-  introduce a deliberate failure to verify a test hook catches it, then restore.
-  A worktree's own hooks never run in the session editing them, so fire them
-  there with
+- **Validate after adding**: after wiring up a new hook, trigger the expected
+  behavior and confirm the hook fires correctly — e.g. introduce a deliberate
+  failure to verify a test hook catches it, then restore.
+- **When the edit is in a worktree, validate that copy**
+  {#worktree-live-validation}: `~/.claude/hooks/` and `~/.claude/scripts/`
+  resolve to the main checkout, so a check run through one of those paths
+  reports on the installed version and passes while the worktree's edit goes
+  untested. Run an edited script from its path inside the worktree. A hook has
+  no such path to run, so fire it with
   `~/.claude/scripts/probe_worktree_hooks.py "<prompt provoking the tool call>"`
   — the script's header states what a probe covers and what it leaves out.
 - **Never install a worktree's config to see it fire**: copying a hook or
