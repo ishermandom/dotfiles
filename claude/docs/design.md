@@ -126,7 +126,7 @@ only the durable design choices behind it:
   rewrote files after the turn ended, so follow-up Edits anchored to stale
   pre-format wording and failed. Formatting immediately after each edit means
   the harness shows the rewrap before the next Edit anchors. The same
-  anchor-stability rationale drives the Python prose-reflow hook.
+  anchor-stability rationale drives the prose-reflow hook.
 - **Tests and type checks at Stop, not per edit**: a single turn often has
   multiple interdependent edits; mid-turn runs produce false failures.
 - **One Stop entry**: same-event hooks run in parallel, so an array of several

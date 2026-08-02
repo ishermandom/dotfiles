@@ -81,11 +81,12 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     deliberately omitted, which is why this pass is manual — files changed by
     Bash or scripts stay un-reflowed until their next Edit. Revisit only if that
     gap bites in practice.
-  - Note: the first reflow of an un-reflowed file destroys structure, not just
-    wrapping — two flag legends and both test-header run commands in the gate
-    hooks were flattened into paragraphs on 2026-08-01. Scan each file for
-    indented comment structure before reflowing it; which constructs survive is
-    written up in `claude/hooks/reflow_prose.py`'s module header.
+  - Note: the first reflow of an un-reflowed file can change structure, not just
+    wrapping — adjacent lines the author meant as separate paragraphs merge into
+    one, which a `Usage:` line abutting the prose below it, or a label line
+    abutting its note, both hit. The shell pass found six such sites. Read every
+    file's diff rather than assuming the pass is mechanical; which constructs
+    survive is written up in `claude/hooks/reflow_prose.py`'s module header.
   - Note: before converting flattened structure to a shape the hook preserves,
     ask whether the content earns its place at all. Every run command the
     dotfiles pass found was a duplicate of what `run_tests.sh` already
@@ -216,10 +217,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `format_on_save` or `formatter` today.
   - Rationale: queued 2026-08-01, after two rounds of hand edits to a skill file
     each needed a formatter run afterwards to fix line wrapping.
-  - Note: prettier and ruff are ordinary formatters Zed can invoke, but Python
-    comment prose is reflowed by `claude/hooks/reflow_prose.py` — a bespoke
-    script rather than a standard formatter. Whether that belongs in the on-save
-    path, and how, is the unsettled part.
+  - Note: prettier and ruff are ordinary formatters Zed can invoke, but comment
+    prose is reflowed by `claude/hooks/reflow_prose.py` — a bespoke script
+    rather than a standard formatter. Whether that belongs in the on-save path,
+    and how, is the unsettled part.
 
 - [ ] **Give the ambiguity threshold an operative home** — low-ambiguity
       reversible work proceeds on a stated assumption, everything else clarifies
