@@ -249,12 +249,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     building, one dropping its task as already covered elsewhere and one
     deferring behind a larger sweep.
 
-- [ ] **List `Worktree:` among the tracker's standard note labels** —
-      `rules/markdown.md` names `Rationale:`, `Open question:`, and `Note:`,
-      while `/fanout` writes a `Worktree:` line onto every task it claims, so
-      the stated convention and the tooling disagree.
-  - Worktree: worktree-note-label
-
 - [ ] **Decide what a new worktree should branch from** — `worktree.baseRef` is
       unset, so every worktree starts from `origin/main`, and a fanout has to
       commit and push the tracker before launching anything. `/fanout`'s step 2
