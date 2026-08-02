@@ -5,9 +5,9 @@
 # A `stop_checks.sh` step: format the current directory, and the dotfiles repo
 # when the session is working outside it.
 #
-# Runs on Stop (end of turn) rather than on each Edit so that all edits from
-# the turn have landed before formatting runs. The Stop hook receives no
-# information about which files changed, so we format whole directories.
+# Runs on Stop (end of turn) rather than on each Edit so that all edits from the
+# turn have landed before formatting runs. The Stop hook receives no information
+# about which files changed, so we format whole directories.
 #
 # Two things here are easy to conflate:
 #
@@ -18,19 +18,19 @@
 # A runner and this step report an exit status on different scales, and
 # translating one into the other is most of the work here:
 #
-# - a runner passes its tool's status through on three levels: 0 when the
-#   files came out clean, 1 when the tool reported findings it could not fix,
-#   and 2 or more when it could not do the job at all — a file it cannot
-#   parse, a misuse, or the shell's 127 for a tool that is not installed. Not
-#   every tool reaches 1 — prettier's --write fixes whatever it can parse, so
-#   it reports success or breakage and nothing between.
+# - a runner passes its tool's status through on three levels: 0 when the files
+#   came out clean, 1 when the tool reported findings it could not fix, and 2 or
+#   more when it could not do the job at all — a file it cannot parse, a misuse,
+#   or the shell's 127 for a tool that is not installed. Not every tool reaches
+#   1 — prettier's --write fixes whatever it can parse, so it reports success or
+#   breakage and nothing between.
 # - this step reports two levels: 0 when the tools ran, whether or not they
-#   found anything, and non-zero when one of them could not run. The reason
-#   for a non-zero exit goes to stderr, while whatever the tools said about
-#   the files goes to stdout, so a caller can surface one without the other.
+#   found anything, and non-zero when one of them could not run. The reason for
+#   a non-zero exit goes to stderr, while whatever the tools said about the
+#   files goes to stdout, so a caller can surface one without the other.
 #
-# So a runner exit of 0 or 1 becomes a step exit of 0, and a runner exit of 2
-# or more fails the step. That split is the point — a missing or broken tool
+# So a runner exit of 0 or 1 becomes a step exit of 0, and a runner exit of 2 or
+# more fails the step. That split is the point — a missing or broken tool
 # otherwise looks exactly like a clean run, and formatting silently fails.
 
 runners_dir="$HOME/.claude/scripts"
@@ -63,8 +63,8 @@ format_dir() { # format_dir <directory>
   )
 }
 
-# A broken tool would tend to fail the same way on the next directory, so
-# short circuit on failure.
+# A broken tool would tend to fail the same way on the next directory, so short
+# circuit on failure.
 format_dir . || exit $?
 
 # The repo holding this file is the dotfiles repo, so ask git where it starts.
@@ -77,9 +77,9 @@ dotfiles_root=$(cd "$hooks_dir" && git rev-parse --show-toplevel 2> /dev/null)
 [ -n "$dotfiles_root" ] || exit 0
 
 # A session at or below the root already covers the repo by formatting the
-# current directory — including a session inside a worktree, which is a
-# checkout of its own. Matching the root with a trailing slash keeps a sibling
-# such as dotfiles-backup out.
+# current directory — including a session inside a worktree, which is a checkout
+# of its own. Matching the root with a trailing slash keeps a sibling such as
+# dotfiles-backup out.
 case "$(realpath .)" in
   "$dotfiles_root" | "$dotfiles_root"/*) exit 0 ;;
 esac

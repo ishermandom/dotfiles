@@ -28,8 +28,8 @@ for path in "${paths[@]}"; do
 done
 
 # Ruff warns "No Python files found under the given path(s)" and exits 0 when
-# there is nothing to check, which is noise rather than a result.
-# -print -quit stops find after the first match, for speed.
+# there is nothing to check, which is noise rather than a result. -print -quit
+# stops find after the first match, for speed.
 has_python_files=$(find "${paths[@]}" -name "*.py" -print -quit 2> /dev/null)
 [ -z "$has_python_files" ] && {
   echo "ruff: no Python files"
@@ -63,9 +63,9 @@ else
   printf '%s\n%s\n' "$check_output" "$format_output"
 fi
 
-# The worse of the two statuses wins, so a breakage never hides behind the
-# other invocation's findings. Callers read the status by level rather than as
-# a bare pass/fail — see the exit-status scales in claude/hooks/format.sh.
+# The worse of the two statuses wins, so a breakage never hides behind the other
+# invocation's findings. Callers read the status by level rather than as a bare
+# pass/fail — see the exit-status scales in claude/hooks/format.sh.
 status=$check_status
 [ $format_status -gt $status ] && status=$format_status
 exit $status

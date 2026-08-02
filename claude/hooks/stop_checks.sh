@@ -39,9 +39,9 @@ halt_turn() { # halt_turn <text shown to the user>
 # fix on its stdout.
 #
 # A non-zero exit means the step could not do its job: either the step script
-# itself would not run — missing, or not executable — or a tool it drives
-# could not. Both halt rather than passing silently. A tool's own findings are
-# not a failure; the step leaves those on the stdout dropped here.
+# itself would not run — missing, or not executable — or a tool it drives could
+# not. Both halt rather than passing silently. A tool's own findings are not a
+# failure; the step leaves those on the stdout dropped here.
 #
 # TODO(tasks.md #ruff-lint-at-stop): add ruff lint as a check step, so its
 # findings reach the user rather than being dropped here.

@@ -37,8 +37,8 @@ failure_count=0
 
 # --- helpers ----------------------------------------------------------------
 
-# Runs the given command as an assertion: prints one result line, and on
-# failure bumps failure_count so the script exits non-zero at the end.
+# Runs the given command as an assertion: prints one result line, and on failure
+# bumps failure_count so the script exits non-zero at the end.
 expect() { # expect <description> <command...>
   local description="$1"
   shift

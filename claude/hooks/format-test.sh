@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Tests what the formatting step makes of the tools it drives: which exit
-# statuses fail the step, which stream carries the reason, and which
-# directories it formats.
+# statuses fail the step, which stream carries the reason, and which directories
+# it formats.
 #
 # Both behaviors regress silently. A step that swallows a missing tool ends
 # every turn clean while nothing is being formatted; a step that formats one
@@ -12,8 +12,8 @@
 #
 # The fixtures replace the real runners with fakes, reached through $HOME the
 # way the step reaches the real ones, and stand the step up inside a fake
-# dotfiles repo so the second-pass logic has a root to find — no test-only
-# seam in the script.
+# dotfiles repo so the second-pass logic has a root to find — no test-only seam
+# in the script.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
@@ -24,8 +24,8 @@ failure_count=0
 
 # --- helpers ----------------------------------------------------------------
 
-# Runs the given command as an assertion: prints one result line, and on
-# failure bumps failure_count so the script exits non-zero at the end.
+# Runs the given command as an assertion: prints one result line, and on failure
+# bumps failure_count so the script exits non-zero at the end.
 expect() { # expect <description> <command...>
   local description="$1"
   shift

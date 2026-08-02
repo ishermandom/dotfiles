@@ -2,8 +2,8 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Tests the exit status quiet-ruff.sh reports, and the case where it declines
-# to run ruff at all.
+# Tests the exit status quiet-ruff.sh reports, and the case where it declines to
+# run ruff at all.
 #
 # The status is the half that fails quietly. claude/hooks/format.sh reads it by
 # level — 0 and 1 mean ruff ran, 2 and up mean it could not — so a status that
@@ -29,8 +29,8 @@ failure_count=0
 
 # --- helpers ----------------------------------------------------------------
 
-# Runs the given command as an assertion: prints one result line, and on
-# failure bumps failure_count so the script exits non-zero at the end.
+# Runs the given command as an assertion: prints one result line, and on failure
+# bumps failure_count so the script exits non-zero at the end.
 expect() { # expect <description> <command...>
   local description="$1"
   shift
@@ -100,8 +100,8 @@ expect "a clean project exits 0" test "$clean_status" -eq 0
 
 # --- findings ruff cannot fix are level 1 ------------------------------------
 
-# F821 (undefined name) is reported but has no autofix, so it survives --fix
-# and is the status callers must not mistake for a broken tool.
+# F821 (undefined name) is reported but has no autofix, so it survives --fix and
+# is the status callers must not mistake for a broken tool.
 project=$(make_project)
 printf 'print(undefined_name)\n' > "$project/undefined.py"
 findings_output=$("$quiet_ruff" "$project" 2>&1)
@@ -122,8 +122,8 @@ expect "an unparseable file exits 2 or more" test "$unparseable_status" -ge 2
 # --- the worse of the two ruff statuses wins ---------------------------------
 
 # `check` breaking while `format` only reports findings is the pairing that
-# tells "worst wins" apart from "the last one wins". Real ruff cannot be made
-# to produce it, so a stub earlier on PATH stands in.
+# tells "worst wins" apart from "the last one wins". Real ruff cannot be made to
+# produce it, so a stub earlier on PATH stands in.
 stub_dir=$(mktemp -d "$test_root/stub.XXXXXX")
 cat > "$stub_dir/ruff" << 'STUB'
 #!/usr/bin/env bash
