@@ -60,9 +60,7 @@ fresh. Never lower the quality bar because a project is small.
   — never append it to a line that carries other content
 - **Comment and docstring prose is markdown**: a blank comment line separates
   paragraphs; adjacent plain lines are one paragraph and may merge under reflow,
-  so express structure as markdown (`-` bullets, backticked code, fenced
-  blocks). Auto-reflow exists where a rules/ file documents it (Python:
-  `rules/python.md`); elsewhere, fit prose to the limit by hand
+  so express structure as markdown (`-` bullets, backticked code, fenced blocks)
 - **Named helpers**: extract repeated expressions into named constants or helper
   variables rather than repeating them inline
 - **Decompose complex regexes**: when a pattern combines two or more distinct
@@ -338,12 +336,9 @@ Every session, without being asked:
   runners `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier}.sh [paths]` —
   terse output, auto-surfaced to the user.
 - **After a raw edit that bypasses `Edit`/`Write`** (e.g. a script-driven
-  multi-file find/replace): their `PostToolUse` formatting hooks — prose reflow,
-  prettier — never fired either. Run the real formatter on the file
-  (`~/.claude/scripts/quiet-prettier.sh` for markdown/JS;
-  `python3 ~/.claude/hooks/reflow_prose.py <path>` for Python) rather than
-  hand-fixing line lengths, which won't quite match what the hook would have
-  produced.
+  multi-file find/replace): their `PostToolUse` formatting hooks never fired
+  either, so run the file's formatter rather than hand-fixing line lengths,
+  which won't quite match what the hook would have produced.
 - **Don't reflexively measure line width by hand where a formatter owns the
   file** — the reflow hooks settle it on every edit. Where no formatter runs,
   find over-long lines with `rg -n '.{81,}'`; `wc -L` and `awk length` both
