@@ -51,6 +51,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `stop_checks.sh` drops; with prettier off PATH `prettier-format.sh` exits
       0 and says nothing on either stream. Formatting then stops for good with
       no signal.
+  - Worktree: formatter-breakage
   - Note: `stop_checks.sh` already halts when a step script will not run at all,
     so only the absent-tool case is open.
   - Note: entangled with #ruff-lint-at-stop — both need the wrappers to separate
@@ -292,6 +293,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       working in this repo loads the same 485 lines twice: once as the global
       instructions injected into every message, and again as a project file once
       anything under `claude/` is read. Every message pays for the duplicate.
+  - Worktree: claude-md-double-load
   - Rationale: observed 2026-08-01 during the Python reflow pass, whose context
     carried both copies verbatim from the first message onward.
   - Note: establish the discovery path before designing a fix — whether the
@@ -304,6 +306,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       eight Python test files disagree three ways: `gate_auto_tools_test.py` is
       mode 755, every other is 644, and `reflow_prose_test.py` and
       `probe_worktree_hooks_test.py` carry no shebang while the other six do.
+  - Worktree: test-file-shebangs
   - Note: pytest collects them regardless, so nothing depends on either today —
     which argues for dropping both from all eight rather than adding them. The
     shell tests beside them are genuinely executed and do need theirs.
