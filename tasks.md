@@ -239,16 +239,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     outside .claude/worktrees/
     ```
 
-- [ ] **Move the weigh-the-approach guidance into `agent-prompt.md`** — an agent
-      facing an unclear approach should compare the options and ask rather than
-      build the first promising one. That instruction reached the 2026-08-01
-      lanes only as ad-hoc text appended to each launch command, so it holds
-      only as long as whoever runs `/fanout` remembers to type it.
-  - Worktree: weigh-the-approach
-  - Rationale: it earned its place that run — two of nine lanes resolved by not
-    building, one dropping its task as already covered elsewhere and one
-    deferring behind a larger sweep.
-
 - [ ] **Decide what a new worktree should branch from** — `worktree.baseRef` is
       unset, so every worktree starts from `origin/main`, and a fanout has to
       commit and push the tracker before launching anything. `/fanout`'s step 2
