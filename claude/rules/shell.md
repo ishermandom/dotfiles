@@ -9,10 +9,21 @@ paths:
 
 # Shell script style guide
 
+After any file-modification notice for a shell file this turn, re-read the
+target region before composing an `old_string` — the prose reflow hook
+(`~/.claude/hooks/reflow_prose.py`) rewraps comment prose right after each Edit
+or Write, so match the post-reflow wording, not the pre-reflow snapshot.
+
+- **Use markdown for comment prose**: readable and auto-formatted.
+  <!-- How to author comment prose so reflow keeps its structure is a
+  cross-language rule, and lives in CLAUDE.md. What reflow leaves alone and
+  which markdown shapes survive is written up in `hooks/reflow_prose.py`'s
+  module header. -->
 - **Run `~/.claude/scripts/quiet-shell.sh` after writing shell**: it formats
   with shfmt and lints with shellcheck. Nothing else will — unlike Markdown,
-  JavaScript, and Python, shell has no edit-time or Stop-time formatter, and
-  shfmt never wraps long lines, so keeping to 80 columns stays hand work.
+  JavaScript, and Python, shell code has no edit-time or Stop-time formatter,
+  and shfmt never wraps a long line of code. Giving shell a Stop-time check is
+  queued: tasks.md #shell-stop-check
 - **Prefer decomposing multi-step operations into named variables**: when a
   command sequence mixes concerns — capturing output, checking exit status, or
   chaining transformations — assign each step to a named variable

@@ -11,16 +11,12 @@ target region before composing an `old_string` — the prose reflow hook
 after each Edit or Write, so match the post-reflow wording, not the pre-reflow
 snapshot.
 
-- **Comment and docstring prose is markdown, auto-reflowed to the project's line
-  length**: a blank comment line (`#` alone) separates paragraphs; adjacent
-  plain lines merge into one, so express structure as markdown (`-` bullets,
-  backticked code, fenced blocks). Never reflowed: shebangs, directives (`noqa`,
-  `fmt:`, `type:`), license tag lines, `fmt: off` regions, trailing comments,
-  tab-indented comments, and a docstring's `Args:`-style section or doctest tail
-  (the prose head above it still reflows)
-  <!-- Which markdown shapes survive, and the machinery behind the reflow — two
-  engines, a character-preservation check, and the shapes prettier merges or
-  rewrites — is written up in `hooks/reflow_prose.py`'s module header. -->
+- **Use markdown for comment and docstring prose**: readable and auto-formatted.
+  <!-- How to author comment prose so reflow keeps its structure is a
+  cross-language rule, and lives in CLAUDE.md. What reflow leaves alone, which
+  markdown shapes survive, and the machinery behind it — two engines, a
+  character-preservation check, and the shapes prettier merges or rewrites — is
+  written up in `hooks/reflow_prose.py`'s module header. -->
 - ruff enforces formatting (2-space indentation, single quotes), configured
   globally in `~/.config/ruff/pyproject.toml`; mypy enforces types via
   `--strict` in `~/.claude/scripts/quiet-mypy.sh` plus each project's own
