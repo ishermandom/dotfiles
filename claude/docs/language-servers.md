@@ -39,14 +39,13 @@ fight:
   style, import order, syntax modernization. It does no type checking; ruff
   defers types to mypy/pyright by design.
 
-Both run at Stop, as steps of `stop_checks.sh` (`ruff-format.sh` →
-`quiet-ruff.sh` runs `ruff check --fix` _and_ `ruff format`; mypy is its own
-step). So ruff lint is already enabled — ruff is a linter as much as a
-formatter. The rule set lives in `~/.config/ruff/pyproject.toml` (source of
-truth). The only overlaps with mypy (F821 undefined-name, F401 unused-import)
-_agree_ — no conflict. The genuine "two tools fighting" risk is running mypy
-_and_ a second type checker (pyright); ruff + mypy is the canonical
-non-conflicting pair.
+Both run at Stop, as steps of `stop_checks.sh` (`format.sh` → `quiet-ruff.sh`
+runs `ruff check --fix` _and_ `ruff format`; mypy is its own step). So ruff lint
+is already enabled — ruff is a linter as much as a formatter. The rule set lives
+in `~/.config/ruff/pyproject.toml` (source of truth). The only overlaps with
+mypy (F821 undefined-name, F401 unused-import) _agree_ — no conflict. The
+genuine "two tools fighting" risk is running mypy _and_ a second type checker
+(pyright); ruff + mypy is the canonical non-conflicting pair.
 
 The specific rule selection — and the rationale for each enabled rule and each
 ignore — is documented inline in `~/.config/ruff/pyproject.toml`.

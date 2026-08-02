@@ -32,7 +32,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       errors (`zip()` without an explicit `strict=`).
       `~/.claude/scripts/quiet-ruff.sh` reports them, yet turns end clean, so
       they have gone unnoticed (observed 2026-07-29).
-  - Note: why a turn ends clean is settled — `ruff-format.sh` does lint
+  - Note: why a turn ends clean is settled — `format.sh` does lint
     (`quiet-ruff.sh` runs `ruff check --fix`) and writes what it cannot fix to
     stdout. So the findings are produced; what is missing is a path from a Stop
     hook's plain stdout to the user.
@@ -42,30 +42,14 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     prints would garble the halt verdict. So the fix is a lint step among its
     checks — print the findings, exit non-zero — not a change to the formatter
     step. A TODO there marks the spot.
-
-- [ ] **Make a missing formatter tool visible at Stop** {#formatter-breakage} —
-      `prettier-format.sh` and `ruff-format.sh` end their tool invocation with
-      `|| true`, which conflates "the tool reported findings" with "the tool is
-      not installed". Verified 2026-08-01: with ruff off PATH `ruff-format.sh`
-      exits 0 and writes `ruff: command not found` to stdout, which
-      `stop_checks.sh` drops; with prettier off PATH `prettier-format.sh` exits
-      0 and says nothing on either stream. Formatting then stops for good with
-      no signal.
-  - Worktree: formatter-breakage
-  - Note: `stop_checks.sh` already halts when a step script will not run at all,
-    so only the absent-tool case is open.
-  - Note: entangled with #ruff-lint-at-stop — both need the wrappers to separate
-    "findings exist" from "tool missing", which `|| true` currently flattens.
-    Settle the two together.
-  - Note: reporting breakage without halting, via a `systemMessage` field, was
+  - Note: findings and breakage are now distinguishable by exit status — ruff
+    exits 1 for findings and 2 or more when it could not run — so a lint step
+    can key on the level. See the exit-status scales in
+    `claude/hooks/format.sh`.
+  - Note: reporting findings without halting, via a `systemMessage` field, was
     considered and dropped — a Stop hook emits one JSON object, so a halt
     verdict would have to carry the field too, and Stop's support for it is
     unverified.
-  - Note: the same two scripts also diverge on their dotfiles-root second pass —
-    prettier's `case` skips it anywhere at or below the root, ruff's `!=` skips
-    it only at the root exactly, so from a subdirectory ruff formats the repo a
-    second time. Read from the source, not run. Worth reconciling in the same
-    pass.
 
 - [ ] **Give the repo a project-local `.venv`** — the dev tools live in
       `/Users/claude-sandbox/.venvs/default`, inside one account's home, which
@@ -218,9 +202,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Worktree: shell-prose-reflow
   - Rationale: extending the existing reflow hook is preferred over adding a
     second mechanism for the same job.
-  - Note: weigh the payoff before building — exactly 2 shell lines exceed 80
-    columns today, both comment prose: `claude/hooks/prettier-format.sh:5` and
-    `claude/scripts/quiet-mypy.sh:23`.
+  - Note: weigh the payoff before building — exactly 1 shell line exceeds 80
+    columns today, comment prose in `claude/scripts/quiet-mypy.sh:23`.
   - Note: take comment positions from `shfmt --to-json` rather than a line-based
     scan. `claude/scripts/gh-protect.sh` heredocs JSON and `gh-protect-test.sh`
     heredocs a stub script, both carrying `#` lines that are not comments.

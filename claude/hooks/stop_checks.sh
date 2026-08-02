@@ -32,27 +32,23 @@ halt_turn() { # halt_turn <text shown to the user>
   exit 0
 }
 
-# Formatters run first so each check below reads a file's final text.
+# Formatting runs first so each check below reads a file's final text.
 #
 # `2>&1 > /dev/null` keeps stderr and drops stdout: this script's stdout
 # carries the verdict Claude Code parses, and ruff prints the lint findings it
 # cannot fix on its stdout.
 #
-# A non-zero exit means the step script itself would not run — missing, or not
-# executable — which halts rather than passing silently. An absent tool is not
-# covered: both formatters end their tool invocation with `|| true`, so a
-# missing ruff or prettier exits 0 and formatting stops with no signal. See
-# tasks.md #formatter-breakage.
+# A non-zero exit means the step could not do its job: either the step script
+# itself would not run — missing, or not executable — or a tool it drives
+# could not. Both halt rather than passing silently. A tool's own findings are
+# not a failure; the step leaves those on the stdout dropped here.
 #
 # TODO(tasks.md #ruff-lint-at-stop): add ruff lint as a check step, so its
 # findings reach the user rather than being dropped here.
-for formatter in prettier-format.sh ruff-format.sh; do
-  breakage=$("$hooks_dir/$formatter" 2>&1 > /dev/null)
-  formatter_status=$?
-  [ $formatter_status -eq 0 ] && continue
-
-  halt_turn "${breakage:-$formatter exited $formatter_status without output}"
-done
+breakage=$("$hooks_dir/format.sh" 2>&1 > /dev/null)
+format_status=$?
+[ $format_status -eq 0 ] \
+  || halt_turn "${breakage:-format.sh exited $format_status without output}"
 
 # The first check to fail halts the turn and the rest are skipped — a type
 # error usually explains the test failures that would follow it.

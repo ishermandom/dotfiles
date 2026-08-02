@@ -56,13 +56,13 @@ write_step() { # write_step <steps dir> <step name> <body>
 }
 
 # Builds a fixture directory: a copy of stop_checks.sh plus a do-nothing fake
-# for each of its four steps. A case overrides only the steps it is about.
+# for each of its three steps. A case overrides only the steps it is about.
 make_steps_dir() { # make_steps_dir  -> prints the directory
   local steps_dir
   steps_dir=$(mktemp -d "$test_root/steps.XXXXXX")
   cp "$stop_checks" "$steps_dir/"
   local step
-  for step in prettier-format.sh ruff-format.sh mypy-check.sh run_tests.sh; do
+  for step in format.sh mypy-check.sh run_tests.sh; do
     write_step "$steps_dir" "$step" "exit 0"
   done
   echo "$steps_dir"
@@ -71,14 +71,13 @@ make_steps_dir() { # make_steps_dir  -> prints the directory
 # --- the steps run in a fixed order -----------------------------------------
 
 steps=$(make_steps_dir)
-for step in prettier-format.sh ruff-format.sh mypy-check.sh run_tests.sh; do
+for step in format.sh mypy-check.sh run_tests.sh; do
   write_step "$steps" "$step" "echo $step >> $steps/order.log"
 done
 "$steps/stop_checks.sh" > /dev/null
 
-expect "formatters run before checks, each pair in order" \
-  test "$(cat "$steps/order.log")" = "prettier-format.sh
-ruff-format.sh
+expect "formatting runs before the checks, which run in order" \
+  test "$(cat "$steps/order.log")" = "format.sh
 mypy-check.sh
 run_tests.sh"
 
@@ -129,7 +128,7 @@ expect "the tests are skipped once mypy has failed" \
 # --- formatter chatter stays out of the verdict -----------------------------
 
 steps=$(make_steps_dir)
-write_step "$steps" "ruff-format.sh" \
+write_step "$steps" "format.sh" \
   "echo 'B905 zip() without an explicit \"strict=\" parameter'"
 write_step "$steps" "mypy-check.sh" 'echo "error: Incompatible types"
 exit 1'
@@ -143,7 +142,7 @@ expect "a formatter's output does not garble the verdict" \
 # The fake writes to both streams: asserting the reason is the stderr line
 # proves stdout was dropped and stderr kept, not the reverse.
 steps=$(make_steps_dir)
-write_step "$steps" "prettier-format.sh" 'echo "reformatted 12 files"
+write_step "$steps" "format.sh" 'echo "reformatted 12 files"
 echo "prettier: command not found" >&2
 exit 127'
 write_step "$steps" "mypy-check.sh" "echo ran >> $steps/mypy.log"
