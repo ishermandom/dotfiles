@@ -301,12 +301,3 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     ordinary project-root discovery — since the two have different remedies.
   - Note: affects the main checkout as much as a worktree; the worktree only
     made the duplication visible by putting both paths in one context.
-
-- [ ] **Settle whether test files carry a shebang and an executable bit** — the
-      eight Python test files disagree three ways: `gate_auto_tools_test.py` is
-      mode 755, every other is 644, and `reflow_prose_test.py` and
-      `probe_worktree_hooks_test.py` carry no shebang while the other six do.
-  - Worktree: test-file-shebangs
-  - Note: pytest collects them regardless, so nothing depends on either today —
-    which argues for dropping both from all eight rather than adding them. The
-    shell tests beside them are genuinely executed and do need theirs.
