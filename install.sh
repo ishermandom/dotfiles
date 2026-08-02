@@ -8,9 +8,9 @@
 # Symlinks dotfile packages into their target directories via stow.
 #
 # Each entry in `packages` maps a subdirectory of this repo (a "stow package")
-# to the directory where its contents should appear as symlinks. For example,
-# a package directory claude/ containing settings.json will produce a symlink
-# at $HOME/.claude/settings.json pointing back into this repo.
+# to the directory where its contents should appear as symlinks. For example, a
+# package directory claude/ containing settings.json will produce a symlink at
+# $HOME/.claude/settings.json pointing back into this repo.
 #
 # Usage: ./install.sh [-n]
 #   -n  Dry run: print planned changes without modifying anything.
@@ -50,6 +50,7 @@ fi
 
 # Symlink a stow package into its target directory. Returns non-zero when
 # linking fails; mkdir or stow has already reported the reason on stderr.
+#
 # Usage: stow_package <source_dir> <package> <target>
 stow_package() {
   source_dir="$1"
@@ -60,7 +61,9 @@ stow_package() {
   mkdir -p "$target" || return 1
   # --restow removes stale symlinks then recreates all links for this package,
   # which handles renames and deletions cleanly.
+  #
   # --no-folding keeps config dirs as real directories; most tools expect this.
+  #
   # Two packages want folding instead, for different reasons:
   #   claude — every subdirectory is hand-authored content (docs, skills,
   #     rules, …), so folding lets stow pick up new ones without curation.
@@ -106,12 +109,12 @@ packages="
 
 # Per-account overlays live under accounts/<account>/, mirroring the package
 # layout, and override only the files that must differ per account (e.g. git's
-# credential config, used for https token storage on the sandbox account
-# alone). An account with no overlay directory just gets the common packages.
+# credential config, used for https token storage on the sandbox account alone).
+# An account with no overlay directory just gets the common packages.
 account_overlay="$DOTFILES_DIR/accounts/$(id -un)" # id -un: current account
 
-# Packages are independent, so one failure shouldn't hide the state of the
-# rest: collect the names as they fail and report them together at the end.
+# Packages are independent, so one failure shouldn't hide the state of the rest:
+# collect the names as they fail and report them together at the end.
 failed_packages=""
 
 for entry in $packages; do

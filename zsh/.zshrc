@@ -51,9 +51,9 @@ _build_prompt() {
   local user_seg=''
   [[ -n "$user_host" ]] && user_seg="%F{$_pc_user}${user_host}%f "
 
-  # Full path when ≤ 4 components deep; first-dir/…/last-two when deeper.
-  # The first-dir anchor is ~, a named directory like ~code (see hash -d
-  # above), or a literal root segment such as /tmp when no name matches.
+  # Full path when ≤ 4 components deep; first-dir/…/last-two when deeper. The
+  # first-dir anchor is ~, a named directory like ~code (see hash -d above), or
+  # a literal root segment such as /tmp when no name matches.
   local path_seg="%F{$_pc_path}%(5~|%-1~/…/%2~|%~)%f"
 
   # Git segment is empty outside a repo.
@@ -82,20 +82,21 @@ alias architect='claude --model sonnet --effort high'
 fpath=($(brew --prefix)/share/zsh/site-functions $fpath)
 autoload -Uz compinit
 # Homebrew completion files are owned by the primary user, so compinit's
-# ownership check fails for sandbox accounts. -u skips it; safe here because
-# all accounts on this machine are personally controlled.
+# ownership check fails for sandbox accounts. -u skips it; safe here because all
+# accounts on this machine are personally controlled.
 if [[ "$USER" == *sandbox* ]]; then
   compinit -u
 else
   compinit
 fi
 
-# Treat punctuation (/, -, .) as word boundaries so Opt+Delete deletes one
-# path component at a time rather than the whole argument.
+# Treat punctuation (/, -, .) as word boundaries so Opt+Delete deletes one path
+# component at a time rather than the whole argument.
 autoload -U select-word-style
 select-word-style bash
 
 # Python agent environment
+#
 # Note that pip packages should be installed separately on each account.
 if [ -f "$HOME/.venvs/default/bin/activate" ]; then
   source "$HOME/.venvs/default/bin/activate"

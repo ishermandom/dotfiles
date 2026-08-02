@@ -9,16 +9,17 @@
 # Why ACLs instead of POSIX bits: inherited ACL entries apply to everything
 # later created inside the tree regardless of the creating process's umask or
 # permission bits, so tools that write owner-only files (e.g. Hugging Face
-# downloads, which arrive as 0600) still come out readable and writable by
-# both accounts. POSIX modes are left untouched: world visibility stays
-# whatever the tree already had.
+# downloads, which arrive as 0600) still come out readable and writable by both
+# accounts. POSIX modes are left untouched: world visibility stays whatever the
+# tree already had.
 #
-# Inheritance only fires when a file is created inside a covered directory.
-# A tree MOVED into a covered directory keeps its old ACLs — that is the
-# main occasion for this script: run it on the moved tree. Re-running is
-# harmless; chmod +a deduplicates identical entries.
+# Inheritance only fires when a file is created inside a covered directory. A
+# tree MOVED into a covered directory keeps its old ACLs — that is the main
+# occasion for this script: run it on the moved tree. Re-running is harmless;
+# chmod +a deduplicates identical entries.
 #
 # Usage: share-directory.sh <directory>
+#
 # Must be run by the tree's owner (or root): adding ACL entries requires
 # ownership of each file, so a mixed-ownership tree needs sudo.
 
@@ -26,10 +27,11 @@ shared_accounts=(ishermandom claude-sandbox)
 
 # Everything short of ownership transfer: read/write/delete for files,
 # list/add/delete-children for directories, attribute and extended-attribute
-# access, plus the two inherit flags that propagate this entry to new
-# children. chmod translates the directory-specific names (list, add_file,
-# ...) to their file equivalents (read, write, ...) on plain files and drops
-# the inherit flags there.
+# access, plus the two inherit flags that propagate this entry to new children.
+# chmod translates the directory-specific names (list, add_file, ...) to their
+# file equivalents (read, write, ...) on plain files and drops the inherit flags
+# there.
+#
 # += appends to the string, splitting one long list across readable lines.
 permissions='list,add_file,search,delete,add_subdirectory,delete_child'
 permissions+=',readattr,writeattr,readextattr,writeextattr,readsecurity'

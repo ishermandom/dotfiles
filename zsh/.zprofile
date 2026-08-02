@@ -29,12 +29,13 @@ unset _home_perms
 export PLAYWRIGHT_BROWSERS_PATH=/Users/Shared/playwright
 
 # Redirect model downloads to shared stores so all users share one set of
-# weights: Ollama-managed GGUF models and the Hugging Face hub cache holding
-# MLX checkpoints. HF_HUB_CACHE only, never HF_HOME (that would move auth
-# tokens into the shared directory). See claude/docs/shared-storage.md.
+# weights: Ollama-managed GGUF models and the Hugging Face hub cache holding MLX
+# checkpoints. HF_HUB_CACHE only, never HF_HOME (that would move auth tokens
+# into the shared directory). See claude/docs/shared-storage.md.
 export OLLAMA_MODELS=/Users/Shared/models/gguf
 export HF_HUB_CACHE=/Users/Shared/models/mlx
 
 # Private environment variables (not tracked in the public repo).
+#
 # Status: deprecated; currently no private environment variables to import.
 #[[ -f "$HOME/.zprofile_private" ]] && source "$HOME/.zprofile_private"
