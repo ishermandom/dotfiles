@@ -14,7 +14,7 @@
 # reasons: the Stop hook receives no information about which files changed,
 # and a change to one file can break the types of callers in other files.
 #
-# The actual mypy invocation is delegated to the quiet-mypy wrapper so the
+# The actual mypy invocation is delegated to the quiet-mypy runner so the
 # canonical flags live in one place (~/.claude/scripts/quiet-mypy.sh).
 
 # The hook inherits the session's current directory, which may sit in a

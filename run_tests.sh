@@ -5,7 +5,7 @@
 # Test suite for the dotfiles repo — the Python unit tests under claude/hooks
 # and claude/scripts, plus the standalone shell tests sitting beside them.
 # Run directly, or via ~/.claude/scripts/quiet-tests.sh (which the Stop test
-# hook invokes). Honors PYTEST_ADDOPTS, which the quiet wrapper sets to
+# hook invokes). Honors PYTEST_ADDOPTS, which the quiet runner sets to
 # --tb=short. The import paths the test modules need live in the root
 # pyproject.toml. Arguments are forwarded to pytest; naming a path narrows the
 # run to that path, and to pytest alone — the shell tests take no arguments.

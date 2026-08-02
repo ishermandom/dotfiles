@@ -38,9 +38,8 @@ runners=(quiet-prettier.sh quiet-ruff.sh)
 
 # Runs every runner over one directory and returns this step's verdict for it.
 #
-# Both tools skip what .gitignore excludes, which is what keeps a pass over the
-# dotfiles repo out of `.claude/worktrees/` — every worktree there is a full
-# checkout that its own session formats.
+# Both tools skip whatever .gitignore excludes, so formatting a repo does not
+# reach the worktrees under `.claude/worktrees/`.
 format_dir() { # format_dir <directory>
   # Each runner resolves its own config and file globs against the working
   # directory, so move there rather than passing the path. The subshell scopes

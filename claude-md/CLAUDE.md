@@ -335,7 +335,7 @@ Every session, without being asked:
   Stop — never invoke the bare tools yourself (a PreToolUse gate denies them).
   Run a check mid-turn only when its result changes what happens this turn (e.g.
   confirming an intermediate state lets more work land now), and then via the
-  wrappers `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier}.sh [paths]` —
+  runners `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier}.sh [paths]` —
   terse output, auto-surfaced to the user.
 - **After a raw edit that bypasses `Edit`/`Write`** (e.g. a script-driven
   multi-file find/replace): their `PostToolUse` formatting hooks — prose reflow,

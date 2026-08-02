@@ -9,7 +9,7 @@
 # Runs at Stop rather than PostToolUse (Write|Edit) so that multi-file edits
 # that depend on each other aren't flagged mid-turn.
 #
-# The actual invocation is delegated to the quiet-tests wrapper so the
+# The actual invocation is delegated to the quiet-tests runner so the
 # canonical flags live in one place (~/.claude/scripts/quiet-tests.sh); its
 # short-traceback setting keeps failure feedback token-lean here too.
 

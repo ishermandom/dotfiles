@@ -56,9 +56,9 @@ DENYLISTED: tuple[str, ...] = (
   'ruff check .\nmypy src/',  # tool at the start of a later line
 )
 
-# --- wrappers, data, and path fragments defer to the prompt ---
+# --- runners, data, and path fragments defer to the prompt ---
 
-# Commands that must pass: the wrappers, data (quoted args, heredoc bodies), and
+# Commands that must pass: the runners, data (quoted args, heredoc bodies), and
 # tool names appearing as path fragments rather than commands.
 DEFERRED: tuple[str, ...] = (
   '~/.claude/scripts/quiet-ruff.sh .',
@@ -81,8 +81,8 @@ def test_tool_in_command_position_is_denied(command: str) -> None:
 
 
 @pytest.mark.parametrize('command', DEFERRED)
-def test_wrapper_or_data_occurrence_defers(command: str) -> None:
-  """A wrapper, quoted argument, heredoc body, or path fragment defers."""
+def test_runner_or_data_occurrence_defers(command: str) -> None:
+  """A runner, quoted argument, heredoc body, or path fragment defers."""
   assert _decision_for(command) is None
 
 
@@ -92,7 +92,7 @@ def test_wrapper_or_data_occurrence_defers(command: str) -> None:
 def test_deny_carries_a_reason() -> None:
   output = json.loads(_run_gate('pytest -q'))['hookSpecificOutput']
   assert output['permissionDecision'] == 'deny'
-  assert 'wrappers' in output['permissionDecisionReason']
+  assert 'runners' in output['permissionDecisionReason']
 
 
 # --- fail-open: a payload the gate can't read never blocks the call ---

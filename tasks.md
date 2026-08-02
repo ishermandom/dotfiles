@@ -186,11 +186,11 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
       so nothing catches unformatted or unlinted shell the way Stop catches
       Python.
-  - Rationale: the manual wrapper was chosen deliberately as the starting point;
-    promoting it to a Stop-time step is the open follow-on.
+  - Rationale: running `quiet-shell.sh` by hand was chosen deliberately as the
+    starting point; promoting it to a Stop-time step is the open follow-on.
   - Note: add it as a step in `stop_checks.sh` rather than as another parallel
     entry.
-  - Note: `rules/shell.md` tells Claude to run the wrapper by hand because
+  - Note: `rules/shell.md` tells Claude to run `quiet-shell.sh` by hand because
     nothing else will. Correct that claim when a hook starts doing it.
   - Note: shellcheck reports 15 findings today (12 × SC2155 in
     `gh-protect-test.sh`, plus SC2164, SC2086, SC2001), so a gating check needs
