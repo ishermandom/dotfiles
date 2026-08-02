@@ -2,14 +2,20 @@
 
 Maintainer rationale for the `fanout` skill.
 
-- **The launch adds one override and no tool restrictions**: agents are
-  otherwise meant to behave as hand-started sessions, so the launch passes
-  nothing further — `CLAUDE.md #interaction-style` already covers asking when
-  blocked, and `CLAUDE.md #review-gate` covers review. Committing is the one
-  place a background session carries its own contrary instructions — commit,
-  push the branch, open a pull request — which CLAUDE.md and the local landing
-  flow contradict without silencing. Overriding those instructions at launch is
-  what keeps each agent from reasoning the clash out alone.
+- **The launch overrides only where a background session is told otherwise**:
+  agents are meant to behave as hand-started sessions, so the launch passes
+  nothing beyond that — no tool restrictions, and `CLAUDE.md #review-gate`
+  already covers review. Two subjects carry contrary instructions. Committing is
+  one: a background session is told to commit, push the branch, and open a pull
+  request, which CLAUDE.md and the local landing flow contradict without
+  silencing. Asking is the other: the same instructions reserve blocking
+  questions for cases where proceeding would be unsafe and call the requested
+  scope the deliverable, which together push an agent to build a task it should
+  have questioned. Overriding both at launch keeps each agent from reasoning the
+  clash out alone. Naming the two is not the whole mechanism — the opening
+  paragraph also directs agents to disregard canned instructions that assume a
+  non-interactive session, which catches contrary text the pair does not
+  anticipate.
 
   The override text sits in `agent-prompt.md` rather than inline in the launch
   command, which keeps the command scannable and keeps literal newlines out of a
@@ -17,6 +23,23 @@ Maintainer rationale for the `fanout` skill.
   `claude --help` but accepted, and is on the CLI's allowlist of flags persisted
   as a background job's respawn flags — so the override survives a respawn
   rather than evaporating mid-run (verified in CLI 2.1.220).
+
+- **The reassessment directive covers the task's premise, not only its
+  approach**: the wording that reached the 2026-08-01 lanes asked just for
+  comparing options where the approach was unclear, yet the two lanes that
+  wording saved from building hit stale premises instead — one task already
+  handled elsewhere, one belonging behind a larger sweep. Currency and
+  completeness carry the value, so the durable wording names all three. That run
+  also settles where the directive belongs: `CLAUDE.md #working-method`'s
+  open-question bullet was loaded in every lane and the launch text still had to
+  be typed by hand, so the push needs restating where a background session's own
+  contrary instructions are.
+
+- **The prompt opens on the session being interactive**: every directive in the
+  file rests on that fact — the recap has a reader, the pending diff has a
+  reviewer, and a question has someone to answer it. Stated once at the top the
+  fact frames all three; attached instead to the asking directive it reads as
+  special pleading for that one paragraph.
 
 - **Config work fans out like any other task**: `~/.claude` symlinks to the main
   checkout, so a worktree's hooks never run in the session editing them. That
