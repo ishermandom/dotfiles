@@ -288,20 +288,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     than shape it (necessity check in `rules/claude-configuration.md`
     #writing-a-rule).
 
-- [ ] **Stop double-loading CLAUDE.md in this repo's own sessions** —
-      `~/.claude/CLAUDE.md` is a symlink to `claude/CLAUDE.md`, so a session
-      working in this repo loads the same 485 lines twice: once as the global
-      instructions injected into every message, and again as a project file once
-      anything under `claude/` is read. Every message pays for the duplicate.
-  - Worktree: claude-md-double-load
-  - Rationale: observed 2026-08-01 during the Python reflow pass, whose context
-    carried both copies verbatim from the first message onward.
-  - Note: establish the discovery path before designing a fix — whether the
-    second copy arrives as a directory-scoped memory for `claude/`, or as
-    ordinary project-root discovery — since the two have different remedies.
-  - Note: affects the main checkout as much as a worktree; the worktree only
-    made the duplication visible by putting both paths in one context.
-
 - [ ] **Catch dangling `~/.claude` symlinks before a session runs on them** —
       renaming or moving a stow-linked file leaves its installed symlink
       pointing at nothing until `install.sh` reruns, and nothing reports the
