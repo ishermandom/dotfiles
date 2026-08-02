@@ -6,8 +6,8 @@
 # Claude Code persists its OAuth login to the macOS keychain. This account is
 # headless (reached via `su`, no GUI login), so it has no login keychain for
 # Claude to write to — without the dedicated keychain below, every session
-# re-prompts for /login and Remote Control fails. Unlock it at login and warn
-# if it ever holds anything other than Claude's single credential.
+# re-prompts for /login and Remote Control fails. Unlock it at login and warn if
+# it ever holds anything other than Claude's single credential.
 #
 # Note: one-time setup on a new machine — create the keychain with an empty
 # password, keep it unlocked, and make it the default write target:

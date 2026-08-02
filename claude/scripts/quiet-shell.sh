@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Token-lean shell runner: format the given paths (default: the current
-# directory) with shfmt and lint them with shellcheck, printing one summary
-# line when clean and the findings otherwise. Canonical shfmt and shellcheck
+# directory) with shfmt and lint them with shellcheck, printing one summary line
+# when clean and the findings otherwise. Canonical shfmt and shellcheck
 # invocation.
 
 # `${#paths[@]}` is the array's element count, so this defaults an empty
@@ -12,9 +12,9 @@
 paths=("$@")
 [ ${#paths[@]} -eq 0 ] && paths=(.)
 
-# Discovery is shfmt's own (`shfmt -f`): it matches shell files by extension
-# and by shebang, and skips `.git`. It also skips every dot-prefixed file —
-# an acknowledged gap upstream rather than a deliberate exclusion — so the
+# Discovery is shfmt's own (`shfmt -f`): it matches shell files by extension and
+# by shebang, and skips `.git`. It also skips every dot-prefixed file — an
+# acknowledged gap upstream rather than a deliberate exclusion — so the
 # dot-prefixed shell files rules/shell.md governs are added back by name. The
 # two listings are disjoint, so nothing arrives twice. A path that is not a
 # directory is taken as a file to check directly, so a caller can name one
@@ -44,17 +44,17 @@ fi
 
 # The flags are passed rather than left to an `.editorconfig`, because passing
 # any formatting flag makes shfmt ignore `.editorconfig` entirely, and this
-# script runs in every project — most of which have no such file to read.
-# `-i 2` matches the 2-space indentation these repos use, `-ci` indents case
-# branches, `-bn` starts a continuation line with `&&` or `||` rather than
-# ending the previous line with it, and `-sr` puts a space after a redirect
-# operator, keeping `> /dev/null` and `<<< "$input"` spaced.
+# script runs in every project — most of which have no such file to read. `-i 2`
+# matches the 2-space indentation these repos use, `-ci` indents case branches,
+# `-bn` starts a continuation line with `&&` or `||` rather than ending the
+# previous line with it, and `-sr` puts a space after a redirect operator,
+# keeping `> /dev/null` and `<<< "$input"` spaced.
 format_output=$(shfmt -i 2 -ci -bn -sr --write "${shell_files[@]}" 2>&1)
 format_status=$?
 
 # Lint only what shellcheck understands: it covers sh, bash, dash, and ksh,
-# rejecting zsh outright — and the zsh startup files carry no shebang for it
-# to key on, so they come back as an unknown shell. zsh still gets formatted.
+# rejecting zsh outright — and the zsh startup files carry no shebang for it to
+# key on, so they come back as an unknown shell. zsh still gets formatted.
 lint_files=()
 for file in "${shell_files[@]}"; do
   case "$file" in

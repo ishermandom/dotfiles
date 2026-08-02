@@ -20,7 +20,8 @@
 # Collect the paths to check into an array. "$#" and "$@" are the script's
 # argument count and its arguments; with none, default to the current directory.
 # Otherwise resolve each argument to an absolute path so it still points at the
-# right file after the directory change below. (array+=(...) appends an element.)
+# right file after the directory change below. (array+=(...) appends an
+# element.)
 targets=()
 if [ $# -eq 0 ]; then
   targets=("$PWD")

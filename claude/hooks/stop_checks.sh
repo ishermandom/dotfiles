@@ -5,14 +5,14 @@
 # Stop hook: run the end-of-turn formatters and checks in a fixed order.
 #
 # Same-event hooks run in parallel, so registering the steps as separate Stop
-# entries would let ruff and prettier rewrite a file while mypy and pytest
-# read it. This script is the single Stop entry that orders them; the design
-# record covers the choice in claude/docs/design.md #hooks.
+# entries would let ruff and prettier rewrite a file while mypy and pytest read
+# it. This script is the single Stop entry that orders them; the design record
+# covers the choice in claude/docs/design.md #hooks.
 #
 # Every step is an ordinary script, runnable by hand: a formatter fixes what it
 # can and stays quiet, a check prints its failure and exits non-zero. Only this
-# script knows how a Stop hook halts a turn, so adding a step takes no
-# knowledge of the hook protocol.
+# script knows how a Stop hook halts a turn, so adding a step takes no knowledge
+# of the hook protocol.
 
 # ${BASH_SOURCE[0]} is this script's own path, and -f resolves it through the
 # ~/.claude symlink, so the steps are read from the dotfiles repo.
@@ -34,9 +34,9 @@ halt_turn() { # halt_turn <text shown to the user>
 
 # Formatting runs first so each check below reads a file's final text.
 #
-# `2>&1 > /dev/null` keeps stderr and drops stdout: this script's stdout
-# carries the verdict Claude Code parses, and ruff prints the lint findings it
-# cannot fix on its stdout.
+# `2>&1 > /dev/null` keeps stderr and drops stdout: this script's stdout carries
+# the verdict Claude Code parses, and ruff prints the lint findings it cannot
+# fix on its stdout.
 #
 # A non-zero exit means the step could not do its job: either the step script
 # itself would not run — missing, or not executable — or a tool it drives
@@ -50,8 +50,8 @@ format_status=$?
 [ $format_status -eq 0 ] \
   || halt_turn "${breakage:-format.sh exited $format_status without output}"
 
-# The first check to fail halts the turn and the rest are skipped — a type
-# error usually explains the test failures that would follow it.
+# The first check to fail halts the turn and the rest are skipped — a type error
+# usually explains the test failures that would follow it.
 #
 # Both streams are captured, so a step is free to report on either: stderr is
 # the natural stream for a diagnostic, and a check that used it would otherwise

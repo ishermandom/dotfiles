@@ -6,13 +6,13 @@
 #
 # Formatting at edit time keeps the on-disk text identical to what Claude
 # believes it wrote: the harness shows the formatter's rewraps to Claude
-# immediately, so follow-up Edits anchor to the post-format wording instead
-# of failing against text prettier has since rewrapped. The Stop-time
-# prettier pass still runs as a safety net for files changed by other means.
+# immediately, so follow-up Edits anchor to the post-format wording instead of
+# failing against text prettier has since rewrapped. The Stop-time prettier pass
+# still runs as a safety net for files changed by other means.
 
-# The hook payload arrives as JSON on stdin; both Edit and Write put the
-# touched file at .tool_input.file_path. `-r` emits the raw string without
-# JSON quotes; `// empty` maps null/missing to empty output.
+# The hook payload arrives as JSON on stdin; both Edit and Write put the touched
+# file at .tool_input.file_path. `-r` emits the raw string without JSON quotes;
+# `// empty` maps null/missing to empty output.
 file_path=$(jq -r '.tool_input.file_path // empty')
 
 # Only Markdown needs edit-time formatting; other file types are covered at

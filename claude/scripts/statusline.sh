@@ -41,9 +41,9 @@ context_color() {
   fi
 }
 
-# Quota coloring by burn pace: compare usage against how far into the window
-# we are. Green at or under pace, yellow up to 15 points over, red beyond.
-# Falls back to absolute 70/90 thresholds when resets_at is absent.
+# Quota coloring by burn pace: compare usage against how far into the window we
+# are. Green at or under pace, yellow up to 15 points over, red beyond. Falls
+# back to absolute 70/90 thresholds when resets_at is absent.
 quota_color() {
   local used="$1" resets_at="$2" window_seconds="$3"
   if [ "$resets_at" -le 0 ]; then
@@ -73,8 +73,7 @@ quota_color() {
   fi
 }
 
-# Gray " (3h 50m)" until the window resets — the context behind the pace
-# color.
+# Gray " (3h 50m)" until the window resets — the context behind the pace color.
 reset_suffix() {
   local resets_at="$1" now seconds days hours minutes
   [ "$resets_at" -le 0 ] && return

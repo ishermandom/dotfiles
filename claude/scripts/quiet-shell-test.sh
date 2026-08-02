@@ -4,14 +4,14 @@
 #
 # Tests which files quiet-shell.sh discovers, and which it leaves alone.
 #
-# Discovery is the half that fails quietly: a file that is never found is
-# simply not formatted, and the output says nothing about it. So every case
-# asserts through an observable effect — it writes a fixture file with
-# four-space indentation, runs the script, and checks whether the file came
-# back with shfmt's two.
+# Discovery is the half that fails quietly: a file that is never found is simply
+# not formatted, and the output says nothing about it. So every case asserts
+# through an observable effect — it writes a fixture file with four-space
+# indentation, runs the script, and checks whether the file came back with
+# shfmt's two.
 #
-# Runs the real shfmt and shellcheck against a temporary tree. No network
-# calls, so it is safe to run anywhere.
+# Runs the real shfmt and shellcheck against a temporary tree. No network calls,
+# so it is safe to run anywhere.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 quiet_shell="$script_dir/quiet-shell.sh"
@@ -30,8 +30,8 @@ failure_count=0
 
 # --- helpers ----------------------------------------------------------------
 
-# Runs the given command as an assertion: prints one result line, and on
-# failure bumps failure_count so the script exits non-zero at the end.
+# Runs the given command as an assertion: prints one result line, and on failure
+# bumps failure_count so the script exits non-zero at the end.
 expect() { # expect <description> <command...>
   local description="$1"
   shift
@@ -55,8 +55,8 @@ not_contains() { # not_contains <haystack> <needle>
 }
 
 # Writes a shell file indented four spaces, which shfmt rewrites to two. The
-# body is valid in bash and zsh alike, so one shape serves every fixture.
-# A first line is written only when given, since zsh startup files carry no
+# body is valid in bash and zsh alike, so one shape serves every fixture. A
+# first line is written only when given, since zsh startup files carry no
 # shebang and are recognized by name instead.
 write_misformatted() { # write_misformatted <path> [first-line]
   mkdir -p "$(dirname "$1")"

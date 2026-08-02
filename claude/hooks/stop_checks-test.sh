@@ -7,13 +7,13 @@
 #
 # Each behavior here regresses silently: a step running out of order, or
 # formatter chatter garbling the verdict, leaves a turn that ends clean while
-# something is broken. That is why the assertions parse the verdict as JSON,
-# the way Claude Code does, rather than matching loose text.
+# something is broken. That is why the assertions parse the verdict as JSON, the
+# way Claude Code does, rather than matching loose text.
 #
 # The fixtures replace the real steps with fakes. stop_checks.sh resolves its
-# steps from its own directory, so a copy of it beside four fake steps runs
-# them — no test-only seam in the script, and no risk of the real steps
-# re-entering this suite through pytest.
+# steps from its own directory, so a copy of it beside four fake steps runs them
+# — no test-only seam in the script, and no risk of the real steps re-entering
+# this suite through pytest.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 stop_checks="$script_dir/stop_checks.sh"
@@ -30,8 +30,8 @@ failure_count=0
 
 # --- helpers ----------------------------------------------------------------
 
-# Runs the given command as an assertion: prints one result line, and on
-# failure bumps failure_count so the script exits non-zero at the end.
+# Runs the given command as an assertion: prints one result line, and on failure
+# bumps failure_count so the script exits non-zero at the end.
 expect() { # expect <description> <command...>
   local description="$1"
   shift

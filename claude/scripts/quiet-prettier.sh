@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: MIT
 #
 # Token-lean prettier runner: format the given targets (default: all
-# Markdown/JS/TS under the current directory), printing one line on success
-# and prettier's errors otherwise. Canonical prettier invocation — the Stop
-# hook delegates here.
+# Markdown/JS/TS under the current directory), printing one line on success and
+# prettier's errors otherwise. Canonical prettier invocation — the Stop hook
+# delegates here.
 
 # Hooks and subshells may run with a minimal environment; Homebrew's bin
 # directory may not be on PATH, so add it explicitly.

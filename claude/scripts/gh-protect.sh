@@ -2,19 +2,19 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Verifies that a GitHub repo's branches carry the protection backstop —
-# force pushes and deletion blocked, linear history required, on every
-# branch — and reports any gap. Run it whenever a new repo is created.
+# Verifies that a GitHub repo's branches carry the protection backstop — force
+# pushes and deletion blocked, linear history required, on every branch — and
+# reports any gap. Run it whenever a new repo is created.
 #
 # The check is by function, not by name: it asks whether the repo's active,
 # all-branch rulesets together enforce the required rules, regardless of how
 # those rulesets are named or split across rulesets.
 #
-# The script only reads, needing just read access on the repo; it never
-# writes a ruleset. Creating one is left to the user via the GitHub UI: a
-# token that could write rulesets could also remove them, defeating the
-# backstop, so that power stays off the tokens Claude holds. On a gap, the
-# script names the missing protections and prints a config to create.
+# The script only reads, needing just read access on the repo; it never writes a
+# ruleset. Creating one is left to the user via the GitHub UI: a token that
+# could write rulesets could also remove them, defeating the backstop, so that
+# power stays off the tokens Claude holds. On a gap, the script names the
+# missing protections and prints a config to create.
 #
 # Authentication: a GH_TOKEN / GH_ENTERPRISE_TOKEN env var or a prior
 # `gh auth login` is used when present. Otherwise, for the current repo, the
@@ -23,12 +23,12 @@
 #
 # Usage: gh-protect.sh [[HOST/]OWNER/REPO]
 #
-# Defaults to the current directory's repo. Exit codes: 0 = protected;
-# 1 = operational error; 2 = usage error; 3 = not protected (a required
-# protection is missing).
+# Defaults to the current directory's repo. Exit codes: 0 = protected; 1 =
+# operational error; 2 = usage error; 3 = not protected (a required protection
+# is missing).
 
-# The rule types every branch must be covered by, paired with how each reads
-# to the user.
+# The rule types every branch must be covered by, paired with how each reads to
+# the user.
 required_rules=(deletion non_fast_forward required_linear_history)
 
 rule_description() {
@@ -107,8 +107,8 @@ if [ -z "$repo_argument" ] && [ -z "$environment_tokens" ]; then
   fi
 fi
 
-# Resolve and validate the target repo in one step: with no argument,
-# gh infers the repo from the current directory's git remotes.
+# Resolve and validate the target repo in one step: with no argument, gh infers
+# the repo from the current directory's git remotes.
 view_args=()
 if [ -n "$repo_argument" ]; then
   view_args=("$repo_argument")
@@ -124,17 +124,17 @@ fi
 # -r keeps any backslashes in the input literal.
 read -r repo visibility <<< "$repo_info"
 
-# Compare case-insensitively: gh versions differ on the casing of the
-# visibility value ("private" vs the GraphQL enum "PRIVATE").
+# Compare case-insensitively: gh versions differ on the casing of the visibility
+# value ("private" vs the GraphQL enum "PRIVATE").
 visibility_lower=$(echo "$visibility" | tr '[:upper:]' '[:lower:]')
 if [ "$visibility_lower" = "private" ]; then
   echo "gh-protect: warning: $repo is private — the GitHub Free plan does" \
     "not enforce rulesets on private repos" >&2
 fi
 
-# includes_parents=false limits the listing to repo-level rulesets;
-# org-level parents do not exist on a personal account, and could not be
-# acted on from here anyway.
+# includes_parents=false limits the listing to repo-level rulesets; org-level
+# parents do not exist on a personal account, and could not be acted on from
+# here anyway.
 rulesets_json=$(gh api "repos/$repo/rulesets?includes_parents=false" 2>&1)
 status=$?
 if [ $status -ne 0 ]; then
@@ -148,9 +148,9 @@ candidate_ids=$(echo "$rulesets_json" | jq -r \
   '.[] | select(.target == "branch" and .enforcement == "active") | .id')
 
 # Collect the rule types enforced on every branch, across all candidates. A
-# ruleset counts only if it targets ~ALL — i.e. its rules reach every
-# branch, not just some. The list response omits rules and conditions, so
-# each candidate needs a detail fetch.
+# ruleset counts only if it targets ~ALL — i.e. its rules reach every branch,
+# not just some. The list response omits rules and conditions, so each candidate
+# needs a detail fetch.
 covered_rules=""
 for ruleset_id in $candidate_ids; do
   ruleset_rules=$(gh api "repos/$repo/rulesets/$ruleset_id" --jq \
@@ -189,11 +189,11 @@ echo "gh-protect: $repo is not fully protected — no active all-branch" \
   "ruleset enforces: $missing_list. Create one in the repo's Settings →" \
   "Rules → Rulesets; for example:"
 
-# ~ALL matches every branch, current and future. The name is just a label —
-# the check above ignores it. If blanket protection adds friction later
-# (rebase force-pushes to feature branches, deleting merged branches),
-# narrow the ruleset by changing ~ALL to ~DEFAULT_BRANCH, which tracks the
-# default branch across renames.
+# ~ALL matches every branch, current and future. The name is just a label — the
+# check above ignores it. If blanket protection adds friction later (rebase
+# force-pushes to feature branches, deleting merged branches), narrow the
+# ruleset by changing ~ALL to ~DEFAULT_BRANCH, which tracks the default branch
+# across renames.
 cat << JSON
 {
   "name": "gh-protect",

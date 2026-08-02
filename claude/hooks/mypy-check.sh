@@ -3,16 +3,16 @@
 # SPDX-License-Identifier: MIT
 #
 # A `stop_checks.sh` step: run mypy on the repo root, or on the current
-# directory when outside a git repo. Stays silent while the types are clean;
-# on errors it prints them and exits non-zero, which `stop_checks.sh` turns
-# into the message that halts the turn.
+# directory when outside a git repo. Stays silent while the types are clean; on
+# errors it prints them and exits non-zero, which `stop_checks.sh` turns into
+# the message that halts the turn.
 #
-# Runs at Stop (end of turn) rather than on each Edit so that multi-file
-# changes that depend on each other aren't flagged mid-edit.
+# Runs at Stop (end of turn) rather than on each Edit so that multi-file changes
+# that depend on each other aren't flagged mid-edit.
 #
 # Checks all Python files rather than only those edited this turn for two
-# reasons: the Stop hook receives no information about which files changed,
-# and a change to one file can break the types of callers in other files.
+# reasons: the Stop hook receives no information about which files changed, and
+# a change to one file can break the types of callers in other files.
 #
 # The actual mypy invocation is delegated to the quiet-mypy runner so the
 # canonical flags live in one place (~/.claude/scripts/quiet-mypy.sh).

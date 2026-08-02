@@ -2,10 +2,10 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Offline tests for gh-protect.sh: exercises every code path against a
-# stubbed `gh` placed first on PATH, asserting on exit codes and messages.
-# Makes no network calls, so it is safe to run anywhere. Requires jq, which
-# the stub and gh-protect.sh both use.
+# Offline tests for gh-protect.sh: exercises every code path against a stubbed
+# `gh` placed first on PATH, asserting on exit codes and messages. Makes no
+# network calls, so it is safe to run anywhere. Requires jq, which the stub and
+# gh-protect.sh both use.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 gh_protect="$script_dir/gh-protect.sh"
@@ -98,8 +98,8 @@ list_one() { # list_one <id> <enforcement>
 
 failure_count=0
 
-# Runs the given command as an assertion: prints one result line, and on
-# failure bumps failure_count so the script exits non-zero at the end.
+# Runs the given command as an assertion: prints one result line, and on failure
+# bumps failure_count so the script exits non-zero at the end.
 expect() { # expect <description> <command...>
   local description="$1"
   shift
@@ -131,8 +131,8 @@ begin_case() { # begin_case <name>
   unset GH_STUB_VISIBILITY GH_STUB_FAIL_REPO_VIEW
 }
 
-# Runs gh-protect.sh, capturing combined stdout+stderr into `output` and
-# the exit status into `exit_code` for the assertions that follow.
+# Runs gh-protect.sh, capturing combined stdout+stderr into `output` and the
+# exit status into `exit_code` for the assertions that follow.
 run_script() {
   # 2>&1: warnings and errors go to stderr; assertions check both streams.
   output=$("$gh_protect" "$@" 2>&1)
@@ -176,8 +176,8 @@ expect "omits the satisfied ones" \
   not_contains "$output" "no active all-branch ruleset enforces: block"
 expect "prints a config to create" contains "$output" '"~ALL"'
 
-# A ruleset that targets only the default branch does not protect all
-# branches, so nothing is covered.
+# A ruleset that targets only the default branch does not protect all branches,
+# so nothing is covered.
 begin_case ruleset-not-all-branches
 export GH_STUB_LIST=$(list_one 1 active)
 export GH_STUB_DETAIL_1=$(detail "~DEFAULT_BRANCH" \
