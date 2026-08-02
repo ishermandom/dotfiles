@@ -88,8 +88,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `gate_auto_tools.py` reflow diff, 2026-07-02). Rewrap each repo's Python
       files in a dedicated pass, one commit per repo, so future diffs stay
       clean.
-  - Worktree: dotfiles-python-reflow — this repo's pass only; the task stays
-    open for the remaining repos.
+  - Note: the dotfiles repo's pass is done; the other repos still need theirs.
   - Note: a Stop-time reflow safety net (mirroring the markdown design) was
     deliberately omitted, which is why this pass is manual — files changed by
     Bash or scripts stay un-reflowed until their next Edit. Revisit only if that
@@ -97,14 +96,20 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the first reflow of an un-reflowed file destroys structure, not just
     wrapping — two flag legends and both test-header run commands in the gate
     hooks were flattened into paragraphs on 2026-08-01. Scan each file for
-    indented comment structure before reflowing it and convert that structure to
-    markdown first; which constructs survive is written up in
-    `claude/hooks/reflow_prose.py`'s module header.
+    indented comment structure before reflowing it; which constructs survive is
+    written up in `claude/hooks/reflow_prose.py`'s module header.
+  - Note: before converting flattened structure to a shape the hook preserves,
+    ask whether the content earns its place at all. Every run command the
+    dotfiles pass found was a duplicate of what `run_tests.sh` already
+    documented, so deleting the six of them beat fencing the three that broke.
   - Note: to scope a repo's pass, reflow every Python file and read the diff —
     `find . -name '*.py' | xargs python3 claude/hooks/reflow_prose.py`, then
-    `git diff` — reverting it until the structure is converted. In this repo
-    that surfaces a handful of files, two of whose test headers flatten an
-    indented `PYTHONPATH=… pytest …` command into prose.
+    `git diff` — reverting it until the structure is settled.
+  - Note: to show a pass touched prose only, compare each file against HEAD on
+    two projections — the syntax tree with docstrings stripped, which must be
+    identical, and the word sequence of all comment and docstring text, which
+    should differ only where prose was deliberately cut. A second and third
+    reflow confirm the result is a fixed point.
 
 - [ ] **Build a license-header Stop lint** — a Stop-hook check flagging source
       files that lack the license block (copyright line + SPDX identifier, per
@@ -278,3 +283,24 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     default handling of ambiguity, so it may document existing behavior rather
     than shape it (necessity check in `rules/claude-configuration.md`
     #writing-a-rule).
+
+- [ ] **Stop double-loading CLAUDE.md in this repo's own sessions** —
+      `~/.claude/CLAUDE.md` is a symlink to `claude/CLAUDE.md`, so a session
+      working in this repo loads the same 485 lines twice: once as the global
+      instructions injected into every message, and again as a project file once
+      anything under `claude/` is read. Every message pays for the duplicate.
+  - Rationale: observed 2026-08-01 during the Python reflow pass, whose context
+    carried both copies verbatim from the first message onward.
+  - Note: establish the discovery path before designing a fix — whether the
+    second copy arrives as a directory-scoped memory for `claude/`, or as
+    ordinary project-root discovery — since the two have different remedies.
+  - Note: affects the main checkout as much as a worktree; the worktree only
+    made the duplication visible by putting both paths in one context.
+
+- [ ] **Settle whether test files carry a shebang and an executable bit** — the
+      eight Python test files disagree three ways: `gate_auto_tools_test.py` is
+      mode 755, every other is 644, and `reflow_prose_test.py` and
+      `probe_worktree_hooks_test.py` carry no shebang while the other six do.
+  - Note: pytest collects them regardless, so nothing depends on either today —
+    which argues for dropping both from all eight rather than adding them. The
+    shell tests beside them are genuinely executed and do need theirs.
