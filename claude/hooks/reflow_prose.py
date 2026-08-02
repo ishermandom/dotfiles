@@ -3,15 +3,20 @@
 # SPDX-License-Identifier: MIT
 #
 # PostToolUse(Edit|Write) hook: reflow comment and docstring prose in a
-# just-edited Python file to the line width that file's project uses, or 80
-# columns by default.
+# just-edited Python or shell file to the line width that file's project uses,
+# or 80 columns by default.
 #
-# Python formatters deliberately leave comment and docstring text alone, so
-# fitting prose to the line limit is manual work. This hook closes that gap with
-# two engines that both split overlong lines and merge ragged short ones,
-# paragraph by paragraph: comments go through prettier
+# Formatters deliberately leave comment and docstring text alone — ruff and
+# shfmt both do — so fitting prose to the line limit is manual work. This hook
+# closes that gap with two engines that both split overlong lines and merge
+# ragged short ones, paragraph by paragraph: comments go through prettier
 # (`--parser=markdown --prose-wrap=always`) for markdown-aware layout, and
 # docstrings through a plain word-preserving filler (see below for why).
+#
+# Where the comments come from differs by language and neither is a line scan.
+# Python's come from `tokenize`, shell's from `shfmt --to-json` — so a `#` line
+# inside a heredoc, which a scan would take for a comment, is correctly left
+# alone. Shell has no docstring equivalent, so comments are its whole job.
 #
 # The contract that makes this safe:
 #
@@ -24,10 +29,17 @@
 # - Structure that survives reflow intact: `-` bullet lists (continuations wrap
 #   under a hanging indent), ordered lists numbered from `1.`, fenced blocks,
 #   tables, headings, and blockquotes. Nested bullets survive too, reindented to
-#   two spaces. Two shapes do not: an indented block merges into the paragraph
-#   above and loses its internal spacing unless a blank comment line precedes
-#   it, and an ordered list numbered from anything but `1.` merges as well,
-#   since only `1.` may interrupt a paragraph.
+#   two spaces. One shape does not: an ordered list numbered from anything but
+#   `1.` merges into the paragraph above, since only `1.` may interrupt a
+#   paragraph.
+# - An indented line is a verbatim block (a usage listing, a shell setup recipe)
+#   rather than prose to refill, so it keeps its shape without needing a blank
+#   comment line above it. Markdown would instead read it as a lazy continuation
+#   and flatten it into the paragraph above, which for source comments is
+#   corruption far more often than it is the author's intent. Two exceptions: a
+#   line under an open list item, whose continuations are indented by nature,
+#   and anything inside a fenced block. The rule errs toward declining: indented
+#   prose that would have refilled cleanly simply stays put.
 # - Reflow never changes a chunk's line density. A chunk holds no blank line, so
 #   every blank line prettier emits is structure it added — splitting a list off
 #   the paragraph that introduces it, say — and is dropped. Density stays the
@@ -41,8 +53,10 @@
 #   corruption. When prettier changes any character, the chunk is refilled by a
 #   plain filler that never rewrites characters; if even that fails the
 #   word-preservation check, the chunk keeps its original text.
-# - Machine directives never reflow: shebangs, `noqa`, `fmt:`, `type:`, and kin
-#   are configuration, not prose, as is any region under `fmt: off`. License tag
+# - Machine directives never reflow: shebangs, `noqa`, `fmt:`, `type:`,
+#   `shellcheck`, and kin are configuration, not prose, as is any region under
+#   `fmt: off`. Wrapping a `shellcheck disable=` line, or letting it merge into
+#   neighboring prose, would silently stop suppressing anything. License tag
 #   lines (`Copyright`, `SPDX-License-Identifier`) are likewise verbatim — to
 #   markdown they are adjacent one-line paragraphs that would otherwise merge.
 #   Only those two tag forms are recognized: an Apache-style boilerplate block
@@ -68,9 +82,12 @@
 # 257 normalization — is a linting concern, not reflow.
 #
 # Invoke with file paths to reflow them directly, or with no arguments to read a
-# hook payload (JSON with .tool_input.file_path) from stdin. A syntactically
-# invalid file is left unchanged by design: mid-turn edits pass through broken
-# states, and ruff reports real syntax errors at Stop.
+# hook payload (JSON with .tool_input.file_path) from stdin. A file whose parser
+# rejects it is left unchanged by design: mid-turn edits pass through broken
+# states, and the real syntax errors are reported by ruff at Stop or by
+# shellcheck through `quiet-shell.sh`. A shell file is likewise left alone when
+# shfmt is missing or hangs — silently, the way a missing ruff falls back to the
+# default width, since reflow is best-effort and must never block the edit loop.
 
 import ast
 import dataclasses
@@ -84,11 +101,16 @@ import sys
 import textwrap
 import time
 import tokenize
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from pathlib import Path
 
 # Width for a file whose project states none — the 80-column house style.
 DEFAULT_LINE_WIDTH = 80
+
+# The shell files to reflow, matching the paths `rules/shell.md` governs. The
+# startup files carry no extension and are recognized by name instead.
+_SHELL_SUFFIXES = frozenset({'.bash', '.sh', '.zsh'})
+_SHELL_FILENAMES = frozenset({'.zprofile', '.zshrc'})
 
 # `ruff check --show-settings` prints a file's resolved configuration as
 # `key = value` lines. The formatter's wrap width is the one prose should match,
@@ -114,8 +136,11 @@ _CHUNK_SEPARATOR = '<!-- reflow-chunk-boundary -->'
 # (linter suppressions, formatter and type-checker switches), not prose. The
 # bare names take `\b` so prose like "pragmatic" isn't misread. `fmt:` here also
 # owns stray non-region fmt directives (`fmt: skip`, an unmatched `fmt: on`);
-# the region patterns below handle only off/on toggling.
-_DIRECTIVE_NAMES = r'noqa\b|fmt:|type:|mypy:|ruff:|pyright:|pragma\b'
+# the region patterns below handle only off/on toggling. `shellcheck` covers
+# shell's `disable=`, `source=`, and `shell=` forms in one name.
+_DIRECTIVE_NAMES = (
+  r'noqa\b|fmt:|type:|mypy:|ruff:|pyright:|pragma\b|shellcheck\b'
+)
 _DIRECTIVE_PATTERN = re.compile(rf'\s*(?:{_DIRECTIVE_NAMES})')
 
 # `fmt: off` opens a hands-off region that `fmt: on` closes, matching the
@@ -175,6 +200,22 @@ _DECORATED_HEADING_PATTERN = re.compile(r'\s*-{3,}\s.*-{3,}\s*$')
 
 class PrettierError(Exception):
   """prettier exited nonzero or could not be run."""
+
+
+class ShellParseError(Exception):
+  """shfmt could not report a shell source's comments.
+
+  Covers a missing or hanging shfmt as well as source it rejects: the caller
+  cannot tell comments from heredoc text without it, so every case means the
+  same thing — leave the file alone.
+  """
+
+
+class Language(enum.Enum):
+  """A source language this hook knows how to find the comments of."""
+
+  PYTHON = enum.auto()
+  SHELL = enum.auto()
 
 
 class ChunkKind(enum.Enum):
@@ -439,6 +480,84 @@ def _full_line_comments(source: str) -> Mapping[int, _CommentLine]:
   return comments
 
 
+def _shfmt_parse_tree(source: str) -> object:
+  """Parse shell source with shfmt, returning its syntax tree as parsed JSON.
+
+  Raises ShellParseError whenever no tree comes back, which the caller treats as
+  a file to leave alone.
+  """
+  # `--to-json` reads stdin only — it rejects a path argument outright — so the
+  # source is piped rather than the file being named.
+  try:
+    result = subprocess.run(
+      ['shfmt', '--to-json'],
+      input=source,
+      text=True,
+      capture_output=True,
+      env=_tool_environment(),
+      # A cap on a pathological hang, nothing more: parsing costs milliseconds,
+      # like the ruff call in _discover_line_width. Both run to completion
+      # before any prettier work starts, so the three budgets are additive — 3 +
+      # 2 + the 25 that _reflow_chunks can spend is the 30-second hook timeout
+      # in settings.json exactly, which is what holds this cap down to 2.
+      timeout=2,
+    )
+  except (OSError, subprocess.TimeoutExpired, UnicodeDecodeError) as error:
+    raise ShellParseError(f'could not run shfmt: {error}') from error
+  if result.returncode != 0:
+    raise ShellParseError(
+      f'shfmt exited {result.returncode}: {result.stderr.strip()[:500]}'
+    )
+  try:
+    return json.loads(result.stdout)
+  except json.JSONDecodeError as error:
+    raise ShellParseError(
+      f'shfmt emitted no parseable tree: {error}'
+    ) from error
+
+
+def _json_objects(node: object) -> Iterator[Mapping[str, object]]:
+  """Every object in a parsed-JSON tree, outermost first."""
+  if isinstance(node, dict):
+    yield node
+    for value in node.values():
+      yield from _json_objects(value)
+  elif isinstance(node, list):
+    for value in node:
+      yield from _json_objects(value)
+
+
+def _shell_comments(source: str) -> Mapping[int, _CommentLine]:
+  """Map line number to comment for every whole-line comment in shell source.
+
+  shfmt hangs each comment off the statement it neighbors, at no fixed depth, so
+  the tree is walked whole and comment nodes are recognized by shape: a `Hash`
+  position paired with the `Text` following it. Keying by line makes the walk
+  order irrelevant.
+
+  Trailing and tab-indented comments are excluded for the same reasons as in
+  Python, and by the same test against the text preceding the `#`.
+  """
+  source_lines = source.split('\n')
+  comments: dict[int, _CommentLine] = {}
+  for node in _json_objects(_shfmt_parse_tree(source)):
+    position = node.get('Hash')
+    text = node.get('Text')
+    if not isinstance(position, Mapping) or not isinstance(text, str):
+      continue
+    row = position.get('Line')
+    column = position.get('Col')
+    if not isinstance(row, int) or not isinstance(column, int):
+      continue
+    # shfmt counts columns from 1; the rest of this module counts from 0.
+    column -= 1
+    before = source_lines[row - 1][:column]
+    if before.strip() or '\t' in before:
+      continue
+    comments[row] = _CommentLine(column, text.rstrip())
+  return comments
+
+
 def _is_verbatim_line(content: str) -> bool:
   """Whether a comment line is machine, legal, or heading text that must never
   reflow.
@@ -464,16 +583,20 @@ def _comment_chunks(
   """Split whole-line comments into reflowable prose chunks.
 
   A chunk is a maximal run of adjacent `# `-prefixed prose lines at one indent.
-  Blank `#` lines, directives, `#`-stuck text, and `fmt: off` regions end the
-  current chunk and stay verbatim.
+  Blank `#` lines, directives, `#`-stuck text, indented blocks, and `fmt: off`
+  regions end the current chunk and stay verbatim.
   """
   chunks: list[ProseChunk] = []
   run: list[tuple[int, str]] = []
   is_formatting_disabled = False
+  # Both track structure within the current run, so both reset when it ends.
+  has_open_list = False
+  is_in_fence = False
   previous_row = None
   previous_indent = None
 
   def flush() -> None:
+    nonlocal has_open_list, is_in_fence
     if run:
       text = '\n'.join(line for _, line in run)
       indent = comments[run[0][0]].indent
@@ -483,6 +606,8 @@ def _comment_chunks(
         )
       )
       run.clear()
+    has_open_list = False
+    is_in_fence = False
 
   for row in sorted(comments):
     comment = comments[row]
@@ -510,6 +635,17 @@ def _comment_chunks(
       continue
 
     text = content[1:]
+    # A fence opens a verbatim region, where the indent rule below must stay off
+    # — fenced content is indented as often as not.
+    if text.strip().startswith(_FENCE_PREFIXES):
+      is_in_fence = not is_in_fence
+    # An indented line is a block to leave alone rather than prose to refill,
+    # unless a list item is open, whose continuations are indented by nature.
+    elif text[:1].isspace() and not has_open_list and not is_in_fence:
+      flush()
+      continue
+    if _LIST_ITEM_PATTERN.match(text):
+      has_open_list = True
     # Comments need the TODO split here — prettier is TODO-blind; docstrings get
     # the equivalent break inside fill_prose.
     if _TODO_PATTERN.match(text):
@@ -799,11 +935,13 @@ def reflow_source(
   source: str,
   format_comment_markdown: MarkdownFormatter,
   line_width: int = DEFAULT_LINE_WIDTH,
+  language: Language = Language.PYTHON,
 ) -> str:
-  """Reflow all comment and docstring prose in Python source to `line_width`.
+  """Reflow all comment and docstring prose in source to `line_width`.
 
-  Raises SyntaxError (or tokenize.TokenError) on source that doesn't parse; the
-  caller owns deciding what a broken file means.
+  Raises SyntaxError (or tokenize.TokenError) on Python that doesn't parse, and
+  ShellParseError when shfmt cannot report a shell source's comments; the caller
+  owns deciding what a source it cannot read means.
   """
   # Any carriage return skips the whole file rather than corrupting it: a CRLF
   # file would come back with reflowed lines LF-only, mixing endings. This
@@ -813,10 +951,14 @@ def reflow_source(
     return source
 
   source_lines = source.split('\n')
-  chunks = [
-    *_comment_chunks(_full_line_comments(source), line_width),
-    *_docstring_chunks(source, source_lines, ast.parse(source), line_width),
-  ]
+  chunks: Sequence[ProseChunk]
+  if language is Language.SHELL:
+    chunks = _comment_chunks(_shell_comments(source), line_width)
+  else:
+    chunks = [
+      *_comment_chunks(_full_line_comments(source), line_width),
+      *_docstring_chunks(source, source_lines, ast.parse(source), line_width),
+    ]
   reflowed = _reflow_chunks(chunks, format_comment_markdown)
 
   # Replace bottom-up so earlier line numbers stay valid as lengths change.
@@ -841,7 +983,7 @@ def reflow_source(
 
 
 def _discover_line_width(path: Path) -> int:
-  """The width to reflow a file's prose to: where ruff wraps that file's code.
+  """The width to reflow a file's prose to: the width its project wraps code at.
 
   Prose reads best wrapped where the surrounding code wraps, and ruff is asked
   for that width rather than the configuration being read a second time here:
@@ -851,9 +993,14 @@ def _discover_line_width(path: Path) -> int:
   rejects, output without the setting in it — the 80-column house style stands
   in.
 
-  The call costs roughly 10 ms, paid on every Python edit rather than only on
-  the ones that reflow something: the width is what decides whether a file is
-  already wrapped, so it has to be known before that question can be asked.
+  Shell files ask the same question, since ruff resolves a width from the path's
+  directory rather than from what the file contains. That gives a project one
+  width across both languages, and a project with no ruff configuration at all
+  falls through to the same 80 columns it would have been given anyway.
+
+  The call costs roughly 10 ms, paid on every edit rather than only on the ones
+  that reflow something: the width is what decides whether a file is already
+  wrapped, so it has to be known before that question can be asked.
   """
   try:
     result = subprocess.run(
@@ -880,8 +1027,12 @@ def _discover_line_width(path: Path) -> int:
   return int(setting['width']) if setting else DEFAULT_LINE_WIDTH
 
 
-def reflow_file(path: Path, format_comment_markdown: MarkdownFormatter) -> bool:
-  """Reflow a Python file in place; report whether it changed."""
+def reflow_file(
+  path: Path,
+  format_comment_markdown: MarkdownFormatter,
+  language: Language = Language.PYTHON,
+) -> bool:
+  """Reflow a source file in place; report whether it changed."""
   try:
     # Read as bytes: read_text's universal-newline translation would flatten
     # \r\n to \n and silently defeat reflow_source's CRLF skip.
@@ -895,10 +1046,17 @@ def reflow_file(path: Path, format_comment_markdown: MarkdownFormatter) -> bool:
     return False
   line_width = _discover_line_width(path)
   try:
-    updated = reflow_source(source, format_comment_markdown, line_width)
-  except (SyntaxError, tokenize.TokenError):
-    # Mid-turn edits pass through broken states; ruff reports real syntax errors
-    # at Stop, so a quiet skip is the correct contract here.
+    updated = reflow_source(
+      source, format_comment_markdown, line_width, language
+    )
+  except (SyntaxError, tokenize.TokenError, ShellParseError):
+    # Mid-turn edits pass through broken states, so a quiet skip is the correct
+    # contract here: ruff reports the real Python syntax errors at Stop.
+    # ShellParseError also covers an absent shfmt, which likewise leaves the
+    # file as the author wrote it.
+    #
+    # TODO: no automatic check reports a shell parse error; shellcheck catches
+    # it but runs by hand. See tasks.md #shell-stop-check
     return False
   if updated == source:
     return False
@@ -926,6 +1084,15 @@ def _path_from_hook_payload() -> Path | None:
   return Path(file_path) if isinstance(file_path, str) else None
 
 
+def _language_of(path: Path) -> Language | None:
+  """The language to read a path as; None for a file this hook never reflows."""
+  if path.suffix == '.py':
+    return Language.PYTHON
+  if path.suffix in _SHELL_SUFFIXES or path.name in _SHELL_FILENAMES:
+    return Language.SHELL
+  return None
+
+
 def main(argv: Sequence[str]) -> int:
   """Reflow the given paths, or the hook payload's path when none are given."""
   paths = [Path(argument) for argument in argv[1:]]
@@ -936,9 +1103,10 @@ def main(argv: Sequence[str]) -> int:
   # A prettier failure never propagates here: _reflow_chunks degrades to the
   # plain filler, so the hook cannot block the edit loop.
   for path in paths:
-    if path.suffix != '.py' or not path.is_file():
+    language = _language_of(path)
+    if language is None or not path.is_file():
       continue
-    reflow_file(path, run_prettier)
+    reflow_file(path, run_prettier, language)
   return 0
 
 

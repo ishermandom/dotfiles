@@ -9,8 +9,11 @@ from pathlib import Path
 
 import pytest
 from reflow_prose import (
+  Language,
   MarkdownFormatter,
   PrettierError,
+  ShellParseError,
+  main,
   reflow_file,
   reflow_source,
   run_prettier,
@@ -150,15 +153,22 @@ def test_todo_line_starts_its_own_paragraph() -> None:
   source = (
     '# Prose line one.\n'
     '# TODO: fix the frobnicator\n'
-    '#   handling soon.\n'
+    '# handling soon.\n'
     'x = 1\n'
-  )
+  )  # fmt: skip
 
   result = reflow_source(source, fill_markdown)
 
   assert result == (
     '# Prose line one.\n# TODO: fix the frobnicator handling soon.\nx = 1\n'
   )
+
+
+def test_a_todos_indented_continuation_stays_verbatim() -> None:
+  """A TODO earns no exception from the indent rule; wrap one flush to reflow."""
+  source = '# TODO: fix the frobnicator\n#   handling soon.\nx = 1\n'
+
+  assert reflow_source(source, fill_markdown) == source
 
 
 def test_trailing_comment_is_left_alone() -> None:
@@ -219,6 +229,68 @@ def test_character_rewrites_fall_back_to_the_plain_filler() -> None:
 
   # The ragged lines still merge — via the filler, asterisks intact.
   assert result == '# Accepts *args and **kwargs.\nx = 1\n'
+
+
+# --- indented blocks ---
+
+
+def test_indented_block_stays_verbatim() -> None:
+  """A usage listing keeps its shape instead of flattening into the prose."""
+  source = (
+    '# Usage: ./widget.sh [-n]\n'
+    '#   -n  Dry run: report what would change, changing nothing.\n'
+    'x = 1\n'
+  )
+
+  assert reflow_source(source, fill_markdown) == source
+
+
+def test_bullet_continuation_reflows_rather_than_staying_verbatim() -> None:
+  """A wrapped bullet is indented too, so the indent rule must not claim it."""
+  source = '# - alpha beta\n#   gamma delta\nx = 1\n'
+
+  result = reflow_source(source, fill_markdown)
+
+  assert result == '# - alpha beta gamma delta\nx = 1\n'
+
+
+def test_prose_resumes_reflowing_below_an_indented_block() -> None:
+  """The block is what stays verbatim, not everything after it."""
+  source = (
+    '# Run the setup once:\n'
+    '#   make install\n'
+    '# ragged tail one\n'
+    '# ragged tail two\n'
+    'x = 1\n'
+  )
+
+  result = reflow_source(source, fill_markdown)
+
+  assert result == (
+    '# Run the setup once:\n'
+    '#   make install\n'
+    '# ragged tail one ragged tail two\n'
+    'x = 1\n'
+  )
+
+
+def test_a_fence_keeps_its_indented_content_in_one_chunk() -> None:
+  """Fenced content is indented as often as not; a split would break the fence."""
+  calls, counting_fill = _make_counting_formatter()
+  source = (
+    '# ragged intro one\n'
+    '# ragged intro two\n'
+    '# ```\n'
+    '#   indented fence content\n'
+    '# ```\n'
+    'x = 1\n'
+  )
+
+  reflow_source(source, counting_fill)
+
+  # One document spanning the whole fence, not a chunk split at its indent.
+  assert len(calls) == 1
+  assert 'indented fence content' in calls[0]
 
 
 # --- docstring reflow ---
@@ -604,6 +676,135 @@ def test_raw_docstring_is_left_alone() -> None:
   )
 
   assert reflow_source(source, fill_markdown) == source
+
+
+# --- shell comment reflow ---
+
+
+def _reflow_shell(source: str) -> str:
+  """Reflow shell source at the house width, through the test's formatter."""
+  return reflow_source(source, fill_markdown, 80, Language.SHELL)
+
+
+def test_overlong_shell_comment_wraps_under_the_prefix() -> None:
+  """Shell prose past 80 columns splits the same way Python's does."""
+  source = (
+    '# This comment is written as one very long line that runs well past'
+    ' the eighty column limit and therefore needs wrapping.\n'
+    'x=1\n'
+  )
+
+  result = _reflow_shell(source)
+
+  lines = result.split('\n')
+  assert all(len(line) <= 80 for line in lines)
+  assert lines[1].startswith('# ')
+
+
+def test_heredoc_hash_lines_are_not_comments() -> None:
+  """Heredoc text is data: taking its `#` lines for prose would rewrite it.
+
+  This is why comment positions come from shfmt rather than a line scan — the
+  two lines below would otherwise merge into one.
+  """
+  source = 'cat << JSON\n# alpha beta\n# gamma delta\nJSON\n'
+
+  assert _reflow_shell(source) == source
+
+
+def test_shell_trailing_comment_is_left_alone() -> None:
+  """Reflowing a comment that follows code would move it off its statement."""
+  source = (
+    'x=1 # a trailing comment written long enough that it runs past the'
+    ' eighty column limit\n'
+  )
+
+  assert _reflow_shell(source) == source
+
+
+def test_shellcheck_directive_does_not_merge_into_neighboring_prose() -> None:
+  """A merged `shellcheck disable=` would silently stop suppressing anything."""
+  source = (
+    '# Captured separately so the exit status survives.\n'
+    '# shellcheck disable=SC2155\n'
+    'output=$(cmd)\n'
+  )
+
+  assert _reflow_shell(source) == source
+
+
+def test_shell_setup_recipe_keeps_its_shape() -> None:
+  """An indented command block is a listing, not prose to flatten."""
+  source = (
+    '# Create the widget, then make it the default:\n'
+    '#   widgetctl create --name alpha\n'
+    '#   widgetctl set-default --name alpha\n'
+    'x=1\n'
+  )
+
+  assert _reflow_shell(source) == source
+
+
+def test_shell_parse_failure_propagates() -> None:
+  """Broken shell raises rather than risking a bad rewrite."""
+  with pytest.raises(ShellParseError):
+    # An `if` shfmt never sees closed: no tree comes back, so no comment map.
+    _reflow_shell('if [ -z "$x" ]; then\n# alpha beta\n# gamma delta\n')
+
+
+def test_broken_shell_file_is_left_untouched(tmp_path: Path) -> None:
+  """Mid-turn edits pass through broken states; reflow must not block them."""
+  target = tmp_path / 'script.sh'
+  source = 'if [ -z "$x" ]; then\n# alpha beta\n# gamma delta\n'
+  target.write_text(source)
+
+  changed = reflow_file(target, fill_markdown, Language.SHELL)
+
+  assert not changed
+  assert target.read_text() == source
+
+
+def test_a_projects_line_length_sets_the_shell_reflow_width(
+  tmp_path: Path,
+) -> None:
+  """A project's configured width governs its shell prose as well as its Python.
+
+  Runs the real `ruff`, which resolves a width from the path's directory rather
+  than from anything in the file — the part worth proving, since ruff has no
+  opinion about shell itself.
+  """
+  (tmp_path / 'pyproject.toml').write_text('[tool.ruff]\nline-length = 100\n')
+  target = tmp_path / 'script.sh'
+  target.write_text('# ' + 'word ' * 25 + '\n')
+
+  changed = reflow_file(target, fill_markdown, Language.SHELL)
+
+  assert changed
+  # Rewrapped past where the 80-column default would have broken it, and inside
+  # the 100 the project states.
+  widest = max(len(line) for line in target.read_text().split('\n'))
+  assert 80 < widest <= 100
+
+
+def test_zsh_startup_file_is_recognized_by_name(tmp_path: Path) -> None:
+  """`.zshrc` carries no extension, so dispatch has to match on the name."""
+  target = tmp_path / '.zshrc'
+  target.write_text('# alpha beta\n# gamma delta\n')
+
+  main(['reflow_prose.py', str(target)])
+
+  assert target.read_text() == '# alpha beta gamma delta\n'
+
+
+def test_a_file_of_neither_language_is_skipped(tmp_path: Path) -> None:
+  """Only the languages this hook can parse are touched."""
+  target = tmp_path / 'notes.md'
+  target.write_text('# alpha beta\n# gamma delta\n')
+
+  main(['reflow_prose.py', str(target)])
+
+  # A markdown heading, not comment prose — prettier owns this file elsewhere.
+  assert target.read_text() == '# alpha beta\n# gamma delta\n'
 
 
 # --- project line width ---
