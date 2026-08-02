@@ -202,8 +202,10 @@ def test_single_line_internal_spacing_normalizes_like_any_prose() -> None:
 def test_section_header_next_to_prose_stays_verbatim() -> None:
   """A '--- subject ---' header never merges into an adjacent comment line."""
   source = (
-    '# Setup helpers for the suite below.\n# --- rotation trigger ---\nx = 1\n'
-  )
+    '# Setup helpers for the suite below.\n'
+    '# --- rotation trigger ---\n'
+    'x = 1\n'
+  )  # fmt: skip
 
   assert reflow_source(source, fill_markdown) == source
 
@@ -494,8 +496,12 @@ def test_fenced_doctest_in_head_does_not_start_the_tail() -> None:
 def test_docstring_with_bare_code_symbols_reflows() -> None:
   """Docstrings use the plain filler, so `*args` prose still refills."""
   source = (
-    'def f() -> None:\n  """Accepts *args\n  and **kwargs.\n  """\n  return\n'
-  )
+    'def f() -> None:\n'
+    '  """Accepts *args\n'
+    '  and **kwargs.\n'
+    '  """\n'
+    '  return\n'
+  )  # fmt: skip
 
   result = reflow_source(source, run_prettier)
 
@@ -900,8 +906,13 @@ def test_same_width_chunks_share_one_formatter_call() -> None:
   """Chunks of equal width batch into a single formatter invocation."""
   calls, counting_fill = _make_counting_formatter()
   source = (
-    '# alpha beta\n# gamma delta\nx = 1\n# epsilon zeta\n# eta theta\ny = 2\n'
-  )
+    '# alpha beta\n'
+    '# gamma delta\n'
+    'x = 1\n'
+    '# epsilon zeta\n'
+    '# eta theta\n'
+    'y = 2\n'
+  )  # fmt: skip
 
   result = reflow_source(source, counting_fill)
 
@@ -948,8 +959,13 @@ def test_swallowed_separator_falls_back_to_per_chunk_calls() -> None:
     )
 
   source = (
-    '# alpha beta\n# gamma delta\nx = 1\n# epsilon zeta\n# eta theta\ny = 2\n'
-  )
+    '# alpha beta\n'
+    '# gamma delta\n'
+    'x = 1\n'
+    '# epsilon zeta\n'
+    '# eta theta\n'
+    'y = 2\n'
+  )  # fmt: skip
 
   result = reflow_source(source, separator_eating_fill)
 
