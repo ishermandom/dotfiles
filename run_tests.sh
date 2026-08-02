@@ -39,7 +39,8 @@ if [ "$names_test_path" = false ]; then
   # The shell tests are standalone executables, which pytest cannot collect,
   # so the suite runs them itself. They go first so a passing run still ends
   # on pytest's summary — the one line quiet-tests.sh keeps on success.
-  for shell_test in "$root"/claude/scripts/*-test.sh; do
+  shell_tests=("$root"/claude/hooks/*-test.sh "$root"/claude/scripts/*-test.sh)
+  for shell_test in "${shell_tests[@]}"; do
     # An unmatched glob stays literal in bash, so -e skips the pattern itself.
     [ -e "$shell_test" ] || continue
     "$shell_test" || shell_test_status=1

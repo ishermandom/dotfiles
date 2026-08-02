@@ -2,15 +2,12 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Run mypy on the repo root (or the current directory when outside a git repo)
-# when Claude tries to stop. On errors, halt the stop and show the output to
-# the user; Claude sees it alongside the user's next message and fixes from
-# there. Deliberately not a decision:block auto-re-invoke: a block can spin
-# forever when Claude cannot fix the failure, guarding against that is out of
-# scope for now, and the workaround is trivial — the user prods the next turn
-# and the fix proceeds.
+# A `stop_checks.sh` step: run mypy on the repo root, or on the current
+# directory when outside a git repo. Stays silent while the types are clean;
+# on errors it prints them and exits non-zero, which `stop_checks.sh` turns
+# into the message that halts the turn.
 #
-# Runs on Stop (end of turn) rather than on each Edit so that multi-file
+# Runs at Stop (end of turn) rather than on each Edit so that multi-file
 # changes that depend on each other aren't flagged mid-edit.
 #
 # Checks all Python files rather than only those edited this turn for two
@@ -37,8 +34,5 @@ mypy_exit_code=$?
 
 [ $mypy_exit_code -eq 0 ] && exit 0
 
-# jq -Rs reads all of stdin as a single raw string (-R) and encodes it as a
-# JSON string (-s joins lines). This safely escapes quotes, newlines, etc.
-json_encoded_output=$(printf '%s' "$mypy_output" | jq -Rs .)
-
-printf '{"continue":false,"stopReason":%s}' "$json_encoded_output"
+echo "$mypy_output"
+exit 1

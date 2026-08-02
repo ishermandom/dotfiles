@@ -110,7 +110,7 @@ config-only sessions — stays small, because most sessions are coding sessions.
   fact. Known limitation: the event does not fire for `@file` imports or
   autonomous `Read` calls.
 
-### Hooks
+### Hooks {#hooks}
 
 `settings.json` is the source of truth for what runs when; this record keeps
 only the durable design choices behind it:
@@ -122,6 +122,15 @@ only the durable design choices behind it:
   anchor-stability rationale drives the Python prose-reflow hook.
 - **Tests and type checks at Stop, not per edit**: a single turn often has
   multiple interdependent edits; mid-turn runs produce false failures.
+- **One Stop entry**: same-event hooks run in parallel, so an array of several
+  gives the format-before-check layout no force — ruff and prettier can rewrite
+  a file while mypy and pytest read it. Edit-time formatting means most files
+  reach Stop already formatted, so the race is rare, but nothing bounds it.
+  `stop_checks.sh` runs the steps in order and stops at the first failure. A
+  formatter's findings are dropped, since they would garble the verdict, and a
+  formatter script that will not run halts the turn. The open gap is an absent
+  tool: both formatters end their tool invocation with `|| true`, so a missing
+  ruff exits 0 and formatting stops with nothing said.
 - **Stop-hook failures surface to the user** (`continue: false`), not as a
   `decision: block` auto-re-invoke: a block can spin forever when Claude cannot
   fix the failure, guarding that is out of scope for now, and the user-prod

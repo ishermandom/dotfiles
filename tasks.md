@@ -27,41 +27,35 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     rules (necessity-test, concrete-over-abstraction) again ran long on
     rationale before trimming; second independent data point.
 
-- [ ] **Sequence the Stop hooks through one orchestrator wrapper**
-      {#stop-orchestrator} — same-event hooks run in parallel (verified live
-      2026-07-03: two probe Stop hooks started 0.8 ms apart with fully
-      overlapping 2 s sleeps; hooks-guide.md documents parallel execution and
-      recommends a wrapper for ordering), so the Stop array's
-      format-before-check layout provides no ordering and mypy/pytest can read
-      files mid-rewrite by ruff/prettier. Rare in practice — edit-time hooks
-      pre-format, so Stop-time rewrites are uncommon — but structurally unsound.
-      Build `claude/hooks/stop_checks.sh` invoking prettier-format → ruff-format
-      → mypy-check → run_tests sequentially, fail-fast after mypy (ratified
-      2026-07-03); replace the four Stop entries with one, single ~120 s
-      timeout.
-  - Worktree: stop-orchestrator
-  - Note: ride-alongs — run_tests.sh needs the repo-root anchor mypy-check.sh
-    has, and its `-f` gate should be `-x` (quiet-tests.sh demands executable);
-    add the parallel-hooks why to design.md's Hooks section. `PYTEST_FROM_HOOK`
-    stays — the crosswords repos' `cluegen/{cloud,local}/run_tests.sh` read it.
-  - Note: validate after wiring per the hooks rule — one deliberate mypy-failure
-    Stop cycle (failure surfaces to the user), then a clean pass.
-
-- [ ] **Surface ruff lint failures at Stop, and clear the open ones** —
-      `claude/hooks/reflow_prose.py` carries two `B905` errors (`zip()` without
-      an explicit `strict=`). `~/.claude/scripts/quiet-ruff.sh` reports them,
-      yet turns end clean, so they have gone unnoticed (observed 2026-07-29).
-  - First step: establish why a turn ends clean while they stand. Unverified
-    hypothesis — the Stop array runs `claude/hooks/ruff-format.sh`, which
-    formats but never lints, while `quiet-ruff.sh` does both, leaving lint
-    findings with no Stop-time path to the user. Confirm before designing a fix;
-    a formatter that silently drops lint findings is a different problem from a
-    check that runs and is ignored.
+- [ ] **Surface ruff lint failures at Stop, and clear the open ones**
+      {#ruff-lint-at-stop} — `claude/hooks/reflow_prose.py` carries two `B905`
+      errors (`zip()` without an explicit `strict=`).
+      `~/.claude/scripts/quiet-ruff.sh` reports them, yet turns end clean, so
+      they have gone unnoticed (observed 2026-07-29).
+  - Note: why a turn ends clean is settled — `ruff-format.sh` does lint
+    (`quiet-ruff.sh` runs `ruff check --fix`) and writes what it cannot fix to
+    stdout. So the findings are produced; what is missing is a path from a Stop
+    hook's plain stdout to the user.
   - Note: mypy and pytest do surface at Stop, so the gap is specific to ruff
     rather than to Stop-time checks generally.
-  - Note: if a lint check earns a place at Stop, add it as a step in
-    `stop_checks.sh` rather than as a fifth parallel entry. Depends on
-    #stop-orchestrator.
+  - Note: `stop_checks.sh` discards formatter stdout, since anything a formatter
+    prints would garble the halt verdict. So the fix is a lint step among its
+    checks — print the findings, exit non-zero — not a change to the formatter
+    step. A TODO there marks the spot.
+
+- [ ] **Make a missing formatter tool visible at Stop** {#formatter-breakage} —
+      `prettier-format.sh` and `ruff-format.sh` end their tool invocation with
+      `|| true`, which conflates "the tool reported findings" with "the tool is
+      not installed". Verified 2026-08-01: with ruff off PATH `ruff-format.sh`
+      exits 0 and writes `ruff: command not found` to stdout, which
+      `stop_checks.sh` drops; with prettier off PATH `prettier-format.sh` exits
+      0 and says nothing on either stream. Formatting then stops for good with
+      no signal.
+  - Note: `stop_checks.sh` already halts when a step script will not run at all,
+    so only the absent-tool case is open.
+  - Note: entangled with #ruff-lint-at-stop — both need the wrappers to separate
+    "findings exist" from "tool missing", which `|| true` currently flattens.
+    Settle the two together.
 
 - [ ] **Give the repo a project-local `.venv`** — the dev tools live in
       `/Users/claude-sandbox/.venvs/default`, inside one account's home, which
@@ -116,8 +110,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       CLAUDE.md #license). Once it exists and holds, shrink the CLAUDE.md
       #license rule to a pointer, per the graduation policy. Queued from the
       2026-07 adversarial review (cluster F2, ratified 2026-07-04).
-  - Note: depends on #stop-orchestrator — build the check as a step in
-    `stop_checks.sh`, not as another parallel Stop entry.
+  - Note: build the check as a step in `stop_checks.sh`, not as another parallel
+    Stop entry.
 
 - [ ] **Lint slug anchors against their citations** — the cross-reference
       convention now spans CLAUDE.md, `rules/`, `docs/`, `skills/`, and
@@ -129,8 +123,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       a defect).
   - Note: a throwaway pass over every `*.md` ran clean in both directions on
     2026-07-31, so the convention holds today; nothing was kept.
-  - Note: depends on #stop-orchestrator — build it as a step in
-    `stop_checks.sh`, not as another parallel Stop entry.
+  - Note: build it as a step in `stop_checks.sh`, not as another parallel Stop
+    entry.
 
 - [ ] **Consider rotating `sessions.md` as part of the distillation skill** —
       `sessions.md` is the curated session log; it is deliberately _not_
@@ -192,7 +186,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Rationale: the manual wrapper was chosen deliberately as the starting point;
     promoting it to a Stop-time step is the open follow-on.
   - Note: add it as a step in `stop_checks.sh` rather than as another parallel
-    entry. Depends on #stop-orchestrator.
+    entry.
   - Note: `rules/shell.md` tells Claude to run the wrapper by hand because
     nothing else will. Correct that claim when a hook starts doing it.
   - Note: shellcheck reports 15 findings today (12 × SC2155 in
