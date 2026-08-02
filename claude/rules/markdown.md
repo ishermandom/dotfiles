@@ -97,6 +97,7 @@ Standard labels:
 - `Rationale:` — why a decision was made
 - `Open question:` — an unresolved choice that affects the task
 - `Note:` — implementation detail, constraint, or context
+- `Worktree:` — the worktree holding this task's in-flight work
 
 Place notes directly under the relevant task or collect them in a subsection —
 whichever keeps related content together. Include what Claude or the user
