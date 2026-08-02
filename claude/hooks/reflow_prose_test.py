@@ -165,7 +165,7 @@ def test_todo_line_starts_its_own_paragraph() -> None:
 
 
 def test_a_todos_indented_continuation_stays_verbatim() -> None:
-  """A TODO earns no exception from the indent rule; wrap one flush to reflow."""
+  """A TODO earns no exception from the indent rule — wrap flush to reflow."""
   source = '# TODO: fix the frobnicator\n#   handling soon.\nx = 1\n'
 
   assert reflow_source(source, fill_markdown) == source
@@ -277,7 +277,7 @@ def test_prose_resumes_reflowing_below_an_indented_block() -> None:
 
 
 def test_a_fence_keeps_its_indented_content_in_one_chunk() -> None:
-  """Fenced content is indented as often as not; a split would break the fence."""
+  """Fenced content is often indented, and a split would break the fence."""
   calls, counting_fill = _make_counting_formatter()
   source = (
     '# ragged intro one\n'
