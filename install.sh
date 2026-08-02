@@ -82,12 +82,21 @@ stow_package() {
 # and any per-account overlay. No package name or target contains a space, so a
 # plain word-split loop is safe. To add a package, add a pair below.
 #
+# claude-md carries CLAUDE.md alone, apart from the claude package, so that a
+# session working in this repo loads CLAUDE.md once rather than twice. Claude
+# Code discovers a CLAUDE.md as project memory for every file beneath that
+# file's own directory, so a copy kept in claude/ would load a second time — on
+# top of ~/.claude/CLAUDE.md — for any session reading something under claude/.
+# A directory holding no other file has nothing to trigger that discovery, so
+# adding a second file to claude-md brings the duplicate back.
+#
 # zed targets ~/.config rather than ~/.config/zed, and nests its own zed/
 # directory inside the package, so that stow links that directory as a whole
 # instead of linking its contents one file at a time — see the folding note
 # above for why Zed needs it that way.
 packages="
   claude:$HOME/.claude
+  claude-md:$HOME/.claude
   git:$HOME
   prettier:$HOME
   ruff:$HOME/.config/ruff

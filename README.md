@@ -5,8 +5,9 @@ This repo manages system configuration via symlinks, managed using GNU Stow.
 ## Structure
 
 - `accounts/` — per-account overlays, layered over the packages below
-- `claude/` — Claude Code global config (CLAUDE.md, settings, rules, skills,
-  hooks, scripts, docs)
+- `claude/` — Claude Code global config (settings, rules, skills, hooks,
+  scripts, docs)
+- `claude-md/` — CLAUDE.md, packaged on its own (`install.sh` says why)
 - `git/` — gitconfig
 - `zed/` — Zed editor settings, keymap, custom themes
 - `zsh/` — zshrc, aliases

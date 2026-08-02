@@ -48,8 +48,8 @@ the other at the OS level.
 Most Claude Code configuration lives globally in `~/.claude/` on the
 `claude-sandbox` account, not in individual project directories. Several entries
 in that directory are symlinks into a dotfiles repo at
-`/Users/Shared/code/dotfiles/claude/`, which makes the config versionable and
-editable from either account.
+`/Users/Shared/code/dotfiles/`, which makes the config versionable and editable
+from either account.
 
 Symlinked entries (resolve before editing — the Edit tool refuses to write
 through symlinks):
@@ -57,7 +57,7 @@ through symlinks):
 | `~/.claude/` entry | Real path                                          |
 | ------------------ | -------------------------------------------------- |
 | `settings.json`    | `/Users/Shared/code/dotfiles/claude/settings.json` |
-| `CLAUDE.md`        | `/Users/Shared/code/dotfiles/claude/CLAUDE.md`     |
+| `CLAUDE.md`        | `/Users/Shared/code/dotfiles/claude-md/CLAUDE.md`  |
 | `docs/`            | `/Users/Shared/code/dotfiles/claude/docs/`         |
 | `hooks/`           | `/Users/Shared/code/dotfiles/claude/hooks/`        |
 | `rules/`           | `/Users/Shared/code/dotfiles/claude/rules/`        |
