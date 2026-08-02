@@ -56,6 +56,15 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: entangled with #ruff-lint-at-stop — both need the wrappers to separate
     "findings exist" from "tool missing", which `|| true` currently flattens.
     Settle the two together.
+  - Note: reporting breakage without halting, via a `systemMessage` field, was
+    considered and dropped — a Stop hook emits one JSON object, so a halt
+    verdict would have to carry the field too, and Stop's support for it is
+    unverified.
+  - Note: the same two scripts also diverge on their dotfiles-root second pass —
+    prettier's `case` skips it anywhere at or below the root, ruff's `!=` skips
+    it only at the root exactly, so from a subdirectory ruff formats the repo a
+    second time. Read from the source, not run. Worth reconciling in the same
+    pass.
 
 - [ ] **Give the repo a project-local `.venv`** — the dev tools live in
       `/Users/claude-sandbox/.venvs/default`, inside one account's home, which
@@ -178,6 +187,15 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     may want to be one mechanism. The task's queuing commit calls this "a
     matching pass," which reads as a recurring audit rather than only a
     self-check on text the review itself writes. Settle when the sweep lands.
+
+- [ ] **Share the shell tests' assertion helpers** — `expect` and `contains` are
+      hand-copied into `gh-protect-test.sh`, `quiet-shell-test.sh`, and
+      `stop_checks-test.sh`, so a fourth shell test starts by copying them
+      again.
+  - Note: pytest plays this role for the Python tests; shell has no runner, so
+    these helpers are the de facto framework. A sourced file beside them is the
+    obvious home — check that its name stays clear of the `*-test.sh` discovery
+    glob in the root `run_tests.sh`, which would otherwise try to run it.
 
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,

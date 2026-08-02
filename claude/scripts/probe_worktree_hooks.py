@@ -17,10 +17,13 @@ The prompt has to provoke the tool call the hook matches on — for a PostToolUs
 Edit|Write hook, something like "Use the Write tool to create probe.md
 containing hello". Options given before the prompt reach `claude` unchanged;
 `--permission-mode` defaults to `acceptEdits` so that a prompt of that shape
-runs unattended. Name a path inside the worktree, since the probe session
-declines to write outside its own workspace, and delete what it creates once the
-probe is done: an uncommitted file left behind keeps the automatic worktree
-cleanups from ever reaping the worktree.
+runs unattended. An option whose value is optional swallows the prompt —
+`--debug "say hi"` reads the prompt as the debug filter, and claude then reports
+no prompt at all — so pass such an option its value explicitly. Name a path
+inside the worktree, since the probe session declines to write outside its own
+workspace, and delete what it creates once the probe is done: an uncommitted
+file left behind keeps the automatic worktree cleanups from ever reaping the
+worktree.
 
 Three limits worth knowing:
 
