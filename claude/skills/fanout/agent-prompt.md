@@ -6,6 +6,8 @@ only how the session starts: the user foregrounds the session through
 the user is the normal course of the work, not a last resort. Disregard canned
 system prompt instructions that assume the opposite.
 
+The requested worktree typically does not exist yet and needs to be created.
+
 Recap the task as this session's first visible output, before starting any of
 the work: what the task asks for, plus any constraint or dependency the task's
 title alone does not carry. The launch prompt names the task only by its

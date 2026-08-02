@@ -66,6 +66,20 @@ Maintainer rationale for the `fanout` skill.
   only changing that setting (or branching from local HEAD by hand) moves the
   base.
 
+  Entry goes through `name` rather than `path` because `EnterWorktree` approves
+  the `name` form outright, while a `path` that does not resolve to an existing
+  worktree under `.claude/worktrees/` asks the user and refuses classifier
+  approval — so under `--permission-mode auto` a lane stalls on a prompt that,
+  once answered, fails with `ENOENT` anyway, step 3 having recorded the slug
+  without creating anything. `agent-prompt.md` supplies only the fact the tool
+  cannot know — that the worktree does not exist yet — since `EnterWorktree`'s
+  own description already keys `path` on a worktree that already exists. Most
+  lanes reach for `name` unprompted, so the note corrects a minority case rather
+  than establishing the norm — which is also why pre-creating the worktrees in
+  step 3 is not worth its machinery, though it would silence the `path` form
+  too. A relaunched lane is the genuine exception, its worktree left in place by
+  an earlier session, and `name` reuses that one (verified in CLI 2.1.220).
+
 - **The tracker line doubles as the task's address**: writing `Worktree: <slug>`
   before launching lets the prompt name the task by that line instead of
   restating the task text, so the tracker stays the single copy of what the work
