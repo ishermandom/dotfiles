@@ -182,14 +182,27 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     obvious home — check that its name stays clear of the `*-test.sh` discovery
     glob in the root `run_tests.sh`, which would otherwise try to run it.
 
+- [ ] **Cover `quiet-prettier.sh` with a test** — `quiet-ruff.sh` now has
+      `quiet-ruff-test.sh` pinning its exit-status levels, its missing-path
+      failure, and its no-Python-files guard. The prettier runner beside it has
+      none, though it carries the same shape of logic: which extensions it globs
+      for, the `--find-config-path` fallback to `~/.prettierrc`, and the
+      no-formattable-files early exit.
+  - Note: `claude/hooks/format.sh` reads both runners' statuses by level, so a
+    prettier runner returning the wrong level would break the Stop verdict the
+    same way a ruff one would.
+
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
       so nothing catches unformatted or unlinted shell the way Stop catches
       Python.
   - Rationale: running `quiet-shell.sh` by hand was chosen deliberately as the
     starting point; promoting it to a Stop-time step is the open follow-on.
-  - Note: add it as a step in `stop_checks.sh` rather than as another parallel
-    entry.
+  - Note: the two halves now want different homes — shfmt fits `format.sh`'s
+    runner list, where findings deliberately do not halt, while shellcheck has
+    to be its own check step in `stop_checks.sh` to gate at all. Neither belongs
+    in a parallel Stop entry. `quiet-shell.sh` runs both from one invocation, so
+    separating them is part of the work.
   - Note: `rules/shell.md` tells Claude to run `quiet-shell.sh` by hand because
     nothing else will. Correct that claim when a hook starts doing it.
   - Note: shellcheck reports 15 findings today (12 × SC2155 in
