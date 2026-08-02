@@ -30,7 +30,8 @@ claude_keychain_init() {
 
   if [[ ! -f "$keychain_path" ]]; then
     echo "ERROR: Claude Code keychain not found at $keychain_path" >&2
-    echo "  Run the one-time setup in the Note above, then 'claude' + /login." >&2
+    echo "  Run the one-time setup in the Note above," \
+      "then 'claude' + /login." >&2
     return 1
   fi
 
@@ -50,7 +51,8 @@ claude_keychain_init() {
   # grep -c . counts non-empty lines (entries); grep -vx lists any whose service
   # is not exactly Claude's — i.e. credentials that should not be here.
   entry_count=$(printf '%s' "$services" | grep -c .)
-  unexpected_services=$(printf '%s\n' "$services" | grep -vx "$expected_service")
+  unexpected_services=$(printf '%s\n' "$services" \
+    | grep -vx "$expected_service")
 
   if [[ "$entry_count" -ne 1 || -n "$unexpected_services" ]]; then
     echo "WARNING: $keychain_path holds unexpected entries" >&2

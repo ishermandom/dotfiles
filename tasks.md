@@ -217,22 +217,11 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Rationale: extending the existing reflow hook is preferred over adding a
     second mechanism for the same job.
   - Note: weigh the payoff before building — exactly 2 shell lines exceed 80
-    columns as prose today, at `claude/hooks/prettier-format.sh:5` and
-    `claude/scripts/quiet-mypy.sh:23`. The other 12 over-long lines are code,
-    which no formatter wraps.
+    columns today, both comment prose: `claude/hooks/prettier-format.sh:5` and
+    `claude/scripts/quiet-mypy.sh:23`.
   - Note: take comment positions from `shfmt --to-json` rather than a line-based
     scan. `claude/scripts/gh-protect.sh` heredocs JSON and `gh-protect-test.sh`
     heredocs a stub script, both carrying `#` lines that are not comments.
-
-- [ ] **Rewrap the shell scripts already over 80 columns** {#shell-rewrap} —
-      shfmt never wraps a long line, whatever else it reformats, so every
-      violation stands until a human rewrites the line itself.
-  - Worktree: shell-rewrap
-  - Note: re-derive the set with `rg -n '.{81,}'` over the shell files rather
-    than trusting a list written here — any shell edit moves it, and a glob of
-    `*.sh` alone misses the zsh files.
-  - Note: the comment prose among them could be automated instead — that is
-    #shell-prose-reflow. The remainder is code, which no formatter wraps.
 
 - [ ] **Stop worktree entry from blocking every fanned-out agent** — a
       fanned-out agent's first act is entering its worktree, and that raises a

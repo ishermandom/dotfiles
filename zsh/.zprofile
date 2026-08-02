@@ -3,7 +3,8 @@
 
 # Homebrew — sets PATH, MANPATH, INFOPATH. Works for both Intel and Apple
 # Silicon by resolving the prefix at login time.
-eval "$(/opt/homebrew/bin/brew shellenv 2> /dev/null || /usr/local/bin/brew shellenv)"
+eval "$(/opt/homebrew/bin/brew shellenv 2> /dev/null \
+  || /usr/local/bin/brew shellenv)"
 
 export EDITOR="emacs -nw"
 
@@ -18,7 +19,8 @@ source "$HOME/.claude-keychain.zsh"
 # which lets any local user list and traverse into ~.
 _home_perms=$(stat -f '%A' "$HOME")
 if [[ "$_home_perms" != '700' ]]; then
-  print -P "%F{yellow}Warning:%f ~ permissions are $_home_perms, expected 700. Fix: chmod 700 ~"
+  print -P "%F{yellow}Warning:%f ~ permissions are $_home_perms," \
+    "expected 700. Fix: chmod 700 ~"
 fi
 unset _home_perms
 

@@ -57,9 +57,10 @@ quota_color() {
     return
   fi
 
-  local now elapsed_percentage
+  local now elapsed_seconds elapsed_percentage
   now=$(date +%s)
-  elapsed_percentage=$(((window_seconds - (resets_at - now)) * 100 / window_seconds))
+  elapsed_seconds=$((window_seconds - (resets_at - now)))
+  elapsed_percentage=$((elapsed_seconds * 100 / window_seconds))
   [ "$elapsed_percentage" -lt 1 ] && elapsed_percentage=1
   [ "$elapsed_percentage" -gt 100 ] && elapsed_percentage=100
 
@@ -92,6 +93,18 @@ reset_suffix() {
   fi
 }
 
+# One quota's segment — " | 5h 63% (3h 50m)", colored by pace. Empty when the
+# quota is absent: rate_limits is missing on API-key accounts and before the
+# first response.
+quota_segment() {
+  local label="$1" used="$2" resets_at="$3" window_seconds="$4"
+  [ "$used" -lt 0 ] && return
+  local color suffix
+  color=$(quota_color "$used" "$resets_at" "$window_seconds")
+  suffix=$(reset_suffix "$resets_at")
+  printf '%s' " | $label ${color}${used}%${RESET}${suffix}"
+}
+
 model_label="$model"
 [ "$effort" != "-" ] && model_label="$model · $effort"
 
@@ -113,20 +126,14 @@ line="[$model_label] ${directory##*/}"
 
 # used_percentage is null early in the session and right after /compact.
 if [ "$context_percentage" -ge 0 ]; then
-  line+=" | ctx $(context_color "$context_percentage")${context_percentage}%${RESET}"
+  line+=" | ctx $(context_color "$context_percentage")"
+  line+="${context_percentage}%${RESET}"
 else
   line+=" | ctx –"
 fi
 
-# rate_limits is absent on API-key accounts and before the first response.
-if [ "$five_hour_percentage" -ge 0 ]; then
-  line+=" | 5h $(quota_color "$five_hour_percentage" "$five_hour_resets_at" 18000)"
-  line+="${five_hour_percentage}%${RESET}$(reset_suffix "$five_hour_resets_at")"
-fi
-if [ "$seven_day_percentage" -ge 0 ]; then
-  line+=" | 7d $(quota_color "$seven_day_percentage" "$seven_day_resets_at" 604800)"
-  line+="${seven_day_percentage}%${RESET}$(reset_suffix "$seven_day_resets_at")"
-fi
+line+=$(quota_segment 5h "$five_hour_percentage" "$five_hour_resets_at" 18000)
+line+=$(quota_segment 7d "$seven_day_percentage" "$seven_day_resets_at" 604800)
 
 # Git state goes last: its width changes as edits come and go, and trailing
 # position keeps the rest of the line from shifting.

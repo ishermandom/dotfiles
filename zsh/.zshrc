@@ -38,14 +38,18 @@ hash -d code=/Users/Shared/code
 _build_prompt() {
   local exit_code=$1
 
+  # %* is the current time of day, 24-hour with seconds.
+  local time_seg="%F{$_pc_time}%*%f "
+
   # Show username when not the primary user; show hostname only over SSH.
   # Combined as user@host, user, or host as appropriate.
   local _user='' _host='' _sep=''
   [[ "$USER" != 'ishermandom' ]] && _user='%n'
   [[ -n "$SSH_CLIENT" ]] && _host='%m'
   [[ -n "$_user" && -n "$_host" ]] && _sep='@'
+  local user_host="${_user}${_sep}${_host}"
   local user_seg=''
-  [[ -n "${_user}${_host}" ]] && user_seg="%F{$_pc_user}${_user}${_sep}${_host}%f "
+  [[ -n "$user_host" ]] && user_seg="%F{$_pc_user}${user_host}%f "
 
   # Full path when ≤ 4 components deep; first-dir/…/last-two when deeper.
   # The first-dir anchor is ~, a named directory like ~code (see hash -d
@@ -59,8 +63,9 @@ _build_prompt() {
   # Prompt char is green on success, red on failure.
   local char_color
   ((exit_code == 0)) && char_color=$_pc_ok || char_color=$_pc_err
+  local char_seg="%F{$char_color}\$%f "
 
-  PROMPT="%F{$_pc_time}%*%f ${user_seg}${path_seg}${git_seg}"$'\n'"%F{$char_color}\$%f "
+  PROMPT="${time_seg}${user_seg}${path_seg}${git_seg}"$'\n'"${char_seg}"
 }
 
 precmd() {

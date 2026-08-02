@@ -34,7 +34,8 @@ if ! prettier --find-config-path ./placeholder > /dev/null 2>&1; then
   config_args=(--config "$HOME/.prettierrc")
 fi
 
-output=$(prettier "${config_args[@]}" --log-level warn --write "${targets[@]}" 2>&1)
+output=$(prettier "${config_args[@]}" --log-level warn \
+  --write "${targets[@]}" 2>&1)
 status=$?
 
 if [ $status -eq 0 ]; then

@@ -10,12 +10,12 @@
 
 format_dir() {
   local dir="$1"
+  local prettier_wrapper="$HOME/.claude/scripts/quiet-prettier.sh"
 
   # The prettier invocation (PATH setup, config fallback, file globs) is
-  # delegated to the quiet-prettier wrapper so it lives in one place
-  # (~/.claude/scripts/quiet-prettier.sh). Run from $dir so the wrapper's
-  # globs are relative to it; formatting issues don't block the stop.
-  (cd "$dir" && "$HOME/.claude/scripts/quiet-prettier.sh" > /dev/null 2>&1 || true)
+  # delegated to the wrapper so it lives in one place. Run from $dir so the
+  # wrapper's globs are relative to it; formatting issues don't block the stop.
+  (cd "$dir" && "$prettier_wrapper" > /dev/null 2>&1 || true)
 }
 
 format_dir .
