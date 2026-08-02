@@ -3,9 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Behavior spec for the distillation-backlog script, exercised through its
-# public entry point — main() reading the session log from a stream and
-# printing one backlog line. Run via the project suite (./run_tests.sh) or:
-#   PYTHONPATH=claude/scripts pytest claude/scripts/distillation_backlog_test.py
+# public entry point — main() reading the session log from a stream and printing
+# one backlog line.
 
 import io
 
@@ -90,8 +89,8 @@ def test_stats_only_counted_apart_from_reflection() -> None:
 
 
 def test_em_dash_date_separator_is_not_mistaken_for_a_marker() -> None:
-  # Some entries put an em-dash between date and project; only a heading
-  # ending in 'distillation' is a marker, and these carry reflection content.
+  # Some entries put an em-dash between date and project; only a heading ending
+  # in 'distillation' is a marker, and these carry reflection content.
   line = _backlog_line(
     '## 2026-06-01 — crosswords (coding)',
     '## 2026-06-02 — crosswords (housekeeping)',

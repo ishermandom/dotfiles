@@ -1,8 +1,7 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Tests for the prose reflow hook. Run from the hooks directory, or with it on
-# PYTHONPATH: PYTHONPATH=~/.claude/hooks python3 -m pytest reflow_prose_test.py
+# Tests for the prose reflow hook.
 
 import textwrap
 import tokenize

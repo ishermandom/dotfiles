@@ -3,9 +3,8 @@
 # SPDX-License-Identifier: MIT
 #
 # Behavior spec for the instructions-loaded hook's block formatting. The
-# formatting is a pure string transform, so it's tested directly without touch-
-# ing the filesystem; rotation is covered by log_rotation_test.py.
-#   PYTHONPATH=~/.claude/hooks pytest ~/.claude/hooks/log_instructions_loaded_test.py
+# formatting is a pure string transform, so it's tested directly without
+# touching the filesystem; rotation is covered by log_rotation_test.py.
 
 import log_instructions_loaded as logger
 

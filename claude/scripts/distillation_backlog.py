@@ -3,13 +3,13 @@
 # SPDX-License-Identifier: MIT
 """Report how many session entries await distillation.
 
-The wrap-session skill suggests running the distill skill once enough
-session entries have accumulated since the last distillation. It calls
-this script for that count rather than grepping the log inline: a bare
-grep invites a `2>/dev/null` redirect, and any redirect to a path outside
-the workspace trips Claude Code's write-scope gate and forces a prompt.
-This script does its reads internally and prints a single line, so the
-allowlisted Bash command carries no redirect.
+The wrap-session skill suggests running the distill skill once enough session
+entries have accumulated since the last distillation. It calls this script for
+that count rather than grepping the log inline: a bare grep invites a
+`2>/dev/null` redirect, and any redirect to a path outside the workspace trips
+Claude Code's write-scope gate and forces a prompt. This script does its reads
+internally and prints a single line, so the allowlisted Bash command carries no
+redirect.
 
 The session log (`~/.claude/logs/sessions.md`) is a flat list of level-2
 Markdown headings: one per session entry, plus a `## <date> — distillation`
@@ -33,9 +33,9 @@ ENTRY_HEADING_PREFIX = '## '
 class DistillationBacklog:
   """Session entries accumulated since the log's last distillation.
 
-  Reflection entries and stats-only entries are counted apart: only the
-  former carry the content distillation consumes, so the stats-only count
-  must not pad the figure the distill decision keys on.
+  Reflection entries and stats-only entries are counted apart: only the former
+  carry the content distillation consumes, so the stats-only count must not pad
+  the figure the distill decision keys on.
   """
 
   reflection_entry_count: int
@@ -46,10 +46,10 @@ class DistillationBacklog:
 def _is_distillation_marker(heading: str) -> bool:
   """Whether a level-2 heading is a distillation marker.
 
-  The distill skill writes `## <date> — distillation`; ordinary entries
-  end in a session type (`coding`, `refactor`, `stats-only`, …). Matching
-  the trailing word, not the dash, avoids misreading entries that use an
-  em-dash as their date/project separator (`## <date> — <project> (type)`).
+  The distill skill writes `## <date> — distillation`; ordinary entries end in a
+  session type (`coding`, `refactor`, `stats-only`, …). Matching the trailing
+  word, not the dash, avoids misreading entries that use an em-dash as their
+  date/project separator (`## <date> — <project> (type)`).
   """
   return heading.rstrip().lower().endswith('distillation')
 
@@ -57,9 +57,9 @@ def _is_distillation_marker(heading: str) -> bool:
 def _is_stats_only_entry(heading: str) -> bool:
   """Whether a level-2 heading is a stats-only entry.
 
-  The SessionEnd hook writes `## <date> · <project> · stats-only` for a
-  session that never ran wrap-session: it carries token counts but none of
-  the Inefficiency/Corrections/Rules content distillation feeds on.
+  The SessionEnd hook writes `## <date> · <project> · stats-only` for a session
+  that never ran wrap-session: it carries token counts but none of the
+  Inefficiency/Corrections/Rules content distillation feeds on.
   """
   return heading.rstrip().lower().endswith('stats-only')
 
@@ -68,8 +68,8 @@ def _distillation_backlog(log_text: str) -> DistillationBacklog:
   """Count entries after the log's last distillation marker, split by kind.
 
   With no marker — the log has never been distilled — every entry counts.
-  Reflection and stats-only entries are tallied separately so the caller
-  can weigh distill input by the entries that actually carry reflection.
+  Reflection and stats-only entries are tallied separately so the caller can
+  weigh distill input by the entries that actually carry reflection.
   """
   headings = [
     line
@@ -81,8 +81,8 @@ def _distillation_backlog(log_text: str) -> DistillationBacklog:
     for index, heading in enumerate(headings)
     if _is_distillation_marker(heading)
   ]
-  # No marker yet: -1 makes the slice below start at the first heading, so
-  # every entry counts.
+  # No marker yet: -1 makes the slice below start at the first heading, so every
+  # entry counts.
   last_position = marker_positions[-1] if marker_positions else -1
   entries = headings[last_position + 1 :]
 
@@ -99,8 +99,8 @@ def _distillation_backlog(log_text: str) -> DistillationBacklog:
 def _backlog_summary(backlog: DistillationBacklog) -> str:
   """A one-line backlog report for the wrap-session reflection step.
 
-  Leads with the reflection-entry count — what distillation consumes — and
-  notes stats-only entries separately so they don't inflate that figure.
+  Leads with the reflection-entry count — what distillation consumes — and notes
+  stats-only entries separately so they don't inflate that figure.
   """
   reflection_count = backlog.reflection_entry_count
   noun = 'entry' if reflection_count == 1 else 'entries'

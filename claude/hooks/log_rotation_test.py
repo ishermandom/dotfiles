@@ -5,8 +5,6 @@
 # Behavior spec for the shared log-rotation helper. Rotation is inherently
 # filesystem-shaped — renaming the active log and pruning archives — so these
 # tests drive it against a real temp directory rather than a stream.
-# Run with the hooks directory on PYTHONPATH:
-#   PYTHONPATH=~/.claude/hooks pytest ~/.claude/hooks/log_rotation_test.py
 
 from collections.abc import Sequence
 from datetime import date, timedelta

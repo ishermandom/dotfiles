@@ -4,11 +4,7 @@
 #
 # Behavior spec for the git permission gate, exercised through its only public
 # entry point — main() reading a hook payload from stdin and writing a decision
-# to stdout. Run with the hooks directory on PYTHONPATH:
-#
-# ```
-# PYTHONPATH=~/.claude/hooks pytest ~/.claude/hooks/gate_git_test.py
-# ```
+# to stdout.
 
 import io
 import json

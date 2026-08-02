@@ -2,8 +2,8 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# PermissionRequest hook: record every tool-use call that is about to prompt
-# the user, then fall through so the prompt still appears. This event fires only
+# PermissionRequest hook: record every tool-use call that is about to prompt the
+# user, then fall through so the prompt still appears. This event fires only
 # after the allow list and PreToolUse have passed a call through to the user, so
 # the log is a noise-free, authoritative list of exactly what prompts and why —
 # the raw material for deciding which calls to allowlist or auto-allow.

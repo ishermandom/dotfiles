@@ -4,11 +4,7 @@
 #
 # Behavior spec for the auto-tools gate, exercised through its only public entry
 # point — main() reading a hook payload from stdin and writing a decision to
-# stdout. Run with the hooks directory on PYTHONPATH:
-#
-# ```
-# PYTHONPATH=~/.claude/hooks pytest ~/.claude/hooks/gate_auto_tools_test.py
-# ```
+# stdout.
 
 import io
 import json
