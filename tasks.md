@@ -209,18 +209,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `gh-protect-test.sh`, plus SC2164, SC2086, SC2001), so a gating check needs
     those cleared or consciously accepted first.
 
-- [ ] **Reflow shell comment prose to 80 columns** {#shell-prose-reflow} —
-      `reflow_prose.py` wraps comment and docstring prose for Python only, and
-      shfmt will never do it for shell, so shell comments are hand-fitted.
-  - Worktree: shell-prose-reflow
-  - Rationale: extending the existing reflow hook is preferred over adding a
-    second mechanism for the same job.
-  - Note: weigh the payoff before building — exactly 1 shell line exceeds 80
-    columns today, comment prose in `claude/scripts/quiet-mypy.sh:23`.
-  - Note: take comment positions from `shfmt --to-json` rather than a line-based
-    scan. `claude/scripts/gh-protect.sh` heredocs JSON and `gh-protect-test.sh`
-    heredocs a stub script, both carrying `#` lines that are not comments.
-
 - [ ] **Have Zed run the repo's formatters on save** — the formatting hooks fire
       on Claude's `Edit` and `Write` only, so a file edited by hand in Zed
       arrives unformatted and its wrapping gets settled later, by whoever next
