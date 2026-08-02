@@ -229,6 +229,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       which `run_tests.sh` picks up, but the script carrying the most logic —
       pace coloring, reset formatting, quota assembly, absent jq fields — has
       none.
+  - Worktree: statusline-test
   - Rationale: queued 2026-08-01, when the 80-column rewrap restructured the
     quota blocks into a `quota_segment` helper. That edit was verified
     differentially against the pre-change script, which is a check that dies
@@ -246,6 +247,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       fanned-out agent's first act is entering its worktree, and that raises a
       permission prompt the user has to answer. Each lane stalls there until
       they do, which costs a background fanout most of what makes it background.
+  - Worktree: worktree-entry-prompt
   - Rationale: queued 2026-08-01, after most of a nine-lane fanout raised the
     prompt at once.
   - Note: the prompt names the worktree path, then calls it "a model-supplied
