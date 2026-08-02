@@ -240,3 +240,4 @@ if [ "$failure_count" -ne 0 ]; then
   echo "format-test: $failure_count assertion(s) failed" >&2
   exit 1
 fi
+echo "format-test: all assertions passed"
