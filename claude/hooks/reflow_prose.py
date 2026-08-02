@@ -32,14 +32,18 @@
 #   two spaces. One shape does not: an ordered list numbered from anything but
 #   `1.` merges into the paragraph above, since only `1.` may interrupt a
 #   paragraph.
-# - An indented line is a verbatim block (a usage listing, a shell setup recipe)
-#   rather than prose to refill, so it keeps its shape without needing a blank
-#   comment line above it. Markdown would instead read it as a lazy continuation
-#   and flatten it into the paragraph above, which for source comments is
-#   corruption far more often than it is the author's intent. Two exceptions: a
-#   line under an open list item, whose continuations are indented by nature,
-#   and anything inside a fenced block. The rule errs toward declining: indented
-#   prose that would have refilled cleanly simply stays put.
+# - An indented comment line is a verbatim block (a usage listing, a shell setup
+#   recipe) rather than prose to refill, so it keeps its shape without needing a
+#   blank comment line above it. Markdown would instead read it as a lazy
+#   continuation and flatten it into the paragraph above, which for source
+#   comments is corruption far more often than it is the author's intent. Two
+#   exceptions: a line under an open list item, whose continuations are indented
+#   by nature, and anything inside a fenced block. The rule errs toward
+#   declining: indented prose that would have refilled cleanly simply stays put.
+#   Docstrings are the exception to all of this — the plain filler holds a line
+#   verbatim only from four spaces, markdown's own code-block threshold, so a
+#   shallower indented block inside a docstring still merges into the paragraph
+#   above it unless a blank line precedes it.
 # - Reflow never changes a chunk's line density. A chunk holds no blank line, so
 #   every blank line prettier emits is structure it added — splitting a list off
 #   the paragraph that introduces it, say — and is dropped. Density stays the
@@ -136,10 +140,12 @@ _CHUNK_SEPARATOR = '<!-- reflow-chunk-boundary -->'
 # (linter suppressions, formatter and type-checker switches), not prose. The
 # bare names take `\b` so prose like "pragmatic" isn't misread. `fmt:` here also
 # owns stray non-region fmt directives (`fmt: skip`, an unmatched `fmt: on`);
-# the region patterns below handle only off/on toggling. `shellcheck` covers
-# shell's `disable=`, `source=`, and `shell=` forms in one name.
+# the region patterns below handle only off/on toggling. shellcheck's entry
+# takes its whole `key=value` shape rather than the bare name: every directive
+# it has is one (`disable=`, `source=`, `shell=`, and kin), and "shellcheck" is
+# an ordinary word in this repo's shell prose that a bare name would freeze.
 _DIRECTIVE_NAMES = (
-  r'noqa\b|fmt:|type:|mypy:|ruff:|pyright:|pragma\b|shellcheck\b'
+  r'noqa\b|fmt:|type:|mypy:|ruff:|pyright:|pragma\b|shellcheck\s+[a-z-]+='
 )
 _DIRECTIVE_PATTERN = re.compile(rf'\s*(?:{_DIRECTIVE_NAMES})')
 
@@ -264,8 +270,9 @@ class _CommentLine:
 def _tool_environment() -> Mapping[str, str]:
   """The process environment with both Homebrew bin directories on PATH.
 
-  Hooks can run with a minimal environment, and the two subprocesses this hook
-  shells out to — prettier and ruff — usually live in one of those directories.
+  Hooks can run with a minimal environment, and the three subprocesses this hook
+  shells out to — prettier, ruff, and shfmt — usually live in one of those
+  directories.
   """
   environment = dict(os.environ)
   environment['PATH'] = '/opt/homebrew/bin:/usr/local/bin:' + environment.get(
@@ -497,9 +504,13 @@ def _shfmt_parse_tree(source: str) -> object:
       env=_tool_environment(),
       # A cap on a pathological hang, nothing more: parsing costs milliseconds,
       # like the ruff call in _discover_line_width. Both run to completion
-      # before any prettier work starts, so the three budgets are additive — 3 +
-      # 2 + the 25 that _reflow_chunks can spend is the 30-second hook timeout
-      # in settings.json exactly, which is what holds this cap down to 2.
+      # before any prettier work starts, so the three budgets are additive, and
+      # 3 + 2 + the 25 that _reflow_chunks can spend already reaches the
+      # 30-second hook timeout in settings.json — which is what keeps this cap
+      # at 2 rather than prettier's 10. Simultaneous worst cases would still
+      # overrun it by whatever the interpreter and the file read cost, and the
+      # harness would kill the hook; the file is then left unchanged, the same
+      # outcome every other failure here produces.
       timeout=2,
     )
   except (OSError, subprocess.TimeoutExpired, UnicodeDecodeError) as error:
@@ -647,8 +658,10 @@ def _comment_chunks(
     if _LIST_ITEM_PATTERN.match(text):
       has_open_list = True
     # Comments need the TODO split here — prettier is TODO-blind; docstrings get
-    # the equivalent break inside fill_prose.
-    if _TODO_PATTERN.match(text):
+    # the equivalent break inside fill_prose. Under an open list item the TODO
+    # is item content, so splitting it out would dedent it into a sibling of the
+    # bullet — the same carve-out fill_prose makes.
+    if _TODO_PATTERN.match(text) and not has_open_list:
       flush()
     run.append((row, text))
   flush()

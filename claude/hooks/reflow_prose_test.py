@@ -164,6 +164,17 @@ def test_todo_line_starts_its_own_paragraph() -> None:
   )
 
 
+def test_todo_under_a_comment_bullet_stays_nested_in_its_item() -> None:
+  """A TODO inside a list item is item content, as it is inside a docstring."""
+  source = '# - item start\n#   TODO: finish this\nx = 1\n'
+
+  result = reflow_source(source, fill_markdown)
+
+  # Merged into the item rather than promoted to a sibling of the bullet, which
+  # is what dedenting it flush would have made it read as.
+  assert result == '# - item start TODO: finish this\nx = 1\n'
+
+
 def test_a_todos_indented_continuation_stays_verbatim() -> None:
   """A TODO earns no exception from the indent rule — wrap flush to reflow."""
   source = '# TODO: fix the frobnicator\n#   handling soon.\nx = 1\n'
