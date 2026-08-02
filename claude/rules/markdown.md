@@ -76,8 +76,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 Use per-task checkboxes. A status change is a one-character edit — don't lose
 that property by encoding status elsewhere.
 
-Always mark dropped tasks with `[-]` rather than deleting them. Add a brief
-inline note explaining why; the decision shouldn't get lost.
+Dropping a task usually means deleting it, not marking `[-]` — see #pruning for
+when an entry stays.
 
 ### When organizing tasks
 
@@ -120,7 +120,7 @@ Cross-reference explicitly: `Depends on #smoke-test` at the end of the task line
 or in its notes. Implicit ordering (listing tasks in dependency order) is fine
 when no cross-phase references are needed.
 
-### When pruning completed work
+### When pruning completed and dropped work {#pruning}
 
 **Prune at completion by default.** When you mark a task `[x]`, in the same edit
 delete it instead if its detail is preserved elsewhere (the commit, the code, or
@@ -133,13 +133,17 @@ writing a task note for it rather than pruning one later. Reserve `spec.md` for
 a genuine architecture or design decision — write it there once, not into a task
 note. Don't let completed checkboxes accumulate for a later cleanup pass.
 
+**Dropping a task follows the same default.** Delete it rather than marking
+`[-]`. Keep the entry only when losing its reasoning would likely get the task
+re-added, and then add a brief note saying why it was dropped. Where another
+file can carry that reasoning, prefer putting it there and deleting the entry.
+
 Completed and dropped tasks, and whole completed phases, can be summarized or
 deleted once they stop informing the remaining work — git preserves the detail.
 Default to **deleting**, not summarizing: reach for a summary only when
 something concrete would otherwise be lost with no other record (not recoverable
 from the code, the commit, or `spec.md`). A summary that just restates what
 `spec.md` already carries, or a note that references a "plan" no longer stated
-anywhere in the file, is worth less than deleting it. The `[-]` rule above
-governs drop time, not pruning. When in doubt, keep a dropped task's rationale,
-a discovered constraint, or anything another task cites. A file whose work is
-all done can simply be deleted.
+anywhere in the file, is worth less than deleting it. When in doubt, keep a
+discovered constraint or anything another task cites. A file whose work is all
+done can simply be deleted.
