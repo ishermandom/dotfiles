@@ -109,6 +109,13 @@ config-only sessions — stays small, because most sessions are coding sessions.
   (`hooks/log_instructions_loaded.py`) so rule-loading can be debugged after the
   fact. Known limitation: the event does not fire for `@file` imports or
   autonomous `Read` calls.
+- **CLAUDE.md discovery is not path-deduped**: a `CLAUDE.md` loads as project
+  memory for every file read beneath its own directory, and the global
+  `~/.claude/CLAUDE.md` symlink does not suppress that second load even when
+  both paths resolve to one file (verified 2026-08-01). Reading the file itself
+  does not self-inject, which is why `install.sh` packages CLAUDE.md alone.
+- **Discoverable memory files are snapshotted at session start** — one created
+  mid-session is never picked up, so testing discovery takes a fresh session.
 
 ### Hooks {#hooks}
 

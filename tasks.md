@@ -301,3 +301,15 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     ordinary project-root discovery — since the two have different remedies.
   - Note: affects the main checkout as much as a worktree; the worktree only
     made the duplication visible by putting both paths in one context.
+
+- [ ] **Catch dangling `~/.claude` symlinks before a session runs on them** —
+      renaming or moving a stow-linked file leaves its installed symlink
+      pointing at nothing until `install.sh` reruns, and nothing reports the
+      gap. For `CLAUDE.md` the global instructions simply stop loading, silently
+      and in every session.
+  - Rationale: queued 2026-08-01, when packaging `CLAUDE.md` as its own stow
+    package made exactly this window real — verified against a throwaway repo
+    that the link dangles between landing and the next `install.sh`.
+  - Open question: whether a `SessionStart` hook checking that the tracked
+    entries resolve is the right shape, or whether the check belongs in
+    `install.sh` and a periodic verification instead.
