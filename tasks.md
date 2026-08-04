@@ -187,14 +187,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     matching pass," which reads as a recurring audit rather than only a
     self-check on text the review itself writes. Settle when the sweep lands.
 
-- [ ] **Convert the remaining shell tests to the test framework** —
-      `format-test.sh`, `quiet-prettier-test.sh`, and `quiet-ruff-test.sh`
-      landed while the framework was being extracted, so each still hand-copies
-      `expect` and its own summary block. Sourcing
-      `claude/scripts/shell-test-framework.sh` drops those copies and picks up
-      `require_commands`, `begin_case`, and `$case_dir`.
-  - Worktree: shell-test-conversion
-
 - [ ] **Leave a task's status to its fanout lane** — the coordinating session
       should not weigh whether a chosen task is still live before launching it;
       that judgment belongs to the lane, whose reassessment directive already
