@@ -163,6 +163,20 @@ expect "a named target is formatted" \
 expect "and a file that was not named is left alone" \
   test "$(head -1 "$fixture/project/other.md")" = "#   Other"
 
+# --- a named target that is not there is breakage ---------------------------
+
+# Discovery leaves out an extension with no files; a named target gets no such
+# forgiveness. Letting prettier's complaint pass as success would be the silent
+# clean turn the level scale exists to prevent.
+fixture=$(make_fixture)
+run_runner "$fixture" gone.md
+missing_target_status=$?
+
+expect "a named target that is not there is breakage" \
+  test "$missing_target_status" -ge 2
+expect "and the error names the missing target" \
+  contains "$(cat "$fixture/stdout")" "gone.md"
+
 # --- summary ----------------------------------------------------------------
 
 if [ "$failure_count" -ne 0 ]; then
