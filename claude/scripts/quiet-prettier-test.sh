@@ -25,143 +25,98 @@ quiet_prettier="$script_dir/quiet-prettier.sh"
 # below looks at the same prettier the script will run.
 export PATH="/opt/homebrew/bin:$PATH"
 
-if ! command -v prettier > /dev/null; then
-  echo "quiet-prettier-test: prettier is missing; brew install prettier" >&2
-  exit 1
-fi
+. "$script_dir/shell-test-framework.sh"
 
-test_root=$(mktemp -d)
-trap 'rm -rf "$test_root"' EXIT
+require_commands prettier
 
-failure_count=0
+# --- case helpers -----------------------------------------------------------
 
-# --- helpers ----------------------------------------------------------------
-
-# Runs the given command as an assertion: prints one result line, and on failure
-# bumps failure_count so the script exits non-zero at the end.
-expect() { # expect <description> <command...>
-  local description="$1"
-  shift
-  if "$@"; then
-    echo "  ok: $description"
-  else
-    echo "  FAIL: $description" >&2
-    failure_count=$((failure_count + 1))
-  fi
-}
-
-contains() { # contains <haystack> <needle>
-  case "$1" in
-    *"$2"*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
-
-# Builds a fixture: a project directory to format, plus a fake HOME to resolve
-# the script's global-config fallback against. Prints the fixture directory,
-# which holds project/ and home/.
+# Begins a case whose directory holds a project to format, plus a fake HOME to
+# resolve the script's global-config fallback against.
 #
 # The empty global config keeps that fallback pointing at a real file, since
 # prettier errors on a --config path that does not exist. The case about the
 # fallback overwrites it with a setting it can observe.
-make_fixture() { # make_fixture  -> prints the fixture directory
-  local fixture
-  fixture=$(mktemp -d "$test_root/case.XXXXXX")
-  mkdir -p "$fixture/home" "$fixture/project"
-  printf '{}\n' > "$fixture/home/.prettierrc"
-  echo "$fixture"
+begin_project_case() { # begin_project_case <name>
+  begin_case "$1"
+  mkdir -p "$case_dir/home" "$case_dir/project"
+  printf '{}\n' > "$case_dir/home/.prettierrc"
 }
 
-# Runs the runner inside the fixture's project against its fake HOME, leaving
-# both streams in the fixture as stdout. Returns the runner's exit status, which
-# is the level claude/hooks/format.sh reads.
-run_runner() { # run_runner <fixture> [runner arguments...]
-  local fixture="$1"
-  shift
-  (cd "$fixture/project" && HOME="$fixture/home" "$quiet_prettier" "$@") \
-    > "$fixture/stdout" 2>&1
+# Runs the runner inside the case's project against its fake HOME, leaving both
+# streams in the case directory as stdout. Returns the runner's exit status,
+# which is the level claude/hooks/format.sh reads.
+run_runner() { # run_runner [runner arguments...]
+  (cd "$case_dir/project" && HOME="$case_dir/home" "$quiet_prettier" "$@") \
+    > "$case_dir/stdout" 2>&1
 }
 
-# --- a project with nothing to format does not reach prettier ---------------
+# --- cases ------------------------------------------------------------------
 
-fixture=$(make_fixture)
-echo "notes" > "$fixture/project/notes.txt"
-run_runner "$fixture"
-no_files_status=$?
+begin_project_case reports-nothing-to-format
+echo "notes" > "$case_dir/project/notes.txt"
+run_runner
+exit_code=$?
 
-expect "a project with nothing to format exits clean" \
-  test "$no_files_status" -eq 0
+expect "a project with nothing to format exits clean" test "$exit_code" -eq 0
 expect "and says so in its own words" \
-  contains "$(cat "$fixture/stdout")" "no formattable files"
+  contains "$(cat "$case_dir/stdout")" "no formattable files"
 
-# --- discovery reaches nested files -----------------------------------------
+begin_project_case finds-nested-files
+mkdir -p "$case_dir/project/nested"
+printf '#   Title\n' > "$case_dir/project/nested/doc.md"
+run_runner
 
-fixture=$(make_fixture)
-mkdir -p "$fixture/project/nested"
-printf '#   Title\n' > "$fixture/project/nested/doc.md"
-run_runner "$fixture"
-
-expect "a markdown file in a subdirectory is reformatted" \
-  test "$(head -1 "$fixture/project/nested/doc.md")" = "# Title"
-
-# --- an extension with no files present is left out of the globs ------------
+expect_equal "a markdown file in a subdirectory is reformatted" \
+  "$(head -1 "$case_dir/project/nested/doc.md")" "# Title"
 
 # Prettier errors on a glob that matches nothing, so a project carrying only
 # markdown must not be handed the JS and TS patterns.
-fixture=$(make_fixture)
-printf '#   Title\n' > "$fixture/project/only.md"
-run_runner "$fixture"
-markdown_only_status=$?
+begin_project_case globs-only-the-extensions-present
+printf '#   Title\n' > "$case_dir/project/only.md"
+run_runner
+exit_code=$?
 
-expect "a project with no JS or TS still exits clean" \
-  test "$markdown_only_status" -eq 0
+expect "a project with no JS or TS still exits clean" test "$exit_code" -eq 0
 
-# --- the home config is the fallback ----------------------------------------
+begin_project_case falls-back-to-the-home-config
+printf '{"semi": false}\n' > "$case_dir/home/.prettierrc"
+printf 'const a = 1;\n' > "$case_dir/project/app.js"
+run_runner
 
-fixture=$(make_fixture)
-printf '{"semi": false}\n' > "$fixture/home/.prettierrc"
-printf 'const a = 1;\n' > "$fixture/project/app.js"
-run_runner "$fixture"
-
-expect "a project with no config of its own formats by the home config" \
-  test "$(cat "$fixture/project/app.js")" = "const a = 1"
-
-# --- a project's own config wins --------------------------------------------
+expect_equal "a project with no config of its own formats by the home config" \
+  "$(cat "$case_dir/project/app.js")" "const a = 1"
 
 # The home config asks for the opposite, so the semicolon's absence can only
 # come from the project's own file.
-fixture=$(make_fixture)
-printf '{"semi": true}\n' > "$fixture/home/.prettierrc"
-printf '{"semi": false}\n' > "$fixture/project/.prettierrc"
-printf 'const a = 1;\n' > "$fixture/project/app.js"
-run_runner "$fixture"
+begin_project_case prefers-the-project-config
+printf '{"semi": true}\n' > "$case_dir/home/.prettierrc"
+printf '{"semi": false}\n' > "$case_dir/project/.prettierrc"
+printf 'const a = 1;\n' > "$case_dir/project/app.js"
+run_runner
 
-expect "a project config wins over the home fallback" \
-  test "$(cat "$fixture/project/app.js")" = "const a = 1"
+expect_equal "a project config wins over the home fallback" \
+  "$(cat "$case_dir/project/app.js")" "const a = 1"
 
-# --- a file prettier cannot parse is breakage -------------------------------
-
-fixture=$(make_fixture)
-printf 'const x = {{{\n' > "$fixture/project/broken.ts"
-run_runner "$fixture"
-unparseable_status=$?
+begin_project_case reports-an-unparseable-file
+printf 'const x = {{{\n' > "$case_dir/project/broken.ts"
+run_runner
+exit_code=$?
 
 expect "a file prettier cannot parse is breakage, not a finding" \
-  test "$unparseable_status" -ge 2
+  test "$exit_code" -ge 2
 expect "and the error names the file" \
-  contains "$(cat "$fixture/stdout")" "broken.ts"
+  contains "$(cat "$case_dir/stdout")" "broken.ts"
 
-# --- a named target replaces discovery --------------------------------------
+begin_project_case formats-only-a-named-target
+printf '#   Named\n' > "$case_dir/project/named.md"
+printf '#   Other\n' > "$case_dir/project/other.md"
+run_runner named.md
 
-fixture=$(make_fixture)
-printf '#   Named\n' > "$fixture/project/named.md"
-printf '#   Other\n' > "$fixture/project/other.md"
-run_runner "$fixture" named.md
-
-expect "a named target is formatted" \
-  test "$(head -1 "$fixture/project/named.md")" = "# Named"
-expect "and a file that was not named is left alone" \
-  test "$(head -1 "$fixture/project/other.md")" = "#   Other"
+expect_equal "a named target is formatted" \
+  "$(head -1 "$case_dir/project/named.md")" "# Named"
+expect_equal "and a file that was not named is left alone" \
+  "$(head -1 "$case_dir/project/other.md")" "#   Other"
 
 # --- a named target that is not there is breakage ---------------------------
 
@@ -179,8 +134,4 @@ expect "and the error names the missing target" \
 
 # --- summary ----------------------------------------------------------------
 
-if [ "$failure_count" -ne 0 ]; then
-  echo "quiet-prettier-test: $failure_count assertion(s) failed" >&2
-  exit 1
-fi
-echo "quiet-prettier-test: all assertions passed"
+exit_with_summary

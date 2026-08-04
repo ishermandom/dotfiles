@@ -17,144 +17,94 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 quiet_ruff="$script_dir/quiet-ruff.sh"
 
-if ! command -v ruff > /dev/null; then
-  echo "quiet-ruff-test: ruff is missing; try 'pip install ruff'" >&2
-  exit 1
-fi
+. "$script_dir/shell-test-framework.sh"
 
-test_root=$(mktemp -d)
-trap 'rm -rf "$test_root"' EXIT
+require_commands ruff
 
-failure_count=0
+# --- case helpers -----------------------------------------------------------
 
-# --- helpers ----------------------------------------------------------------
-
-# Runs the given command as an assertion: prints one result line, and on failure
-# bumps failure_count so the script exits non-zero at the end.
-expect() { # expect <description> <command...>
-  local description="$1"
-  shift
-  if "$@"; then
-    echo "  ok: $description"
-  else
-    echo "  FAIL: $description" >&2
-    failure_count=$((failure_count + 1))
-  fi
+# Begins a case whose directory is an empty project for ruff to run over. The
+# project is a checkout because quiet-ruff.sh anchors its working directory on
+# the target's repo root.
+begin_project_case() { # begin_project_case <name>
+  begin_case "$1"
+  git -C "$case_dir" init --quiet
 }
 
-contains() { # contains <haystack> <needle>
-  case "$1" in
-    *"$2"*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
+# --- cases ------------------------------------------------------------------
 
-lacks() { # lacks <haystack> <needle>
-  ! contains "$1" "$2"
-}
+begin_project_case skips-a-project-with-no-python
+echo "notes" > "$case_dir/notes.txt"
+output=$("$quiet_ruff" "$case_dir" 2>&1)
+exit_code=$?
 
-# Makes an empty project for ruff to run over. It is a checkout because
-# quiet-ruff.sh anchors its working directory on the target's repo root.
-make_project() { # make_project  -> prints the directory
-  local project
-  project=$(mktemp -d "$test_root/project.XXXXXX")
-  git -C "$project" init --quiet
-  echo "$project"
-}
-
-# --- a project with no Python files does not reach ruff ---------------------
-
-project=$(make_project)
-echo "notes" > "$project/notes.txt"
-no_python_output=$("$quiet_ruff" "$project" 2>&1)
-no_python_status=$?
-
-expect "a project with no Python files exits clean" \
-  test "$no_python_status" -eq 0
-expect "and says so in its own words" \
-  contains "$no_python_output" "no Python files"
+expect "a project with no Python files exits clean" test "$exit_code" -eq 0
+expect "and says so in its own words" contains "$output" "no Python files"
 expect "rather than passing ruff's warning through" \
-  lacks "$no_python_output" "No Python files found under"
-
-# --- a path that does not exist is not a clean run --------------------------
+  not_contains "$output" "No Python files found under"
 
 # The no-Python-files short circuit must not swallow a stale or typo'd path,
 # which would be the same silent success the level scale exists to prevent.
-project=$(make_project)
-missing_path_output=$("$quiet_ruff" "$project/gone.py" 2>&1)
-missing_path_status=$?
+begin_project_case reports-a-missing-path
+output=$("$quiet_ruff" "$case_dir/gone.py" 2>&1)
+exit_code=$?
 
 expect "a path that does not exist is breakage, not a finding" \
-  test "$missing_path_status" -ge 2
+  test "$exit_code" -ge 2
 expect "and the message names the path rather than its remains" \
-  contains "$missing_path_output" "gone.py"
+  contains "$output" "gone.py"
 
-# --- a clean project reports success -----------------------------------------
+begin_project_case reports-a-clean-project
+printf 'X = 1\n' > "$case_dir/clean.py"
+"$quiet_ruff" "$case_dir" > /dev/null 2>&1
+exit_code=$?
 
-project=$(make_project)
-printf 'X = 1\n' > "$project/clean.py"
-"$quiet_ruff" "$project" > /dev/null 2>&1
-clean_status=$?
-
-expect "a clean project exits 0" test "$clean_status" -eq 0
-
-# --- findings ruff cannot fix are level 1 ------------------------------------
+expect "a clean project exits 0" test "$exit_code" -eq 0
 
 # F821 (undefined name) is reported but has no autofix, so it survives --fix and
 # is the status callers must not mistake for a broken tool.
-project=$(make_project)
-printf 'print(undefined_name)\n' > "$project/undefined.py"
-findings_output=$("$quiet_ruff" "$project" 2>&1)
-findings_status=$?
+begin_project_case reports-unfixable-findings
+printf 'print(undefined_name)\n' > "$case_dir/undefined.py"
+output=$("$quiet_ruff" "$case_dir" 2>&1)
+exit_code=$?
 
-expect "unfixable findings exit 1" test "$findings_status" -eq 1
-expect "and name the rule that fired" contains "$findings_output" "F821"
+expect "unfixable findings exit 1" test "$exit_code" -eq 1
+expect "and name the rule that fired" contains "$output" "F821"
 
-# --- a file ruff cannot parse is breakage, not a finding ---------------------
+begin_project_case reports-an-unparseable-file
+printf 'def (\n' > "$case_dir/broken.py"
+"$quiet_ruff" "$case_dir" > /dev/null 2>&1
+exit_code=$?
 
-project=$(make_project)
-printf 'def (\n' > "$project/broken.py"
-"$quiet_ruff" "$project" > /dev/null 2>&1
-unparseable_status=$?
-
-expect "an unparseable file exits 2 or more" test "$unparseable_status" -ge 2
-
-# --- the worse of the two ruff statuses wins ---------------------------------
+expect "an unparseable file exits 2 or more" test "$exit_code" -ge 2
 
 # `check` breaking while `format` only reports findings is the pairing that
 # tells "worst wins" apart from "the last one wins". Real ruff cannot be made to
 # produce it, so a stub earlier on PATH stands in.
-stub_dir=$(mktemp -d "$test_root/stub.XXXXXX")
-cat > "$stub_dir/ruff" << 'STUB'
+begin_project_case takes-the-worse-of-two-statuses
+mkdir "$case_dir/stub"
+cat > "$case_dir/stub/ruff" << 'STUB'
 #!/usr/bin/env bash
 case "$1" in
   check) exit 2 ;;
   format) exit 1 ;;
 esac
 STUB
-chmod +x "$stub_dir/ruff"
-
-project=$(make_project)
-printf 'X = 1\n' > "$project/clean.py"
-PATH="$stub_dir:$PATH" "$quiet_ruff" "$project" > /dev/null 2>&1
-worst_status=$?
+chmod +x "$case_dir/stub/ruff"
+printf 'X = 1\n' > "$case_dir/clean.py"
+PATH="$case_dir/stub:$PATH" "$quiet_ruff" "$case_dir" > /dev/null 2>&1
+exit_code=$?
 
 expect "a breakage in check outranks findings from format" \
-  test "$worst_status" -eq 2
+  test "$exit_code" -eq 2
 
-# --- a ruff that is not installed is distinguishable from findings -----------
+begin_project_case reports-a-missing-ruff
+printf 'X = 1\n' > "$case_dir/clean.py"
+PATH=/usr/bin:/bin "$quiet_ruff" "$case_dir" > /dev/null 2>&1
+exit_code=$?
 
-project=$(make_project)
-printf 'X = 1\n' > "$project/clean.py"
-PATH=/usr/bin:/bin "$quiet_ruff" "$project" > /dev/null 2>&1
-missing_status=$?
-
-expect "a missing ruff exits 127" test "$missing_status" -eq 127
+expect "a missing ruff exits 127" test "$exit_code" -eq 127
 
 # --- summary ----------------------------------------------------------------
 
-if [ "$failure_count" -ne 0 ]; then
-  echo "quiet-ruff-test: $failure_count assertion(s) failed" >&2
-  exit 1
-fi
-echo "quiet-ruff-test: all assertions passed"
+exit_with_summary

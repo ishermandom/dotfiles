@@ -17,38 +17,17 @@
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
-test_root=$(mktemp -d)
-trap 'rm -rf "$test_root"' EXIT
+. "$script_dir/../scripts/shell-test-framework.sh"
 
-failure_count=0
+require_commands git
 
-# --- helpers ----------------------------------------------------------------
+# --- case helpers -----------------------------------------------------------
 
-# Runs the given command as an assertion: prints one result line, and on failure
-# bumps failure_count so the script exits non-zero at the end.
-expect() { # expect <description> <command...>
-  local description="$1"
-  shift
-  if "$@"; then
-    echo "  ok: $description"
-  else
-    echo "  FAIL: $description" >&2
-    failure_count=$((failure_count + 1))
-  fi
-}
-
-contains() { # contains <haystack> <needle>
-  case "$1" in
-    *"$2"*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
-
-# Writes one fake runner into a fixture's fake HOME. The body arrives on stdin
-# so each case can write it as a quoted heredoc, where `$PWD` and `$HOME` stay
+# Writes one fake runner into the case's fake HOME. The body arrives on stdin so
+# each case can write it as a quoted heredoc, where `$PWD` and `$HOME` stay
 # literal for the fake itself to expand when the step runs it.
-write_runner() { # write_runner <fixture> <runner name>   (body on stdin)
-  local runner="$1/home/.claude/scripts/$2"
+write_runner() { # write_runner <runner name>   (body on stdin)
+  local runner="$case_dir/home/.claude/scripts/$1"
   {
     echo '#!/usr/bin/env bash'
     cat
@@ -56,188 +35,168 @@ write_runner() { # write_runner <fixture> <runner name>   (body on stdin)
   chmod +x "$runner"
 }
 
-# Builds a fixture: a fake dotfiles repo holding the step, plus a fake HOME
-# holding a do-nothing fake for each runner the step drives. A case overrides
-# only the runner it is about. Prints the fixture directory, which holds repo/
-# and home/.
-make_fixture() { # make_fixture  -> prints the fixture directory
-  local fixture runner
-  fixture=$(mktemp -d "$test_root/case.XXXXXX")
-  mkdir -p "$fixture/repo/claude/hooks" "$fixture/home/.claude/scripts"
-  cp "$script_dir/format.sh" "$fixture/repo/claude/hooks/"
+# Begins a case whose directory holds a fake dotfiles repo carrying the step,
+# plus a fake HOME holding a do-nothing fake for each runner the step drives. A
+# case overrides only the runner it is about.
+begin_step_case() { # begin_step_case <name>
+  begin_case "$1"
+  mkdir -p "$case_dir/repo/claude/hooks" "$case_dir/home/.claude/scripts"
+  cp "$script_dir/format.sh" "$case_dir/repo/claude/hooks/"
 
   # The step locates the dotfiles repo with git, so the fake one has to be a
   # checkout rather than a bare directory tree.
-  git -C "$fixture/repo" init --quiet
+  git -C "$case_dir/repo" init --quiet
 
+  local runner
   for runner in quiet-prettier.sh quiet-ruff.sh; do
-    write_runner "$fixture" "$runner" <<< "exit 0"
+    write_runner "$runner" <<< "exit 0"
   done
-  echo "$fixture"
 }
 
-# Runs the step from the given directory against the fixture's fake HOME,
-# leaving its streams in the fixture as stdout and stderr. Returns the step's
-# own exit status, which is the verdict stop_checks.sh reads.
-run_step() { # run_step <fixture> <directory>
-  (cd "$2" && HOME="$1/home" "$1/repo/claude/hooks/format.sh") \
-    > "$1/stdout" 2> "$1/stderr"
+# Runs the step from the given directory against the case's fake HOME, leaving
+# its streams in the case directory as stdout and stderr. Returns the step's own
+# exit status, which is the verdict stop_checks.sh reads.
+run_step() { # run_step <directory>
+  (cd "$1" && HOME="$case_dir/home" "$case_dir/repo/claude/hooks/format.sh") \
+    > "$case_dir/stdout" 2> "$case_dir/stderr"
 }
 
 # Counts the directories the fake runners were handed, for the cases about how
 # many passes the step makes. An unrun runner leaves no log at all.
-invocation_count() { # invocation_count <fixture>
-  [ -f "$1/home/invocations" ] || {
+invocation_count() {
+  [ -f "$case_dir/home/invocations" ] || {
     echo 0
     return 0
   }
-  grep -c '' < "$1/home/invocations"
+  grep -c '' < "$case_dir/home/invocations"
 }
 
-# --- a tool's findings are not the step's failure ---------------------------
+# --- cases ------------------------------------------------------------------
 
-fixture=$(make_fixture)
-write_runner "$fixture" quiet-ruff.sh << 'BODY'
+begin_step_case passes-on-findings
+write_runner quiet-ruff.sh << 'BODY'
 echo "F401 [*] unused import"
 exit 1
 BODY
-run_step "$fixture" "$fixture/repo"
-findings_status=$?
+run_step "$case_dir/repo"
+exit_code=$?
 
-expect "findings leave the step passing" test "$findings_status" -eq 0
-expect "findings stay off the halting stream" test ! -s "$fixture/stderr"
+expect "findings leave the step passing" test "$exit_code" -eq 0
+expect "findings stay off the halting stream" test ! -s "$case_dir/stderr"
 expect "findings stay on the stream stop_checks drops" \
-  contains "$(cat "$fixture/stdout")" "F401"
+  contains "$(cat "$case_dir/stdout")" "F401"
 
-# --- a tool that cannot parse a file fails the step -------------------------
-
-fixture=$(make_fixture)
-write_runner "$fixture" quiet-ruff.sh << 'BODY'
+begin_step_case fails-on-an-unparseable-file
+write_runner quiet-ruff.sh << 'BODY'
 echo "error: Failed to parse module.py"
 exit 2
 BODY
-run_step "$fixture" "$fixture/repo"
-unparseable_status=$?
+run_step "$case_dir/repo"
+exit_code=$?
 
 expect "a tool that could not do its job fails the step" \
-  test "$unparseable_status" -ne 0
+  test "$exit_code" -ne 0
 expect "its reason reaches the halting stream" \
-  contains "$(cat "$fixture/stderr")" "Failed to parse"
-
-# --- a missing tool fails the step rather than going unnoticed --------------
+  contains "$(cat "$case_dir/stderr")" "Failed to parse"
 
 # A runner reports a missing tool on its stdout, which stop_checks.sh drops, so
 # the step has to move the message to stderr for the user to ever see it.
-fixture=$(make_fixture)
-write_runner "$fixture" quiet-ruff.sh << 'BODY'
+begin_step_case fails-on-a-missing-ruff
+write_runner quiet-ruff.sh << 'BODY'
 echo "ruff: command not found"
 exit 127
 BODY
-run_step "$fixture" "$fixture/repo"
-missing_ruff_status=$?
+run_step "$case_dir/repo"
+exit_code=$?
 
-expect "a missing ruff fails the step" test "$missing_ruff_status" -ne 0
+expect "a missing ruff fails the step" test "$exit_code" -ne 0
 expect "a missing ruff explains itself on the halting stream" \
-  contains "$(cat "$fixture/stderr")" "command not found"
+  contains "$(cat "$case_dir/stderr")" "command not found"
 
-fixture=$(make_fixture)
-write_runner "$fixture" quiet-prettier.sh << 'BODY'
+begin_step_case fails-on-a-missing-prettier
+write_runner quiet-prettier.sh << 'BODY'
 echo "prettier: command not found"
 exit 127
 BODY
-run_step "$fixture" "$fixture/repo"
-missing_prettier_status=$?
+run_step "$case_dir/repo"
+exit_code=$?
 
-expect "a missing prettier fails the step" test "$missing_prettier_status" -ne 0
+expect "a missing prettier fails the step" test "$exit_code" -ne 0
 expect "a missing prettier explains itself on the halting stream" \
-  contains "$(cat "$fixture/stderr")" "command not found"
+  contains "$(cat "$case_dir/stderr")" "command not found"
 
-# --- working tools leave the turn alone -------------------------------------
+begin_step_case passes-when-the-tools-work
+run_step "$case_dir/repo"
+exit_code=$?
 
-fixture=$(make_fixture)
-run_step "$fixture" "$fixture/repo"
-clean_status=$?
-
-expect "a clean run passes the step" test "$clean_status" -eq 0
+expect "a clean run passes the step" test "$exit_code" -eq 0
 expect "a clean run says nothing on the halting stream" \
-  test ! -s "$fixture/stderr"
-
-# --- a broken tool stops the ones after it ----------------------------------
+  test ! -s "$case_dir/stderr"
 
 # prettier runs first, so a break there must leave ruff unrun rather than
 # pressing on with a formatter chain that is already failing.
-fixture=$(make_fixture)
-write_runner "$fixture" quiet-prettier.sh << 'BODY'
+begin_step_case stops-the-runners-after-a-break
+write_runner quiet-prettier.sh << 'BODY'
 echo "prettier: command not found"
 exit 127
 BODY
-write_runner "$fixture" quiet-ruff.sh << 'BODY'
+write_runner quiet-ruff.sh << 'BODY'
 echo "$PWD" >> "$HOME/invocations"
 exit 0
 BODY
-run_step "$fixture" "$fixture/repo"
+run_step "$case_dir/repo"
 
 expect "a broken tool stops the runners after it" \
-  test "$(invocation_count "$fixture")" -eq 0
+  test "$(invocation_count)" -eq 0
 
-# --- a session outside the repo formats the dotfiles repo too ---------------
-
-fixture=$(make_fixture)
-write_runner "$fixture" quiet-ruff.sh << 'BODY'
+begin_step_case formats-the-dotfiles-repo-from-outside
+write_runner quiet-ruff.sh << 'BODY'
 echo "$PWD" >> "$HOME/invocations"
 exit 0
 BODY
-mkdir -p "$fixture/project"
-run_step "$fixture" "$fixture/project"
+mkdir -p "$case_dir/project"
+run_step "$case_dir/project"
 
 expect "a session outside the repo makes two passes" \
-  test "$(invocation_count "$fixture")" -eq 2
+  test "$(invocation_count)" -eq 2
 expect "the second pass targets the dotfiles repo" \
-  contains "$(cat "$fixture/home/invocations")" "$(realpath "$fixture/repo")"
+  contains "$(cat "$case_dir/home/invocations")" "$(realpath "$case_dir/repo")"
 
-# --- a session inside the repo formats it once ------------------------------
-
-fixture=$(make_fixture)
-write_runner "$fixture" quiet-ruff.sh << 'BODY'
+begin_step_case formats-the-repo-root-once
+write_runner quiet-ruff.sh << 'BODY'
 echo "$PWD" >> "$HOME/invocations"
 exit 0
 BODY
-run_step "$fixture" "$fixture/repo"
+run_step "$case_dir/repo"
 
 expect "a session at the repo root makes one pass" \
-  test "$(invocation_count "$fixture")" -eq 1
+  test "$(invocation_count)" -eq 1
 
 # A worktree is a copy of the repo, so formatting the current directory already
 # covers it; a second pass would reach into the checkout it branched from.
-fixture=$(make_fixture)
-write_runner "$fixture" quiet-ruff.sh << 'BODY'
+begin_step_case formats-a-worktree-once
+write_runner quiet-ruff.sh << 'BODY'
 echo "$PWD" >> "$HOME/invocations"
 exit 0
 BODY
-mkdir -p "$fixture/repo/.claude/worktrees/lane"
-run_step "$fixture" "$fixture/repo/.claude/worktrees/lane"
+mkdir -p "$case_dir/repo/.claude/worktrees/lane"
+run_step "$case_dir/repo/.claude/worktrees/lane"
 
 expect "a session in a worktree makes one pass" \
-  test "$(invocation_count "$fixture")" -eq 1
+  test "$(invocation_count)" -eq 1
 
-# --- a broken tool stops the step before the second pass --------------------
-
-fixture=$(make_fixture)
-write_runner "$fixture" quiet-prettier.sh << 'BODY'
+begin_step_case skips-the-second-pass-after-a-break
+write_runner quiet-prettier.sh << 'BODY'
 echo "$PWD" >> "$HOME/invocations"
 echo "prettier: command not found"
 exit 127
 BODY
-mkdir -p "$fixture/project"
-run_step "$fixture" "$fixture/project"
+mkdir -p "$case_dir/project"
+run_step "$case_dir/project"
 
 expect "a broken tool is not run over a second directory" \
-  test "$(invocation_count "$fixture")" -eq 1
+  test "$(invocation_count)" -eq 1
 
 # --- summary ----------------------------------------------------------------
 
-if [ "$failure_count" -ne 0 ]; then
-  echo "format-test: $failure_count assertion(s) failed" >&2
-  exit 1
-fi
-echo "format-test: all assertions passed"
+exit_with_summary
