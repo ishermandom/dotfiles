@@ -221,6 +221,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Rationale: queued 2026-08-04, after a fanout round spent research calls
     establishing that one of three chosen tasks had already landed, then
     proposed dropping it rather than launching its lane.
+  - Worktree: fanout-status-directive
 
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
