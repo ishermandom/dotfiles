@@ -24,6 +24,11 @@ or Write, so match the post-reflow wording, not the pre-reflow snapshot.
   JavaScript, and Python, shell code has no edit-time or Stop-time formatter,
   and shfmt never wraps a long line of code. Giving shell a Stop-time check is
   queued: tasks.md #shell-stop-check
+- **Avoid `# shellcheck` pragmas**: a suppression usually means either the
+  flagged code is wrong or the tool is a poor fit, and a finding local to one
+  line usually means that line is the problem — so fix the code rather than
+  silence the check. Where a setting genuinely applies project-wide, put it in a
+  repo-root `.shellcheckrc`.
 - **Prefer decomposing multi-step operations into named variables**: when a
   command sequence mixes concerns — capturing output, checking exit status, or
   chaining transformations — assign each step to a named variable

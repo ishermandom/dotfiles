@@ -100,3 +100,15 @@ paths:
   `exec node --test-reporter=dot "$(dirname "$0")/your_module.test.js"` (a
   vitest project runs `exec npm --prefix "$(dirname "$0")/<pkg-dir>" test`
   instead)
+
+## Shell
+
+- **Test file naming**: `<script>-test.sh` beside the script it covers, matching
+  Python's `<module>_test.py`. Keep a sourced helper file outside that pattern —
+  a suite that collects its tests by glob would otherwise run the helper as a
+  test.
+- **In the dotfiles repo, source `claude/scripts/shell-test-framework.sh` rather
+  than copying assertions into a new test**: shell has no runner, so that file
+  plays pytest's part; its header documents the contract. When another project
+  needs a shell test framework, flag it to the user — the two should share one
+  rather than each growing its own.

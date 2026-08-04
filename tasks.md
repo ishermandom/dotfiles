@@ -197,18 +197,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     prettier runner returning the wrong level would break the Stop verdict the
     same way a ruff one would.
 
-- [ ] **Point the testing rules at the shell test framework** — neither
-      `rules/testing.md` nor `rules/shell.md` names
-      `claude/scripts/shell-test-framework.sh`, and `testing.md` has no shell
-      section at all, so a session writing a new shell test finds the framework
-      only by reading an existing test — the hand-copying the framework was
-      built to end.
-  - Note: `testing.md` already carries per-language sections for Python and
-    JavaScript, so a Shell section beside them is the natural home. It needs to
-    cover what a test script sources, that `exit_with_summary` goes on the last
-    line, and that a predicate has to be callable rather than passed to `expect`
-    by name.
-
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
       so nothing catches unformatted or unlinted shell the way Stop catches
