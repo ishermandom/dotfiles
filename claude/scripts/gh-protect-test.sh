@@ -10,15 +10,16 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 gh_protect="$script_dir/gh-protect.sh"
 
-test_root=$(mktemp -d)
-trap 'rm -rf "$test_root"' EXIT
+. "$script_dir/shell-test-framework.sh"
+
+require_commands jq
 
 # --- gh stub ----------------------------------------------------------------
 
-mkdir "$test_root/bin"
+mkdir "$test_script_root/bin"
 # Quoted delimiter: the $GH_STUB_* references must survive into the stub and
 # resolve when it runs, not when this file is written.
-cat > "$test_root/bin/gh" << 'STUB'
+cat > "$test_script_root/bin/gh" << 'STUB'
 #!/usr/bin/env bash
 # Stubbed gh: emulates the read-only gh calls gh-protect.sh makes, driven by
 # GH_STUB_* environment variables, and logs every invocation to
@@ -70,8 +71,8 @@ case "$1" in
 esac
 exit 0
 STUB
-chmod +x "$test_root/bin/gh"
-PATH="$test_root/bin:$PATH"
+chmod +x "$test_script_root/bin/gh"
+PATH="$test_script_root/bin:$PATH"
 
 # --- fixtures -------------------------------------------------------------
 
@@ -94,38 +95,13 @@ list_one() { # list_one <id> <enforcement>
   printf '[{"id": %s, "target": "branch", "enforcement": "%s"}]' "$1" "$2"
 }
 
-# --- assertion helpers --------------------------------------------------
+# --- case helpers -----------------------------------------------------------
 
-failure_count=0
-
-# Runs the given command as an assertion: prints one result line, and on failure
-# bumps failure_count so the script exits non-zero at the end.
-expect() { # expect <description> <command...>
-  local description="$1"
-  shift
-  if "$@"; then
-    echo "  ok: $description"
-  else
-    echo "  FAIL: $description" >&2
-    failure_count=$((failure_count + 1))
-  fi
-}
-
-contains() { # contains <haystack> <needle>
-  case "$1" in
-    *"$2"*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
-
-not_contains() { # not_contains <haystack> <needle>
-  ! contains "$1" "$2"
-}
-
-# Announces the case and resets the stub's call log and knobs.
-begin_case() { # begin_case <name>
-  echo "case: $1"
-  export GH_STUB_LOG="$test_root/$1.log"
+# Begins a case with the stub back at rest: an empty call log, and none of the
+# knobs a previous case set still answering for this one.
+begin_stubbed_case() { # begin_stubbed_case <name>
+  begin_case "$1"
+  export GH_STUB_LOG="$case_dir/calls.log"
   : > "$GH_STUB_LOG"
   unset GH_STUB_LIST GH_STUB_DETAIL_1 GH_STUB_DETAIL_2
   unset GH_STUB_VISIBILITY GH_STUB_FAIL_REPO_VIEW
@@ -144,7 +120,7 @@ calls() { cat "$GH_STUB_LOG"; }
 # --- cases ----------------------------------------------------------------
 
 # A single ruleset, arbitrarily named, covers everything — name is ignored.
-begin_case protected-single-ruleset
+begin_stubbed_case protected-single-ruleset
 export GH_STUB_LIST=$(list_one 1 active)
 export GH_STUB_DETAIL_1=$(detail "~ALL" \
   deletion non_fast_forward required_linear_history)
@@ -154,7 +130,7 @@ expect "reports protection" contains "$output" "is protected"
 expect "sends no write request" not_contains "$(calls)" "--method"
 
 # Protection split across two rulesets still counts — structure is ignored.
-begin_case protected-split-across-rulesets
+begin_stubbed_case protected-split-across-rulesets
 export GH_STUB_LIST='[{"id": 1, "target": "branch", "enforcement": "active"},
   {"id": 2, "target": "branch", "enforcement": "active"}]'
 export GH_STUB_DETAIL_1=$(detail "~ALL" deletion non_fast_forward)
@@ -164,7 +140,7 @@ expect "exits 0" [ "$exit_code" -eq 0 ]
 expect "reports protection" contains "$output" "is protected"
 
 # One protection missing: the message names just that one.
-begin_case missing-one-protection
+begin_stubbed_case missing-one-protection
 export GH_STUB_LIST=$(list_one 1 active)
 export GH_STUB_DETAIL_1=$(detail "~ALL" deletion non_fast_forward)
 run_script
@@ -178,7 +154,7 @@ expect "prints a config to create" contains "$output" '"~ALL"'
 
 # A ruleset that targets only the default branch does not protect all branches,
 # so nothing is covered.
-begin_case ruleset-not-all-branches
+begin_stubbed_case ruleset-not-all-branches
 export GH_STUB_LIST=$(list_one 1 active)
 export GH_STUB_DETAIL_1=$(detail "~DEFAULT_BRANCH" \
   deletion non_fast_forward required_linear_history)
@@ -190,7 +166,7 @@ expect "names linear history missing" \
   contains "$output" "require linear history"
 
 # A disabled ruleset enforces nothing, even with the right rules.
-begin_case ruleset-disabled
+begin_stubbed_case ruleset-disabled
 export GH_STUB_LIST=$(list_one 1 disabled)
 export GH_STUB_DETAIL_1=$(detail "~ALL" \
   deletion non_fast_forward required_linear_history)
@@ -198,7 +174,7 @@ run_script
 expect "exits 3" [ "$exit_code" -eq 3 ]
 expect "reports the gap" contains "$output" "is not fully protected"
 
-begin_case no-rulesets
+begin_stubbed_case no-rulesets
 run_script
 expect "exits 3" [ "$exit_code" -eq 3 ]
 expect "reports the gap" contains "$output" "is not fully protected"
@@ -206,7 +182,7 @@ expect "prints a config to create" \
   contains "$output" '"required_linear_history"'
 expect "sends no write request" not_contains "$(calls)" "--method"
 
-begin_case private-repo-warning
+begin_stubbed_case private-repo-warning
 export GH_STUB_VISIBILITY=PRIVATE
 export GH_STUB_LIST=$(list_one 1 active)
 export GH_STUB_DETAIL_1=$(detail "~ALL" \
@@ -215,23 +191,23 @@ run_script
 expect "warns about Free-plan enforcement" \
   contains "$output" "does not enforce rulesets on private repos"
 
-begin_case explicit-repo-argument
+begin_stubbed_case explicit-repo-argument
 run_script someowner/somerepo
 expect "passes the argument to gh repo view" \
   contains "$(calls)" "repo view someowner/somerepo"
 
-begin_case rejects-write-flag
+begin_stubbed_case rejects-write-flag
 run_script --apply
 expect "exits 2" [ "$exit_code" -eq 2 ]
 expect "prints usage" contains "$output" "usage:"
 expect "makes no gh call" [ -z "$(calls)" ]
 
-begin_case extra-positional-argument
+begin_stubbed_case extra-positional-argument
 run_script a/b c/d
 expect "exits 2" [ "$exit_code" -eq 2 ]
 expect "prints usage" contains "$output" "usage:"
 
-begin_case unresolvable-repo
+begin_stubbed_case unresolvable-repo
 export GH_STUB_FAIL_REPO_VIEW=1
 run_script nosuch/repo
 expect "exits 1" [ "$exit_code" -eq 1 ]
@@ -240,10 +216,4 @@ expect "explains the failure" \
 
 # --- summary ----------------------------------------------------------------
 
-echo
-if [ "$failure_count" -eq 0 ]; then
-  echo "gh-protect tests: all passed"
-else
-  echo "gh-protect tests: $failure_count assertion(s) failed" >&2
-  exit 1
-fi
+report_summary

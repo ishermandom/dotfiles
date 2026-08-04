@@ -187,15 +187,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     matching pass," which reads as a recurring audit rather than only a
     self-check on text the review itself writes. Settle when the sweep lands.
 
-- [ ] **Share the shell tests' assertion helpers** — `expect` and `contains` are
-      hand-copied into every shell test in the repo, so each new one starts by
-      copying them again.
-  - Worktree: shell-test-helpers
-  - Note: pytest plays this role for the Python tests; shell has no runner, so
-    these helpers are the de facto framework. A sourced file beside them is the
-    obvious home — check that its name stays clear of the `*-test.sh` discovery
-    glob in the root `run_tests.sh`, which would otherwise try to run it.
-
 - [ ] **Cover `quiet-prettier.sh` with a test** — `quiet-ruff.sh` now has
       `quiet-ruff-test.sh` pinning its exit-status levels, its missing-path
       failure, and its no-Python-files guard. The prettier runner beside it has

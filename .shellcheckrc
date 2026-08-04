@@ -1,0 +1,20 @@
+# Copyright 2026 Ilya Sherman (ishermandom@)
+# SPDX-License-Identifier: MIT
+#
+# shellcheck settings for the repo. They live here rather than as
+# `# shellcheck` directives so the scripts themselves stay free of lint
+# pragmas. shellcheck finds this file by walking up from each file it
+# checks, so the working directory it runs from does not matter.
+
+# Resolve a sourced path against the sourcing script's own directory. The
+# default resolves against the working directory instead, which finds
+# nothing for a script that sources a neighbour by a path built from its own
+# location — the only way a script can name a neighbour it may be invoked
+# from anywhere.
+source-path=SCRIPTDIR
+
+# Follow a sourced file even when that file is not itself named on the
+# command line, so checking one script alone still sees what its sourced
+# files define. Unfollowed, every name a sourced file provides looks
+# undefined, and each use of one is reported as a typo.
+external-sources=true

@@ -18,37 +18,11 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 stop_checks="$script_dir/stop_checks.sh"
 
-if ! command -v jq > /dev/null; then
-  echo "stop_checks-test: jq is missing; try 'brew install jq'" >&2
-  exit 1
-fi
+. "$script_dir/../scripts/shell-test-framework.sh"
 
-test_root=$(mktemp -d)
-trap 'rm -rf "$test_root"' EXIT
-
-failure_count=0
+require_commands jq
 
 # --- helpers ----------------------------------------------------------------
-
-# Runs the given command as an assertion: prints one result line, and on failure
-# bumps failure_count so the script exits non-zero at the end.
-expect() { # expect <description> <command...>
-  local description="$1"
-  shift
-  if "$@"; then
-    echo "  ok: $description"
-  else
-    echo "  FAIL: $description" >&2
-    failure_count=$((failure_count + 1))
-  fi
-}
-
-contains() { # contains <haystack> <needle>
-  case "$1" in
-    *"$2"*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
 
 write_step() { # write_step <steps dir> <step name> <body>
   printf '#!/usr/bin/env bash\n%s\n' "$3" > "$1/$2"
@@ -59,7 +33,7 @@ write_step() { # write_step <steps dir> <step name> <body>
 # for each of its three steps. A case overrides only the steps it is about.
 make_steps_dir() { # make_steps_dir  -> prints the directory
   local steps_dir
-  steps_dir=$(mktemp -d "$test_root/steps.XXXXXX")
+  steps_dir=$(mktemp -d "$test_script_root/steps.XXXXXX")
   cp "$stop_checks" "$steps_dir/"
   local step
   for step in format.sh mypy-check.sh run_tests.sh; do
@@ -168,8 +142,4 @@ expect "a silent failure reports the exit status" contains "$reason" "3"
 
 # --- summary ----------------------------------------------------------------
 
-if [ "$failure_count" -ne 0 ]; then
-  echo "stop_checks-test: $failure_count assertion(s) failed" >&2
-  exit 1
-fi
-echo "stop_checks-test: all assertions passed"
+report_summary

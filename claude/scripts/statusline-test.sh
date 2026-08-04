@@ -16,23 +16,19 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 statusline="$script_dir/statusline.sh"
 
-if ! command -v jq > /dev/null; then
-  echo "statusline-test: jq is missing; try 'brew install jq'" >&2
-  exit 1
-fi
+. "$script_dir/shell-test-framework.sh"
 
-test_root=$(mktemp -d)
-trap 'rm -rf "$test_root"' EXIT
+require_commands jq
 
 # --- frozen clock -----------------------------------------------------------
 
 # An arbitrary instant; only the offsets the cases add to it carry meaning.
 export FROZEN_NOW=1800000000
 
-mkdir "$test_root/bin"
+mkdir "$test_script_root/bin"
 # Quoted delimiter: $FROZEN_NOW must reach the stub unexpanded and resolve when
 # the stub runs.
-cat > "$test_root/bin/date" << 'STUB'
+cat > "$test_script_root/bin/date" << 'STUB'
 #!/usr/bin/env bash
 # Stubbed date: statusline.sh asks only for epoch seconds, so any other
 # request means the script grew a call this stub has to answer.
@@ -42,21 +38,21 @@ if [ "$1" != "+%s" ]; then
 fi
 echo "$FROZEN_NOW"
 STUB
-chmod +x "$test_root/bin/date"
-PATH="$test_root/bin:$PATH"
+chmod +x "$test_script_root/bin/date"
+PATH="$test_script_root/bin:$PATH"
 
 # --- fixtures ---------------------------------------------------------------
 
 # A plain directory for the cases that are not about git state.
-mkdir "$test_root/workspace"
+mkdir "$test_script_root/workspace"
 
 # Git discovery walks upward, so without a ceiling a repository anywhere above
 # the temporary tree would add a segment to every expected line.
-export GIT_CEILING_DIRECTORIES="$test_root"
+export GIT_CEILING_DIRECTORIES="$test_script_root"
 
 # A repository with one commit, then one line rewritten and one appended in the
 # working tree.
-repository="$test_root/repository"
+repository="$test_script_root/repository"
 mkdir "$repository"
 git -C "$repository" init -q -b statusline-fixture
 printf 'first\nsecond\nthird\n' > "$repository/notes.txt"
@@ -79,36 +75,6 @@ RESET=$'\033[0m'
 
 # --- helpers ----------------------------------------------------------------
 
-failure_count=0
-
-# Runs the given command as an assertion: prints one result line, and on failure
-# bumps failure_count so the script exits non-zero at the end.
-expect() { # expect <description> <command...>
-  local description="$1"
-  shift
-  if "$@"; then
-    echo "  ok: $description"
-  else
-    echo "  FAIL: $description" >&2
-    failure_count=$((failure_count + 1))
-  fi
-}
-
-contains() { # contains <haystack> <needle>
-  case "$1" in
-    *"$2"*) return 0 ;;
-    *) return 1 ;;
-  esac
-}
-
-not_contains() { # not_contains <haystack> <needle>
-  ! contains "$1" "$2"
-}
-
-begin_case() { # begin_case <name>
-  echo "case: $1"
-}
-
 # Builds the input object from the fields a case names, runs the script on that
 # object, and leaves the printed line in `output`. A field left unnamed is
 # absent from the JSON — the shape the script sees when a quota or a percentage
@@ -118,7 +84,7 @@ run_statusline() { # run_statusline [--model M] [--context P] ...
   # A jq program of assignments applied left to right. The defaults come first,
   # so a field a case names overrides its default.
   local program='.model.display_name = "Opus 5"'
-  program+=" | .workspace.current_dir = \"$test_root/workspace\""
+  program+=" | .workspace.current_dir = \"$test_script_root/workspace\""
   while [ $# -gt 0 ]; do
     case "$1" in
       --model) program+=" | .model.display_name = \"$2\"" ;;
@@ -156,7 +122,7 @@ run_statusline() { # run_statusline [--model M] [--context P] ...
 # Every segment at once, in the order the line assembles them.
 begin_case assembles-the-whole-line
 run_statusline --model "Opus 5" --effort high \
-  --dir "$test_root/workspace" --context 42 \
+  --dir "$test_script_root/workspace" --context 42 \
   --five-hour 20 --five-hour-resets-in "$((3 * 3600 + 50 * 60))" \
   --seven-day 55 --seven-day-resets-in "$((2 * 86400 + 5 * 3600))"
 expected="[Opus 5 · high] workspace"
@@ -276,10 +242,4 @@ expect "ends with the branch and its line counts" \
 
 # --- summary ----------------------------------------------------------------
 
-echo
-if [ "$failure_count" -eq 0 ]; then
-  echo "statusline tests: all passed"
-else
-  echo "statusline tests: $failure_count assertion(s) failed" >&2
-  exit 1
-fi
+report_summary
