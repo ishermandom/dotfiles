@@ -96,21 +96,27 @@ Maintainer rationale for the `fanout` skill.
   recap belongs in the session's output.
 
 - **State reporting rides on Claude Code's own view, with one prompt-level
-  assist**: the background-agent view sets `waiting` plus a `waitingFor` reason
-  whenever a dialog is open, so an `AskUserQuestion` call surfaces there without
-  the skill polling or mirroring anything. End-of-turn state is weaker — a
-  classifier reads only the reply text and infers `working`, `blocked`, `done`,
-  or `failed` from the prose, so a turn ending on a question can read as
-  finished. `agent-prompt.md` has each agent close with `needs input:` instead,
-  which pins the row to `blocked` for as long as the job lives:
-  `fanout-teardown` is user-invoked, so no agent can finish its own task, and a
-  `done` row would drop out of the default listing once the process exits —
-  hiding a worktree that still needs landing. The sibling `failed:` marker stays
-  unused for that same reason, `done`, `failed`, and `stopped` being alike
-  terminal: an impossible task ends by telling the user so and asking, never by
-  reporting failure into a row that then disappears. The marker convention ships
-  with the built-in `claude` agent type, which a bare `claude --bg` launch does
-  not apply (verified in CLI 2.1.220).
+  assist** {#state-reporting}: the background-agent view sets `waiting` plus a
+  `waitingFor` reason whenever a dialog is open, so an `AskUserQuestion` call
+  surfaces there without the skill polling or mirroring anything. End-of-turn
+  state is weaker — a classifier reads only the reply text and infers `working`,
+  `blocked`, `done`, or `failed` from the prose, so a turn ending on a question
+  can read as finished. `agent-prompt.md` has each agent close with
+  `needs input:` instead, which pins the row to `blocked` for as long as the
+  task is unfinished: `fanout-teardown` is user-invoked, so no agent can finish
+  its own task, and a `done` row would drop out of the default listing once the
+  process exits — hiding a worktree that still needs landing. The sibling
+  `failed:` marker stays unused for that same reason, `done`, `failed`, and
+  `stopped` being alike terminal: an impossible task ends by telling the user so
+  and asking, never by reporting failure into a row that then disappears. The
+  marker convention ships with the built-in `claude` agent type, which a bare
+  `claude --bg` launch does not apply (verified in CLI 2.1.220).
+
+  The turn that finishes `fanout-teardown` is where `done` becomes the right
+  state, so that turn closes on `result:` instead. By then the worktree is
+  landed and removed, so a terminal row hides nothing. And a row leaves the
+  default listing only when its process exits, so the lane stays visible as a
+  finished row until the user stops the session (verified 2026-08-04).
 
 - **File overlap is a poor stand-in for coupling**: a textual collision is
   mechanical work, since the agent resolving it at landing holds both sides and

@@ -48,5 +48,6 @@ teardown from anywhere else wraps the wrong one. Work the steps in order.
    fast-forwarded `main` to the branch tip, so deleting the branch loses
    nothing.
 
-8. **Close the background session**: report the outcome, then run
-   `claude stop "${CLAUDE_CODE_SESSION_ID%%-*}"`.
+8. **Mark the lane as finished**: close this turn on a `result:` line — one
+   short sentence naming the final status — rather than the `needs input:` line
+   every other turn ends on.

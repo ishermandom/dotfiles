@@ -27,16 +27,16 @@ Maintainer rationale for the `fanout-teardown` skill. The `fanout` skill's
   against a live lock (`cannot remove a locked working tree`), so the session
   holding it has to exit rather than the removal being forced.
 
-- **The session stops itself**: `claude stop` works from inside the session it
-  names (verified 2026-08-01), so the final step needs no hand-off to the user.
-  Reverting to a printed command is the tempting mistake, on the reasoning that
-  a running session cannot issue its own stop. A session can.
-
-- **The id comes from the environment**: `CLAUDE_CODE_SESSION_ID` holds the
-  session's own id, whose leading segment is the short form `claude stop` takes.
-  A `claude agents` lookup would also reach it, but concurrent fanout sessions
-  are told apart there only by the worktree slug inside their launch prompt, and
-  stopping a sibling interrupts live work.
+- **The lane never stops itself**: `claude stop` does work from inside the
+  session it names (verified 2026-08-01), so "a running session cannot issue its
+  own stop" is not the reason stopping is left to the user. The reason is the
+  report: the closing text vanishes alongside the stop, and the stopped row
+  drops out of the default `claude agents` listing — so nothing the user sees
+  says what landed. `fanout/notes.md #state-reporting` covers what the closing
+  `result:` line does instead. Step 8 names that marker rather than
+  `agent-prompt.md` doing so: a skill can override the prompt's turn-ending
+  convention at the moment that convention lapses, so teardown's detail stays in
+  teardown.
 
 - **The tracker edit follows the rebase**: every fanned-out branch edits
   `tasks.md`, and merging one of those edits against a stale base is not safely
