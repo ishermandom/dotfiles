@@ -195,13 +195,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `require_commands`, `begin_case`, and `$case_dir`.
   - Worktree: shell-test-conversion
 
-- [ ] **Stop fanout lanes from stopping themselves** — `fanout-teardown`'s last
-      step has each lane run `claude stop` on its own session, and the lane's
-      closing text vanishes alongside the stop command. Have the lane print a
-      clear marker saying it is ready to be pruned, and leave the stopping to
-      the user.
-  - Worktree: lane-stop-marker
-
 - [ ] **Leave a task's status to its fanout lane** — the coordinating session
       should not weigh whether a chosen task is still live before launching it;
       that judgment belongs to the lane, whose reassessment directive already
