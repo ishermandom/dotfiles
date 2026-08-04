@@ -187,17 +187,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     matching pass," which reads as a recurring audit rather than only a
     self-check on text the review itself writes. Settle when the sweep lands.
 
-- [ ] **Cover `quiet-prettier.sh` with a test** — `quiet-ruff.sh` now has
-      `quiet-ruff-test.sh` pinning its exit-status levels, its missing-path
-      failure, and its no-Python-files guard. The prettier runner beside it has
-      none, though it carries the same shape of logic: which extensions it globs
-      for, the `--find-config-path` fallback to `~/.prettierrc`, and the
-      no-formattable-files early exit.
-  - Note: `claude/hooks/format.sh` reads both runners' statuses by level, so a
-    prettier runner returning the wrong level would break the Stop verdict the
-    same way a ruff one would.
-  - Worktree: prettier-runner-test
-
 - [ ] **Convert the remaining shell tests to the test framework** —
       `format-test.sh`, `quiet-prettier-test.sh`, and `quiet-ruff-test.sh`
       landed while the framework was being extracted, so each still hand-copies
