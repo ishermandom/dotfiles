@@ -14,17 +14,19 @@
 # - `$test_script_root`, an empty directory that disappears on exit
 # - `require_commands`, to stop with a clear message when a tool is missing
 # - `begin_case`, which announces a test case and hands it `$case_dir`
-# - `expect`, plus the `contains` and `not_contains` predicates
-# - `report_summary`, the last line of every test script
+# - `expect` and `expect_equal`, with the `contains` and `not_contains`
+#   predicates to assert through
+# - `exit_with_summary`, the last line of every test script
 #
 # Two edges to know about before writing a test script against this:
 #
 # - Cleanup rides on an EXIT trap installed here. A test script that installs an
 #   EXIT trap of its own silently replaces this one, and its scratch tree then
 #   outlives the run. Such a script has to remove `$test_script_root` itself.
-# - `report_summary` belongs on the last line, and its return value has to reach
-#   the shell — see its own comment for why it returns rather than exiting, and
-#   what breaks when something swallows that value.
+# - A predicate a test script defines has to be called somewhere, not only
+#   handed to `expect` by name. shellcheck cannot see a name passed as data, and
+#   reports the function as never invoked (SC2329). Having the predicate print a
+#   value, and comparing it with `expect_equal`, keeps it in plain sight.
 #
 # The file name deliberately avoids ending in `-test.sh`, the glob run_tests.sh
 # collects test scripts with — a name inside that glob would have the suite try
@@ -77,7 +79,7 @@ begin_case() { # begin_case <name>
 
 # --- assertions -------------------------------------------------------------
 
-# Assertions that have failed so far — `expect` bumps it and `report_summary`
+# Assertions that have failed so far — `expect` bumps it and `exit_with_summary`
 # reports it, so a sourcing test script never touches it.
 failure_count=0
 
@@ -105,32 +107,24 @@ not_contains() { # not_contains <haystack> <needle>
   ! contains "$1" "$2"
 }
 
+# Asserts that a value matches what the case expects. `expect` takes a command
+# to run, so a plain comparison needs a `test ... = ...` around it; this
+# supplies that once rather than at every call site.
+expect_equal() { # expect_equal <description> <actual> <expected>
+  expect "$1" test "$2" = "$3"
+}
+
 # --- the verdict ------------------------------------------------------------
 
-# Prints the run's verdict and returns 0 when every assertion passed, 1
-# otherwise. Call it on the test script's last line: a script that runs off its
-# end exits with the status of its last command, so this return value becomes
-# the exit status that run_tests.sh reads.
-#
-# Returning rather than calling `exit` is what keeps the test scripts free of
-# lint suppressions, by way of three facts:
-#
-# - A function that is never invoked draws SC2329. A predicate handed to
-#   `expect` is only ever invoked through `expect`'s own `"$@"`, so no call to
-#   it appears anywhere for shellcheck to find.
-# - That report is held back while the file could be a library some other file
-#   sources, since the calls could just as well live in that file.
-# - A definite top-level `exit` settles the question, because only a standalone
-#   program ends that way. Any of them does it — a bare `exit 0`, or an
-#   `exit $?` wrapped around this function's result.
-#
-# Ending on a return leaves the question open, so the report never fires.
-report_summary() {
+# Ends the run: prints its verdict, then exits 0 when every assertion passed and
+# 1 otherwise. The exit status is what run_tests.sh reads to decide whether the
+# suite failed.
+exit_with_summary() {
   echo
   if [ "$failure_count" -eq 0 ]; then
     echo "$test_script_name: all passed"
-    return 0
+    exit 0
   fi
   echo "$test_script_name: $failure_count assertion(s) failed" >&2
-  return 1
+  exit 1
 }

@@ -142,4 +142,4 @@ expect "a silent failure reports the exit status" contains "$reason" "3"
 
 # --- summary ----------------------------------------------------------------
 
-report_summary
+exit_with_summary

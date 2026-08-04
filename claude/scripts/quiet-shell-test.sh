@@ -35,13 +35,10 @@ write_misformatted() { # write_misformatted <path> [first-line]
   printf 'if true; then\n    echo hello\nfi\n' >> "$1"
 }
 
-# Surviving four-space indentation means the file was never discovered.
-was_formatted() { # was_formatted <path>
-  ! grep -q '^    echo hello' "$1"
-}
-
-was_not_formatted() { # was_not_formatted <path>
-  ! was_formatted "$1"
+# Prints `true` when shfmt rewrote the file's indentation and `false` when the
+# original four spaces survived, which means it was never discovered.
+was_reformatted() { # was_reformatted <path>
+  if grep -q '^    echo hello' "$1"; then echo false; else echo true; fi
 }
 
 # --- cases ------------------------------------------------------------------
@@ -52,25 +49,29 @@ begin_case finds-nested-and-extensionless
 write_misformatted "$case_dir/nested/deep.sh" '#!/usr/bin/env bash'
 write_misformatted "$case_dir/tool" '#!/usr/bin/env bash'
 "$quiet_shell" "$case_dir" > /dev/null 2>&1
-expect "formats a nested .sh" was_formatted "$case_dir/nested/deep.sh"
-expect "formats an extensionless script with a shebang" \
-  was_formatted "$case_dir/tool"
+expect_equal "formats a nested .sh" \
+  "$(was_reformatted "$case_dir/nested/deep.sh")" true
+expect_equal "formats an extensionless script with a shebang" \
+  "$(was_reformatted "$case_dir/tool")" true
 
 # The find half of discovery: shfmt skips every dot-prefixed file.
 begin_case finds-dot-prefixed-files
 write_misformatted "$case_dir/.zshrc"
 write_misformatted "$case_dir/.helper.sh" '#!/usr/bin/env bash'
 "$quiet_shell" "$case_dir" > /dev/null 2>&1
-expect "formats .zshrc" was_formatted "$case_dir/.zshrc"
-expect "formats a dot-prefixed .sh" was_formatted "$case_dir/.helper.sh"
+expect_equal "formats .zshrc" "$(was_reformatted "$case_dir/.zshrc")" true
+expect_equal "formats a dot-prefixed .sh" \
+  "$(was_reformatted "$case_dir/.helper.sh")" true
 
 # A repo's own metadata is not source to format.
 begin_case skips-the-git-directory
 write_misformatted "$case_dir/.git/hooks/local.sh" '#!/usr/bin/env bash'
 write_misformatted "$case_dir/tracked.sh" '#!/usr/bin/env bash'
 "$quiet_shell" "$case_dir" > /dev/null 2>&1
-expect "formats a file outside .git" was_formatted "$case_dir/tracked.sh"
-expect "leaves .git alone" was_not_formatted "$case_dir/.git/hooks/local.sh"
+expect_equal "formats a file outside .git" \
+  "$(was_reformatted "$case_dir/tracked.sh")" true
+expect_equal "leaves .git alone" \
+  "$(was_reformatted "$case_dir/.git/hooks/local.sh")" false
 
 # Only bash is linted: shellcheck has no zsh support. Formatting covers both.
 begin_case lints-bash-but-not-zsh
@@ -80,7 +81,8 @@ write_misformatted "$case_dir/.settings.zsh"
 printf 'cd /tmp\n' >> "$case_dir/checked.sh"
 printf 'cd /tmp\n' >> "$case_dir/.settings.zsh"
 output=$("$quiet_shell" "$case_dir" 2>&1)
-expect "formats the zsh file" was_formatted "$case_dir/.settings.zsh"
+expect_equal "formats the zsh file" \
+  "$(was_reformatted "$case_dir/.settings.zsh")" true
 expect "reports the finding in the bash file" contains "$output" "checked.sh"
 expect "reports nothing for the zsh file" \
   not_contains "$output" ".settings.zsh"
@@ -90,8 +92,10 @@ begin_case accepts-a-single-file
 write_misformatted "$case_dir/named.sh" '#!/usr/bin/env bash'
 write_misformatted "$case_dir/sibling.sh" '#!/usr/bin/env bash'
 "$quiet_shell" "$case_dir/named.sh" > /dev/null 2>&1
-expect "formats the named file" was_formatted "$case_dir/named.sh"
-expect "leaves its sibling alone" was_not_formatted "$case_dir/sibling.sh"
+expect_equal "formats the named file" \
+  "$(was_reformatted "$case_dir/named.sh")" true
+expect_equal "leaves its sibling alone" \
+  "$(was_reformatted "$case_dir/sibling.sh")" false
 
 # Nothing to do is a clean result, and a non-shell file is not shell.
 begin_case reports-a-tree-with-no-shell
@@ -110,4 +114,4 @@ expect "names the missing path" contains "$output" "absent.sh"
 
 # --- summary ----------------------------------------------------------------
 
-report_summary
+exit_with_summary

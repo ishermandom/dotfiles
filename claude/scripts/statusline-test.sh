@@ -242,4 +242,4 @@ expect "ends with the branch and its line counts" \
 
 # --- summary ----------------------------------------------------------------
 
-report_summary
+exit_with_summary

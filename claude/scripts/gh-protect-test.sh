@@ -216,4 +216,4 @@ expect "explains the failure" \
 
 # --- summary ----------------------------------------------------------------
 
-report_summary
+exit_with_summary
