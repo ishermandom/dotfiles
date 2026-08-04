@@ -204,6 +204,21 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `claude/scripts/shell-test-framework.sh` drops those copies and picks up
       `require_commands`, `begin_case`, and `$case_dir`.
 
+- [ ] **Stop fanout lanes from stopping themselves** — `fanout-teardown`'s last
+      step has each lane run `claude stop` on its own session, and the lane's
+      closing text vanishes alongside the stop command. Have the lane print a
+      clear marker saying it is ready to be pruned, and leave the stopping to
+      the user.
+
+- [ ] **Leave a task's status to its fanout lane** — the coordinating session
+      should not weigh whether a chosen task is still live before launching it;
+      that judgment belongs to the lane, whose reassessment directive already
+      covers a stale premise. `fanout/SKILL.md` step 1 is the likely home for
+      the directive.
+  - Rationale: queued 2026-08-04, after a fanout round spent research calls
+    establishing that one of three chosen tasks had already landed, then
+    proposed dropping it rather than launching its lane.
+
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
       so nothing catches unformatted or unlinted shell the way Stop catches
