@@ -197,6 +197,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     prettier runner returning the wrong level would break the Stop verdict the
     same way a ruff one would.
 
+- [ ] **Convert the remaining shell tests to the test framework** —
+      `format-test.sh`, `quiet-prettier-test.sh`, and `quiet-ruff-test.sh`
+      landed while the framework was being extracted, so each still hand-copies
+      `expect` and its own summary block. Sourcing
+      `claude/scripts/shell-test-framework.sh` drops those copies and picks up
+      `require_commands`, `begin_case`, and `$case_dir`.
+
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
       so nothing catches unformatted or unlinted shell the way Stop catches
