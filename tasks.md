@@ -196,6 +196,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: `claude/hooks/format.sh` reads both runners' statuses by level, so a
     prettier runner returning the wrong level would break the Stop verdict the
     same way a ruff one would.
+  - Worktree: prettier-runner-test
 
 - [ ] **Convert the remaining shell tests to the test framework** —
       `format-test.sh`, `quiet-prettier-test.sh`, and `quiet-ruff-test.sh`
@@ -203,12 +204,14 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `expect` and its own summary block. Sourcing
       `claude/scripts/shell-test-framework.sh` drops those copies and picks up
       `require_commands`, `begin_case`, and `$case_dir`.
+  - Worktree: shell-test-conversion
 
 - [ ] **Stop fanout lanes from stopping themselves** — `fanout-teardown`'s last
       step has each lane run `claude stop` on its own session, and the lane's
       closing text vanishes alongside the stop command. Have the lane print a
       clear marker saying it is ready to be pruned, and leave the stopping to
       the user.
+  - Worktree: lane-stop-marker
 
 - [ ] **Leave a task's status to its fanout lane** — the coordinating session
       should not weigh whether a chosen task is still live before launching it;
