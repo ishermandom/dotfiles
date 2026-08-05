@@ -27,10 +27,15 @@ worktree.
 
 Three limits worth knowing:
 
-- Only the hook commands move. A hook that shells out to
-  `$HOME/.claude/scripts/` still reaches the installed copy of that script — run
-  those directly out of the worktree instead, since they are plain scripts
-  rather than hooks.
+- Only the hook commands move, so whether a probe reaches a script the hook
+  calls depends on how the hook names that script. A path through
+  `$HOME/.claude/scripts/` still resolves to the installed copy — run those
+  scripts out of the worktree directly instead, since they are plain scripts
+  rather than hooks. A path the hook resolves against its own location travels
+  with the hook: `stop_checks.sh` finds its steps through `${BASH_SOURCE[0]}`,
+  so a probe does fire the worktree's `format.sh` — over the installed
+  `quiet-*.sh` runners that `format.sh` in turn names through
+  `$HOME/.claude/scripts/`.
 - A probe writes to shared state. The logging hooks resolve their own
   destinations under `~/.claude/logs/`, so a probe appends there and to the
   session token accounting as though it were real work.
