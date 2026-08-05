@@ -159,6 +159,9 @@ run_step "$case_dir/project"
 
 expect "a session outside the repo makes two passes" \
   test "$(invocation_count)" -eq 2
+expect_equal "with no repo to anchor on, the first pass covers the directory" \
+  "$(realpath "$(head -1 "$case_dir/home/invocations")")" \
+  "$(realpath "$case_dir/project")"
 expect "the second pass targets the dotfiles repo" \
   contains "$(cat "$case_dir/home/invocations")" "$(realpath "$case_dir/repo")"
 
@@ -172,15 +175,37 @@ run_step "$case_dir/repo"
 expect "a session at the repo root makes one pass" \
   test "$(invocation_count)" -eq 1
 
-# A worktree is a copy of the repo, so formatting the current directory already
-# covers it; a second pass would reach into the checkout it branched from.
+# A session's directory can sit below its repo root, and a pass over that
+# subtree alone would skip whatever the turn edited elsewhere in the repo.
+begin_step_case formats-from-the-session-repo-root
+write_runner quiet-ruff.sh << 'BODY'
+echo "$PWD" >> "$HOME/invocations"
+exit 0
+BODY
+mkdir -p "$case_dir/project/nested"
+git -C "$case_dir/project" init --quiet
+run_step "$case_dir/project/nested"
+
+expect_equal "a session below its repo root formats from the root" \
+  "$(head -1 "$case_dir/home/invocations")" "$(realpath "$case_dir/project")"
+
+# A worktree is a checkout of its own, so the first pass already covers it; a
+# second pass would reach into the checkout it branched from. The fixture makes
+# a real worktree because the step asks git where the session's repo starts: git
+# names a real worktree as its own root, where a plain subdirectory of the repo
+# would name the parent checkout.
 begin_step_case formats-a-worktree-once
 write_runner quiet-ruff.sh << 'BODY'
 echo "$PWD" >> "$HOME/invocations"
 exit 0
 BODY
-mkdir -p "$case_dir/repo/.claude/worktrees/lane"
-run_step "$case_dir/repo/.claude/worktrees/lane"
+worktree_dir="$case_dir/repo/.claude/worktrees/lane"
+# `git worktree add` needs a commit to branch from. The identity and signing
+# settings come from flags so the case does not depend on the user's git config.
+git -C "$case_dir/repo" -c user.name=test -c user.email=test@example.com \
+  -c commit.gpgsign=false commit --quiet --allow-empty -m "fixture"
+git -C "$case_dir/repo" worktree add --quiet "$worktree_dir"
+run_step "$worktree_dir"
 
 expect "a session in a worktree makes one pass" \
   test "$(invocation_count)" -eq 1

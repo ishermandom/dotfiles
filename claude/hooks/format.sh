@@ -2,8 +2,9 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# A `stop_checks.sh` step: format the current directory, and the dotfiles repo
-# when the session is working outside it.
+# A `stop_checks.sh` step: format the repo the session is working in — or the
+# current directory, outside a repo — plus the dotfiles repo when the session
+# works elsewhere.
 #
 # Runs on Stop (end of turn) rather than on each Edit so that all edits from the
 # turn have landed before formatting runs. The Stop hook receives no information
@@ -63,9 +64,15 @@ format_dir() { # format_dir <directory>
   )
 }
 
+# The session's directory can sit below its repo root — launched there, or left
+# there by the turn's own commands — and a pass over that subtree alone would
+# skip files edited elsewhere in the repo. Outside a repo, the current directory
+# is the scope.
+session_root=$(git rev-parse --show-toplevel 2> /dev/null || pwd)
+
 # A broken tool would tend to fail the same way on the next directory, so short
 # circuit on failure.
-format_dir . || exit $?
+format_dir "$session_root" || exit $?
 
 # The repo holding this file is the dotfiles repo, so ask git where it starts.
 # -f resolves the ~/.claude symlink. git runs in this file's own directory,
@@ -76,11 +83,11 @@ dotfiles_root=$(cd "$hooks_dir" && git rev-parse --show-toplevel 2> /dev/null)
 # Outside a checkout there is no dotfiles repo to make a second pass over.
 [ -n "$dotfiles_root" ] || exit 0
 
-# A session at or below the root already covers the repo by formatting the
-# current directory — including a session inside a worktree, which is a checkout
-# of its own. Matching the root with a trailing slash keeps a sibling such as
+# A session anchored at or below the root already covers the repo with the first
+# pass — including a session inside a worktree, which is a checkout of its own.
+# Matching the root with a trailing slash keeps a sibling such as
 # dotfiles-backup out.
-case "$(realpath .)" in
+case "$(realpath "$session_root")" in
   "$dotfiles_root" | "$dotfiles_root"/*) exit 0 ;;
 esac
 
