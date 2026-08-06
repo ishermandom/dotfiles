@@ -14,11 +14,26 @@ export PATH="/opt/homebrew/bin:$PATH"
 if [ $# -gt 0 ]; then
   targets=("$@")
 else
-  # Prettier errors on glob patterns with no matches, so only include the
-  # extensions actually present.
+  # Prettier treats a glob that matches nothing as an error, so a pattern is
+  # offered only once a file of that type is known to exist. That error keeps a
+  # typo in one of the patterns below from quietly formatting nothing.
+  #
+  # Guessing which patterns match means seeing the tree the way prettier does.
+  # Seeing more of the tree than prettier does means offering a pattern prettier
+  # then finds empty — the error this check exists to head off. Only
+  # `node_modules` has to be accounted for: prettier drops vendored trees while
+  # expanding the glob, so a pattern matching nothing else is unmatched from
+  # prettier's point of view. Ignore rules (`.gitignore`, `.prettierignore`)
+  # apply after matching instead, so a pattern whose every match they exclude
+  # still counts as matched, and costs a prettier run that reformats nothing
+  # rather than an error.
   targets=()
   for pattern in '*.md' '*.js' '*.ts'; do
-    if [ -n "$(find . -name "$pattern" -print -quit 2> /dev/null)" ]; then
+    # -prune skips node_modules wholesale, and -quit ends the walk at the first
+    # hit, since presence is the only question being asked.
+    first_match=$(find . -name node_modules -prune -o \
+      -name "$pattern" -print -quit 2> /dev/null)
+    if [ -n "$first_match" ]; then
       targets+=("**/${pattern}")
     fi
   done

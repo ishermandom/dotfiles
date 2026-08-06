@@ -27,7 +27,7 @@ export PATH="/opt/homebrew/bin:$PATH"
 
 . "$script_dir/shell-test-framework.sh"
 
-require_commands prettier
+require_commands prettier git
 
 # --- case helpers -----------------------------------------------------------
 
@@ -78,6 +78,44 @@ run_runner
 exit_code=$?
 
 expect "a project with no JS or TS still exits clean" test "$exit_code" -eq 0
+
+# The runner does not read gitignore rules when deciding which patterns to
+# offer, which is safe only because prettier tolerates a pattern whose matches
+# are all ignored files: the pattern did match on disk and so does not count as
+# unmatched, and the ignored files drop out afterwards.
+#
+# That is an assumption about prettier rather than about the runner, which is
+# why it is pinned here. Should prettier ever count such a pattern as unmatched,
+# the runner would start reporting breakage on healthy projects, and this case
+# is what would say so first.
+begin_project_case tolerates-a-fully-gitignored-extension
+git -C "$case_dir/project" init -q
+printf 'vendor.js\n' > "$case_dir/project/.gitignore"
+printf 'const a   =   1;\n' > "$case_dir/project/vendor.js"
+printf '#   Title\n' > "$case_dir/project/doc.md"
+run_runner
+exit_code=$?
+
+expect "a project whose only JS is gitignored exits clean" \
+  test "$exit_code" -eq 0
+expect_equal "and its markdown is still formatted" \
+  "$(head -1 "$case_dir/project/doc.md")" "# Title"
+expect_equal "and the gitignored file is left alone" \
+  "$(cat "$case_dir/project/vendor.js")" "const a   =   1;"
+
+# Prettier drops node_modules while expanding the glob, so an extension found
+# only there would produce a pattern matching nothing — the error the runner's
+# pattern check exists to head off.
+begin_project_case skips-an-extension-only-inside-node-modules
+mkdir -p "$case_dir/project/node_modules"
+printf 'const a   =   1;\n' > "$case_dir/project/node_modules/vendor.js"
+printf '#   Title\n' > "$case_dir/project/doc.md"
+run_runner
+exit_code=$?
+
+expect "a project whose only JS is vendored exits clean" test "$exit_code" -eq 0
+expect_equal "and the vendored file is left alone" \
+  "$(cat "$case_dir/project/node_modules/vendor.js")" "const a   =   1;"
 
 begin_project_case falls-back-to-the-home-config
 printf '{"semi": false}\n' > "$case_dir/home/.prettierrc"

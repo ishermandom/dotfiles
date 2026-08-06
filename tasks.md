@@ -197,22 +197,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     proposed dropping it rather than launching its lane.
   - Worktree: fanout-status-directive
 
-- [ ] **Let prettier decide which globs match** — `quiet-prettier.sh` runs a
-      `find` per extension before offering the pattern, duplicating a view of
-      the tree prettier already holds and gets right, since it skips
-      `node_modules` and gitignored files. Offer every supported pattern with
-      `--no-error-on-unmatched-pattern` instead, leaving explicit targets strict
-      so a typo in one still errors.
-  - Note: a work-in-progress diff is stashed at
-    `78533e755c453324ba54bd2aaf6a2915a5c63539`. Apply it with
-    `git stash apply <sha>` — stash objects live in the repo's shared object
-    database, so any worktree reaches one. Use the SHA, not a `stash@{n}` index,
-    which shifts as other stashes land.
-  - Note: the change drops the "no formattable files" early exit, which
-    `quiet-prettier-test.sh` pins at its `reports-nothing-to-format` case, so
-    that case needs rewriting alongside the runner.
-  - Worktree: prettier-unmatched-globs
-
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
       so nothing catches unformatted or unlinted shell the way Stop catches
