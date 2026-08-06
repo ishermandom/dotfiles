@@ -197,19 +197,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     proposed dropping it rather than launching its lane.
   - Worktree: fanout-status-directive
 
-- [ ] **Anchor the Stop-time format pass on the repo root** — `format.sh`
-      formats `.`, so a turn whose commands left the shell deep in a
-      subdirectory formats only that subtree and skips files edited elsewhere in
-      the repo. Resolve the session's repo root with
-      `git rev-parse --show-toplevel` and format from there, keeping the current
-      directory as the scope outside a checkout.
-  - Note: a work-in-progress diff is stashed at
-    `333d50c36e80de99fb3026dfeb0f82d3d174f6a7`. Apply it with
-    `git stash apply <sha>` — stash objects live in the repo's shared object
-    database, so any worktree reaches one. Use the SHA, not a `stash@{n}` index,
-    which shifts as other stashes land.
-  - Worktree: format-repo-root
-
 - [ ] **Let prettier decide which globs match** — `quiet-prettier.sh` runs a
       `find` per extension before offering the pattern, duplicating a view of
       the tree prettier already holds and gets right, since it skips
@@ -217,7 +204,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `--no-error-on-unmatched-pattern` instead, leaving explicit targets strict
       so a typo in one still errors.
   - Note: a work-in-progress diff is stashed at
-    `78533e755c453324ba54bd2aaf6a2915a5c63539`; apply it as described above.
+    `78533e755c453324ba54bd2aaf6a2915a5c63539`. Apply it with
+    `git stash apply <sha>` — stash objects live in the repo's shared object
+    database, so any worktree reaches one. Use the SHA, not a `stash@{n}` index,
+    which shifts as other stashes land.
   - Note: the change drops the "no formattable files" early exit, which
     `quiet-prettier-test.sh` pins at its `reports-nothing-to-format` case, so
     that case needs rewriting alongside the runner.
