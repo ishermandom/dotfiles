@@ -275,3 +275,28 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Open question: `~/.claude/scripts/` is also the by-hand invocation path that
     CLAUDE.md points at for the `quiet-*.sh` runners, so those have to stay
     reachable there whatever the hooks come to use.
+
+- [ ] **Record that a hook runs in the shell's current directory** — a hook
+      inherits whatever directory the turn's own commands left the shell in,
+      rather than the one the session started in, so any hook reaching for a
+      relative path silently narrows its scope. `rules/claude-configuration.md`
+      #gotchas is the home: its entries are exactly the mechanical traps that
+      fail without a sound.
+  - Rationale: queued 2026-08-04 from the format-anchoring lane, where nothing
+    on record settled the question and an experiment had to. With the shell
+    moved into `claude/hooks/`, a Markdown file edited at the repo root that
+    same turn came back unformatted, while one edited in `claude/hooks/` was
+    rewrapped.
+  - Note: `format.sh` now anchors on the repo root, so the trap is closed where
+    it was found; the entry is for whichever hook is written next.
+
+- [ ] **Say how to validate a hook's steps from a worktree** —
+      `rules/claude-configuration.md` #worktree-live-validation splits the world
+      into scripts, run from their path in the worktree, and hooks, fired with
+      `probe_worktree_hooks.py`. It leaves the third case unaddressed: a script
+      reached only through a hook, such as a `stop_checks.sh` step. Running the
+      registered hook script straight out of the worktree covers such a step end
+      to end, and spends no model turn.
+  - Rationale: queued 2026-08-04 from the format-anchoring lane, where the
+    binary framing sent the first instinct to the probe and the user flagged it.
+    The direct run then validated the whole chain, `format.sh` included.
