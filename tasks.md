@@ -17,20 +17,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     shaped fix is wanted. That shape also caught prose already wrapped across
     two compliant lines whose merge would have overflowed.
 
-- [ ] **Hold a shallow indented block in a docstring, as comments now do**
-      {#filler-indent-threshold} — `_comment_chunks` keeps any indented comment
-      line verbatim, but `fill_prose` does so only from four spaces, so the same
-      block flattens as a docstring and survives as a comment.
-  - Rationale: queued 2026-08-02, from the review of the shell reflow work that
-    introduced the comment-side rule. `reflow_prose.py`'s module header records
-    the split as a known exception rather than a design.
-  - Note: repro — a docstring reading `Run once:` / `  make install` /
-    `then continue.` comes back as one filled line.
-  - Note: `fill_prose` needs the carve-out the comment rule has, since a
-    bullet's continuation is indented by nature. `unit.hanging_indent` already
-    tracks when an item is open, so the guard is available.
-  - Worktree: docstring-indent-threshold
-
 - [ ] **Reconsider the "inline rationale: at most one clause" cap** — the cap in
       rules/claude-configuration.md served an earlier token-limiting goal; the
       current goal is focusing attention, which may warrant fuller rationale
