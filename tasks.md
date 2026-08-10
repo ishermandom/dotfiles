@@ -29,6 +29,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: `fill_prose` needs the carve-out the comment rule has, since a
     bullet's continuation is indented by nature. `unit.hanging_indent` already
     tracks when an item is open, so the guard is available.
+  - Worktree: docstring-indent-threshold
 
 - [ ] **Reconsider the "inline rationale: at most one clause" cap** — the cap in
       rules/claude-configuration.md served an earlier token-limiting goal; the
@@ -39,6 +40,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: recurred 2026-07-05 — drafting the new `session-context-routing.md`
     rules (necessity-test, concrete-over-abstraction) again ran long on
     rationale before trimming; second independent data point.
+  - Worktree: rationale-clause-cap
 
 - [ ] **Surface ruff lint failures at Stop, and clear the open ones**
       {#ruff-lint-at-stop} — `claude/hooks/reflow_prose.py` carries two `B905`
@@ -63,6 +65,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     considered and dropped — a Stop hook emits one JSON object, so a halt
     verdict would have to carry the field too, and Stop's support for it is
     unverified.
+  - Worktree: ruff-lint-at-stop
 
 - [ ] **Give the repo a project-local `.venv`** — the dev tools live in
       `/Users/claude-sandbox/.venvs/default`, inside one account's home, which
