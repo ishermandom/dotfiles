@@ -267,3 +267,23 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Rationale: queued 2026-08-04 from the format-anchoring lane, where the
     binary framing sent the first instinct to the probe and the user flagged it.
     The direct run then validated the whole chain, `format.sh` included.
+
+- [ ] **Stop restating the `~/.claude` warning in fanout launch prompts** —
+      `fanout/SKILL.md` step 4 has the coordinating session tell a lane, in its
+      launch prompt, that `~/.claude` paths resolve to the main checkout. The
+      lane gets that anyway: `rules/claude-configuration.md`
+      #worktree-live-validation carries it, and that file path-matches
+      `claude/hooks/**` and `claude/rules/*.md` among others, so it loads the
+      moment a lane opens the file it came to edit. Either delete the paragraph
+      or narrow it to executable config.
+  - Rationale: queued 2026-08-04. `fanout/notes.md` already argues this position
+    for the skill as a whole — config work needs no routing rule, because the
+    mechanism lives in the rules file and that file loads on its own. Step 4 is
+    the one place the skill does not follow the argument.
+  - Note: composing the warning also pulls against step 1's no-prework
+    directive, since judging whether a task qualifies means working out which
+    files it touches and how each one is reached.
+  - Note: the paragraph over-fires on prose. A lane editing
+    `rules/claude-configuration.md` was sent the warning on 2026-08-04, though a
+    file only ever read as context has nothing to fire and so no
+    installed-versus-worktree hazard.
