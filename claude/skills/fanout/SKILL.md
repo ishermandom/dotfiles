@@ -19,6 +19,14 @@ working in its own git worktree. Work the steps in order.
    that merely edit the same file are fine as concurrent lanes; the conflict is
    ordinary work at landing.
 
+   Take each task as given and do not attempt to validate the task or do any
+   groundwork. This skill is the serial part of a fanout and the lanes are the
+   parallel part, so prep work done here holds up every launch. Each lane
+   reassesses and works its own task regardless, so groundwork laid here gets
+   redone anyway. Prioritize getting the lanes launched. Coupling is the one
+   reason to open a task here: no lane can clearly evaluate coupling from inside
+   a single task. Think far enough to judge coupling, and no further.
+
 2. **Check what the worktrees will branch from**: with `worktree.baseRef` unset,
    a new worktree starts from `origin/main`, so unpushed commits and uncommitted
    changes never reach it. If there is a gap, report it and ask how to proceed

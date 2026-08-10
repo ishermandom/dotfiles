@@ -35,6 +35,20 @@ Maintainer rationale for the `fanout` skill.
   be typed by hand, so the push needs restating where a background session's own
   contrary instructions are.
 
+- **A fanout is serial until its lanes launch, so step 1 lays no groundwork**:
+  every step of the skill runs before any lane exists, so time spent anywhere in
+  the skill is time no lane is running. The reason is not that a lane knows
+  more; the coordinating session could dig as deep as it liked, and each lane
+  reassesses and works its own task regardless, so the groundwork is redone
+  anyway. That sets the bar for doing anything here: only work no lane can do.
+  Coupling clears the bar, each lane seeing a single task while coupling lives
+  between two. A task's status does not, tempting though that check looks — left
+  to its own judgment the coordinating session digs in, one round spending
+  research calls to establish that one of three chosen tasks had landed, then
+  proposing to drop the task rather than launch its lane. Launching a dead task
+  is cheap by comparison: its lane reads the task, finds the work already done,
+  and reports back without building.
+
 - **The prompt opens on the session being interactive**: every directive in the
   file rests on that fact — the recap has a reader, the pending diff has a
   reviewer, and a question has someone to answer it. Stated once at the top the
