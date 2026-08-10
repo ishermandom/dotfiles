@@ -39,14 +39,13 @@
 #   above, which in source prose is corruption far more often than it is the
 #   author's intent. Depth counts relative to the text the line continues:
 #   column zero for a paragraph, an open list item's hanging indent for its
-#   continuations, which are indented by nature. Inside a list item the two
-#   engines part. Take a `make install` line indented under a `- Run the setup
-#   once:` bullet, deeper than that bullet's own wrapped text: the filler keeps
-#   it on its own line, while prettier reads it as a lazy continuation and
-#   merges the command into the bullet. So that line survives in a docstring,
-#   and in a comment only while nothing else in the chunk needs rewrapping.
-#   Fenced content is verbatim throughout. The rule errs toward declining:
-#   indented prose that would have refilled cleanly simply stays put.
+#   continuations, which are indented by nature. Take a `make install` line
+#   indented under a `- Run the setup once:` bullet, deeper than that bullet's
+#   own wrapped text: it holds its own line, where markdown would read it as the
+#   bullet wrapping and fold the command in. A line carrying a list marker is
+#   never a block, so a nested bullet still reindents. Fenced content is
+#   verbatim throughout. The rule errs toward declining: indented prose that
+#   would have refilled cleanly simply stays put.
 # - Reflow never changes a chunk's line density. A chunk holds no blank line, so
 #   every blank line prettier emits is structure it added — splitting a list off
 #   the paragraph that introduces it, say — and is dropped. Density stays the
@@ -59,7 +58,11 @@
 #   backticks, or a line-leading `>=` split into a blockquote's `> =` is plain
 #   corruption. When prettier changes any character, the chunk is refilled by a
 #   plain filler that never rewrites characters; if even that fails the
-#   word-preservation check, the chunk keeps its original text.
+#   word-preservation check, the chunk keeps its original text. Moving
+#   whitespace has one limit of its own: a reflow that merged an indented block
+#   into the line above takes the same fallback. Every word survives that merge,
+#   so the word check passes it and a second check on the blocks is what
+#   notices.
 # - Machine directives never reflow: shebangs, `noqa`, `fmt:`, `type:`,
 #   `shellcheck`, and kin are configuration, not prose, as is any region under
 #   `fmt: off`. Wrapping a `shellcheck disable=` line, or letting it merge into
@@ -389,15 +392,16 @@ def _starts_list_item(item: re.Match[str], unit: _FillUnit) -> bool:
   )
 
 
-def _is_indented_block(line: str, unit: _FillUnit) -> bool:
+def _is_indented_block(line: str, continuation_column: int) -> bool:
   """Whether an indented line is a verbatim block rather than prose to refill.
 
-  Depth counts relative to the text the line would continue: column zero for a
-  paragraph, an open list item's hanging indent for its continuations, which are
-  indented by nature. Anything deeper is structure the author put there — a
-  usage listing, a setup recipe — and keeps its shape.
+  Depth counts relative to the text the line would continue, which the caller
+  passes as `continuation_column`: zero for a paragraph, an open list item's
+  hanging indent for its continuations, which are indented by nature. Anything
+  deeper is structure the author put there — a usage listing, a setup recipe —
+  and keeps its shape.
   """
-  return len(line) - len(line.lstrip()) > len(unit.hanging_indent)
+  return len(line) - len(line.lstrip()) > continuation_column
 
 
 def fill_prose(markdown: str, width: int) -> str:
@@ -458,7 +462,7 @@ def fill_prose(markdown: str, width: int) -> str:
 
     if (
       stripped.startswith(_STRUCTURAL_PREFIXES)
-      or _is_indented_block(line, unit)
+      or _is_indented_block(line, len(unit.hanging_indent))
       or _DECORATED_HEADING_PATTERN.match(line)
     ):
       output.extend(unit.flush())
@@ -938,6 +942,59 @@ def _preserves_words(original: str, reflowed: str) -> bool:
   return original.split() == reflowed.split()
 
 
+def _indented_block_lines(markdown: str) -> Iterator[str]:
+  """Every line the indent rule holds as a block, indentation included.
+
+  Tracks only what that question needs — the column where the text a line would
+  continue sits, and whether a fence is open — rather than filling anything. A
+  line carrying a list marker is never a block: a nested item is structure a
+  markdown formatter may legitimately reindent.
+  """
+  is_in_fence = False
+  continuation_column = 0
+  for line in markdown.split('\n'):
+    stripped = line.strip()
+    if stripped.startswith(_FENCE_PREFIXES):
+      is_in_fence = not is_in_fence
+    elif is_in_fence:
+      continue
+    elif not stripped:
+      continuation_column = 0
+    elif item := _LIST_ITEM_PATTERN.match(line):
+      continuation_column = item.end()
+    elif _is_indented_block(line, continuation_column):
+      # A block's own further lines stay blocks, so the column stands.
+      yield line
+    else:
+      continuation_column = len(line) - len(line.lstrip())
+
+
+def _keeps_indented_blocks(original: str, reflowed: str) -> bool:
+  """Whether every indented block still stands on its own line, indent and all.
+
+  The word check above is blind to a reflow that only moves whitespace, and
+  merging a block is exactly that: markdown reads an indented line under a
+  paragraph as that paragraph wrapping, so a formatter folds a listing into the
+  bullet above it with every word intact. This is the check that notices. A
+  block whose indent merely shifted fails too — the depth is the shape.
+
+  Both sides are read the same way, so a line that only looks like the missing
+  block — the same text inside a fenced example, say — cannot stand in for it.
+  Blocks may be gained, never lost: reflow narrows an over-wide marker, which
+  can deepen a line into a block, and that is no reason to reject the text.
+  """
+  return set(_indented_block_lines(original)) <= set(
+    _indented_block_lines(reflowed)
+  )
+
+
+def _preserves_content(original: str, reflowed: str) -> bool:
+  """Whether reflow left both the words and the drawn structure intact."""
+  return _preserves_words(original, reflowed) and _keeps_indented_blocks(
+    original, reflowed
+  )
+
+
 def _render(chunk: ProseChunk, markdown: str) -> Sequence[str]:
   """Turn reflowed markdown back into source lines for the chunk's slot."""
   prefix = ' ' * chunk.indent
@@ -993,15 +1050,16 @@ def reflow_source(
     zip(chunks, reflowed), key=lambda pair: pair[0].first_line, reverse=True
   )
   for chunk, markdown in by_position:
-    keeps_words = _preserves_words(chunk.markdown, markdown)
-    if chunk.kind is ChunkKind.COMMENT and not keeps_words:
-      # prettier rewrote a character (an escape, an emphasis marker); refill
-      # plainly instead, which sacrifices markdown-aware layout but keeps every
-      # character intact. Docstrings already come from the filler, so a second
-      # filler pass would just recompute the same text.
+    keeps_content = _preserves_content(chunk.markdown, markdown)
+    if chunk.kind is ChunkKind.COMMENT and not keeps_content:
+      # prettier rewrote a character (an escape, an emphasis marker), or read an
+      # indented block as the line above wrapping and merged it away; refill
+      # plainly instead, which sacrifices markdown-aware layout but keeps both
+      # the characters and the shape. Docstrings already come from the filler,
+      # so a second filler pass would just recompute the same text.
       markdown = _fill_chunk(chunk)
-      keeps_words = _preserves_words(chunk.markdown, markdown)
-    if not keeps_words:
+      keeps_content = _preserves_content(chunk.markdown, markdown)
+    if not keeps_content:
       continue
     source_lines[chunk.first_line - 1 : chunk.last_line] = _render(
       chunk, markdown

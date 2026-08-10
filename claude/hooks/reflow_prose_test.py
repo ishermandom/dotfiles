@@ -1172,6 +1172,62 @@ def test_prettier_emphasis_rewrite_falls_back_to_plain_fill() -> None:
   assert result == '# Accepts *args and **kwargs in its signature.\nx = 1\n'
 
 
+def test_prettier_merging_a_listing_falls_back_to_plain_fill() -> None:
+  """Real prettier reads a listing under a bullet as the bullet wrapping."""
+  source = (
+    '# - Run the setup once, with wording long enough that this line needs'
+    ' rewrapping:\n'
+    '#       make install\n'
+    'x = 1\n'
+  )
+
+  result = reflow_source(source, run_prettier)
+
+  # The bullet still wraps, and the command still holds its own line — the prose
+  # came back from the filler rather than from prettier.
+  assert result == (
+    '# - Run the setup once, with wording long enough that this line needs\n'
+    '#   rewrapping:\n'
+    '#       make install\n'
+    'x = 1\n'
+  )
+
+
+def test_a_fenced_copy_does_not_excuse_a_merged_listing() -> None:
+  """The same text elsewhere is not the block; both sides are read alike."""
+  source = (
+    '# - Set up the thing, with wording long enough that this line certainly'
+    ' needs to be rewrapped by prettier:\n'
+    '#       make install\n'
+    '# ```\n'
+    '#       make install\n'
+    '# ```\n'
+    'x = 1\n'
+  )
+
+  result = reflow_source(source, run_prettier)
+
+  # The listing holds its line even though an identical one sits in the fence
+  # below it, which a check reading only the output would have accepted.
+  assert '#   be rewrapped by prettier:\n#       make install\n' in result
+
+
+def test_prettier_still_reindents_a_nested_bullet() -> None:
+  """A nested item is structure prettier may restyle, not a block to hold."""
+  source = (
+    '# - outer bullet with wording long enough that this line needs'
+    ' rewrapping and so the chunk goes to prettier\n'
+    '#     - nested bullet written at four spaces\n'
+    'x = 1\n'
+  )
+
+  result = reflow_source(source, run_prettier)
+
+  # Reindented to two spaces, so the block check did not claim it and send the
+  # chunk to the filler, which would have left it at four.
+  assert '#   - nested bullet written at four spaces\n' in result
+
+
 def test_reflow_is_idempotent_with_prettier() -> None:
   """Reflowing already-reflowed source changes nothing."""
   source = (
