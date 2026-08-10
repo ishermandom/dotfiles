@@ -190,16 +190,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     matching pass," which reads as a recurring audit rather than only a
     self-check on text the review itself writes. Settle when the sweep lands.
 
-- [ ] **Leave a task's status to its fanout lane** — the coordinating session
-      should not weigh whether a chosen task is still live before launching it;
-      that judgment belongs to the lane, whose reassessment directive already
-      covers a stale premise. `fanout/SKILL.md` step 1 is the likely home for
-      the directive.
-  - Rationale: queued 2026-08-04, after a fanout round spent research calls
-    establishing that one of three chosen tasks had already landed, then
-    proposed dropping it rather than launching its lane.
-  - Worktree: fanout-status-directive
-
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
       so nothing catches unformatted or unlinted shell the way Stop catches
