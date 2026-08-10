@@ -4,8 +4,8 @@ Editing-time rationale for CLAUDE.md rules — the "why" a future editor needs
 that a running session does not. The parallel of a skill's companion `notes.md`:
 never loaded at runtime, read when editing CLAUDE.md. The file exists because
 CLAUDE.md injection does not strip HTML comments (verified 2026-07-03), so
-rationale cannot ride in the file for free; anything beyond a one-clause inline
-why lands here, keyed by rule.
+rationale cannot ride in the file for free; anything beyond the inline why a
+running session needs lands here, keyed by rule.
 
 ## Pronouns and demonstratives (CLAUDE.md #pronouns)
 

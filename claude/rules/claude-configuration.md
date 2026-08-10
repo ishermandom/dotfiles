@@ -83,13 +83,46 @@ complex code" fires while attention is already divided.
 they carry different obligations. Quantifiers like `every` and `never` are
 equivalent to `always`; use them where they read more naturally.
 
-**Inline rationale**: Include a brief "why" when the rule is unintuitive, when
+**Inline rationale**: Include a "why" when the rule is unintuitive, when
 violating it is tempting, or when knowing the reason would clarify an ambiguous
-case. Keep to at most one clause inline, e.g. "prefer `Edit` over `Write` —
-sends only the diff". Not: "…because `Write` re-sends the entire file content,
-increasing token usage and making diffs harder to review." If the rationale
-can't fit in one clause, surface the rule to the user for scoping rather than
-expanding inline.
+case. A why is there to rule out the wrong moves Claude would otherwise make,
+not to justify the rule. All else equal, be concise. Keep an idea in the why
+when it rules out a wrong move no other idea does; cut an idea that only
+strengthens the case against a move already ruled out — "prefer `Edit` over
+`Write` — sends only the diff" settles the choice, and the longer "…because
+`Write` re-sends the entire file content, increasing token usage and making
+diffs harder to review" settles nothing more.
+
+<!-- Multi-idea rationale recurs across the rules corpus in these shapes. Each
+survives the keep test because it rules out a wrong move the other ideas don't;
+a rationale fitting none of them is worth a second look.
+
+- A failure that passes silently, so nothing catches the mistake downstream:
+  shell.md's bash-array rule (an unquoted string word-splits, breaking
+  multi-word flags), python.md's frozen-dataclass collection field (a `list`
+  satisfies `Sequence`, so the caller keeps a live handle), markdown.md's
+  nested-list rule (Prettier folds the child into the parent paragraph).
+- The boundary where the rule stops, or the outside convention it overrides:
+  python.md's f-string rule (displaces the standard `%`-style logging advice),
+  testing.md's JS runner split (`node:test` by default, vitest + jsdom only for
+  DOM code), python.md's `if not foo:` rule (unless `0`, `False`, or `[]` must
+  be distinguished from `None`).
+- A mechanism without which compliance fails: shell.md's `$?` capture (`$?` is
+  overwritten by every subsequent command), testing.md's `xfail(strict=True)`
+  and its scripted-fake `__exit__` skip while an exception propagates.
+- A misreading of the directive, headed off: testing.md's DAMP rule (extract
+  shared setup only where the value is genuinely irrelevant) and its helper
+  rules (never hide a value the test asserts on).
+- Lookalike branches that need separating: python.md's logging levels,
+  testing.md's parametrize-versus-separate-tests split.
+
+The shapes stay in this note rather than in the rule: the keep test decides
+any case on its own, and an incomplete list inline reads as the closed set.
+
+The unit is ideas, not clauses or words. A syntactic unit rewards fusing
+ideas into one clause, which the legibility rule below forbids, and the pull
+toward counting clauses or words is strong enough to recur.
+-->
 
 **Make each idea separately legible**: a rule often carries several ideas — a
 directive, a rationale, an exception, an example. Keep each idea's extent, role,
@@ -122,8 +155,8 @@ further.
 editing but Claude doesn't need it to apply the rule, the home depends on the
 file. In path-matched rules files, an HTML comment is stripped on injection
 (verified 2026-07-03) — free, use it liberally. In CLAUDE.md, comments are _not_
-stripped: they bill tokens and attention on every message, so rationale beyond a
-one-clause inline why goes to CLAUDE.md's companion notes file,
+stripped: they bill tokens and attention on every message, so rationale beyond
+the inline why goes to CLAUDE.md's companion notes file,
 `docs/claude-md-notes.md`, never a comment. `SKILL.md` and docs never strip
 either; for a skill, keep the editing-time why in a companion notes file — see
 #skill-rationale below.

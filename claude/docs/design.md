@@ -81,9 +81,9 @@ removed, signal-to-noise drops — so the counter-pressure is structural:
 injection only (sentinel-verified 2026-06-13 and again 2026-07-03). CLAUDE.md
 injection does _not_ strip them — observed directly 2026-07-03, correcting an
 earlier over-generalization of the rules-file result — so CLAUDE.md rationale is
-either a one-clause inline why or lives in CLAUDE.md's companion notes file
-(`docs/claude-md-notes.md`, mirroring the skills pattern). Docs and `SKILL.md`
-enter context verbatim as well. Operative convention:
+either the inline why Claude needs to apply the rule or lives in CLAUDE.md's
+companion notes file (`docs/claude-md-notes.md`, mirroring the skills pattern).
+Docs and `SKILL.md` enter context verbatim as well. Operative convention:
 `rules/claude-configuration.md` #maintainer-rationale; skill rationale goes in a
 companion `notes.md`.
 

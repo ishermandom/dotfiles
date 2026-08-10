@@ -17,17 +17,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     shaped fix is wanted. That shape also caught prose already wrapped across
     two compliant lines whose merge would have overflowed.
 
-- [ ] **Reconsider the "inline rationale: at most one clause" cap** — the cap in
-      rules/claude-configuration.md served an earlier token-limiting goal; the
-      current goal is focusing attention, which may warrant fuller rationale
-      where a rule is tempting to violate.
-  - Rationale: queued 2026-07-04 when the legibility rule's own rationale bumped
-    against the cap and had to be compressed to fit.
-  - Note: recurred 2026-07-05 — drafting the new `session-context-routing.md`
-    rules (necessity-test, concrete-over-abstraction) again ran long on
-    rationale before trimming; second independent data point.
-  - Worktree: rationale-clause-cap
-
 - [ ] **Surface ruff lint failures at Stop, and clear the open ones**
       {#ruff-lint-at-stop} — `claude/hooks/reflow_prose.py` carries two `B905`
       errors (`zip()` without an explicit `strict=`).
