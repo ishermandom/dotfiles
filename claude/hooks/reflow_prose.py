@@ -32,18 +32,21 @@
 #   two spaces. One shape does not: an ordered list numbered from anything but
 #   `1.` merges into the paragraph above, since only `1.` may interrupt a
 #   paragraph.
-# - An indented comment line is a verbatim block (a usage listing, a shell setup
-#   recipe) rather than prose to refill, so it keeps its shape without needing a
-#   blank comment line above it. Markdown would instead read it as a lazy
-#   continuation and flatten it into the paragraph above, which for source
-#   comments is corruption far more often than it is the author's intent. Two
-#   exceptions: a line under an open list item, whose continuations are indented
-#   by nature, and anything inside a fenced block. The rule errs toward
-#   declining: indented prose that would have refilled cleanly simply stays put.
-#   Docstrings are the exception to all of this — the plain filler holds a line
-#   verbatim only from four spaces, markdown's own code-block threshold, so a
-#   shallower indented block inside a docstring still merges into the paragraph
-#   above it unless a blank line precedes it.
+# - An indented line — in a comment or a docstring — is a verbatim block (a
+#   usage listing, a shell setup recipe) rather than prose to refill, so it
+#   keeps its shape without needing a blank line above it. Markdown would
+#   instead read it as a lazy continuation and flatten it into the paragraph
+#   above, which in source prose is corruption far more often than it is the
+#   author's intent. Depth counts relative to the text the line continues:
+#   column zero for a paragraph, an open list item's hanging indent for its
+#   continuations, which are indented by nature. Inside a list item the two
+#   engines part. Take a `make install` line indented under a `- Run the setup
+#   once:` bullet, deeper than that bullet's own wrapped text: the filler keeps
+#   it on its own line, while prettier reads it as a lazy continuation and
+#   merges the command into the bullet. So that line survives in a docstring,
+#   and in a comment only while nothing else in the chunk needs rewrapping.
+#   Fenced content is verbatim throughout. The rule errs toward declining:
+#   indented prose that would have refilled cleanly simply stays put.
 # - Reflow never changes a chunk's line density. A chunk holds no blank line, so
 #   every blank line prettier emits is structure it added — splitting a list off
 #   the paragraph that introduces it, say — and is dropped. Density stays the
@@ -386,13 +389,24 @@ def _starts_list_item(item: re.Match[str], unit: _FillUnit) -> bool:
   )
 
 
+def _is_indented_block(line: str, unit: _FillUnit) -> bool:
+  """Whether an indented line is a verbatim block rather than prose to refill.
+
+  Depth counts relative to the text the line would continue: column zero for a
+  paragraph, an open list item's hanging indent for its continuations, which are
+  indented by nature. Anything deeper is structure the author put there — a
+  usage listing, a setup recipe — and keeps its shape.
+  """
+  return len(line) - len(line.lstrip()) > len(unit.hanging_indent)
+
+
 def fill_prose(markdown: str, width: int) -> str:
   """Reflow markdown-ish prose without ever rewriting a character.
 
   The model covers exactly: blank-line-separated paragraphs; bullet and numbered
   list items (hanging indents, CommonMark's paragraph-interruption rule); fenced
   blocks and heading underlines kept verbatim; and verbatim structural lines
-  (code indents, quotes, tables, headings, HTML). Everything else is plain
+  (indented blocks, quotes, tables, headings, HTML). Everything else is plain
   prose. Deliberate non-goals — lazy continuations, blockquote refill,
   nested-list reindentation — stay as prose or verbatim lines rather than
   gaining rules here.
@@ -424,8 +438,8 @@ def fill_prose(markdown: str, width: int) -> str:
       output.append('')
       continue
 
-    # An item marker opens a new fill unit, checked before the code-indent rule
-    # so nested bullets refill. Rule lines are checked first: `- - -` would
+    # An item marker opens a new fill unit, checked before the indent rule so
+    # nested bullets refill. Rule lines are checked first: `- - -` would
     # otherwise parse as a bullet item.
     if _RULE_LINE_PATTERN.match(line):
       output.extend(unit.flush())
@@ -444,7 +458,7 @@ def fill_prose(markdown: str, width: int) -> str:
 
     if (
       stripped.startswith(_STRUCTURAL_PREFIXES)
-      or line.startswith('    ')
+      or _is_indented_block(line, unit)
       or _DECORATED_HEADING_PATTERN.match(line)
     ):
       output.extend(unit.flush())

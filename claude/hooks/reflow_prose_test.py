@@ -306,6 +306,89 @@ def test_a_fence_keeps_its_indented_content_in_one_chunk() -> None:
   assert 'indented fence content' in calls[0]
 
 
+def test_docstring_indented_block_stays_verbatim() -> None:
+  """A two-space listing holds its shape in a docstring as it does anywhere."""
+  source = (
+    'def f() -> None:\n'
+    '  """Summary.\n'
+    '\n'
+    '  Run the setup once:\n'
+    '    make install\n'
+    '  then continue.\n'
+    '  """\n'
+    '  return\n'
+  )
+
+  assert reflow_source(source, fill_markdown) == source
+
+
+def test_docstring_bullet_continuation_reflows() -> None:
+  """A wrapped bullet is indented too, so the indent rule must not claim it."""
+  source = (
+    'def f() -> None:\n'
+    '  """Summary.\n'
+    '\n'
+    '  - alpha beta\n'
+    '    gamma delta\n'
+    '  """\n'
+    '  return\n'
+  )
+
+  result = reflow_source(source, fill_markdown)
+
+  assert result == (
+    'def f() -> None:\n'
+    '  """Summary.\n'
+    '\n'
+    '  - alpha beta gamma delta\n'
+    '  """\n'
+    '  return\n'
+  )
+
+
+def test_docstring_block_under_a_bullet_stays_verbatim() -> None:
+  """A block deeper than the item's continuation column keeps its shape."""
+  source = (
+    'def f() -> None:\n'
+    '  """Summary.\n'
+    '\n'
+    '  - Run the setup once:\n'
+    '        make install\n'
+    '  """\n'
+    '  return\n'
+  )
+
+  assert reflow_source(source, fill_markdown) == source
+
+
+def test_docstring_nested_bullet_continuation_reflows() -> None:
+  """A nested item's continuations sit deeper, and still refill."""
+  source = (
+    'def f() -> None:\n'
+    '  """Summary.\n'
+    '\n'
+    '  - outer item\n'
+    '    - inner item alpha\n'
+    '      beta gamma\n'
+    '  """\n'
+    '  return\n'
+  )
+
+  result = reflow_source(source, fill_markdown)
+
+  # The continuation column follows the inner marker, so four spaces is a
+  # continuation here where at top level it would be a block.
+  assert result == (
+    'def f() -> None:\n'
+    '  """Summary.\n'
+    '\n'
+    '  - outer item\n'
+    '    - inner item alpha beta gamma\n'
+    '  """\n'
+    '  return\n'
+  )
+
+
 # --- docstring reflow ---
 
 
