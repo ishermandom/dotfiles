@@ -137,6 +137,23 @@ only the durable design choices behind it:
   formatter's findings are dropped, since they would garble the verdict, while
   anything that keeps a tool from running at all — the step script missing, or
   the tool itself absent or broken — halts the turn with its reason on stderr.
+- **Ruff lints in a check step of its own**: ruff both fixes and finds, and the
+  fixing half runs in `format.sh`, so the findings ruff cannot fix are lost with
+  that step's dropped stdout. `ruff-lint.sh` runs the lint pass again as an
+  ordinary check, where a non-zero exit halts the turn with the findings as the
+  reason.
+- **Formatting and linting stay separate passes**: folding the lint back into
+  the format step would drop a ruff run and let that step share the checks'
+  loop, but the two want different file sets — formatting sweeps the dotfiles
+  repo alongside the session's, harmlessly, while halting on a stale finding
+  there would stop every turn in every project on the machine. Scope decides the
+  split, not cost: ruff caches across runs, so the second pass is 60ms against a
+  26-second chain (measured 2026-08-11; both numbers track the repo and the
+  machine, so the ratio is the durable part).
+- **A lint finding halts the turn rather than reporting quietly**: a Stop hook
+  emits one JSON object, so a non-halting `systemMessage` would have to ride
+  along with the halt verdict anyway, and Stop's support for the field is
+  unverified.
 - **Stop-hook failures surface to the user** (`continue: false`), not as a
   `decision: block` auto-re-invoke: a block can spin forever when Claude cannot
   fix the failure, guarding that is out of scope for now, and the user-prod

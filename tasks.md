@@ -17,31 +17,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     shaped fix is wanted. That shape also caught prose already wrapped across
     two compliant lines whose merge would have overflowed.
 
-- [ ] **Surface ruff lint failures at Stop, and clear the open ones**
-      {#ruff-lint-at-stop} — `claude/hooks/reflow_prose.py` carries two `B905`
-      errors (`zip()` without an explicit `strict=`).
-      `~/.claude/scripts/quiet-ruff.sh` reports them, yet turns end clean, so
-      they have gone unnoticed (observed 2026-07-29).
-  - Note: why a turn ends clean is settled — `format.sh` does lint
-    (`quiet-ruff.sh` runs `ruff check --fix`) and writes what it cannot fix to
-    stdout. So the findings are produced; what is missing is a path from a Stop
-    hook's plain stdout to the user.
-  - Note: mypy and pytest do surface at Stop, so the gap is specific to ruff
-    rather than to Stop-time checks generally.
-  - Note: `stop_checks.sh` discards formatter stdout, since anything a formatter
-    prints would garble the halt verdict. So the fix is a lint step among its
-    checks — print the findings, exit non-zero — not a change to the formatter
-    step. A TODO there marks the spot.
-  - Note: findings and breakage are now distinguishable by exit status — ruff
-    exits 1 for findings and 2 or more when it could not run — so a lint step
-    can key on the level. See the exit-status scales in
-    `claude/hooks/format.sh`.
-  - Note: reporting findings without halting, via a `systemMessage` field, was
-    considered and dropped — a Stop hook emits one JSON object, so a halt
-    verdict would have to carry the field too, and Stop's support for it is
-    unverified.
-  - Worktree: ruff-lint-at-stop
-
 - [ ] **Give the repo a project-local `.venv`** — the dev tools live in
       `/Users/claude-sandbox/.venvs/default`, inside one account's home, which
       the other account cannot read. Nothing in the repo root points an editor

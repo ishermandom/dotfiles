@@ -11,9 +11,9 @@
 # way Claude Code does, rather than matching loose text.
 #
 # The fixtures replace the real steps with fakes. stop_checks.sh resolves its
-# steps from its own directory, so a copy of it beside four fake steps runs them
-# — no test-only seam in the script, and no risk of the real steps re-entering
-# this suite through pytest.
+# steps from its own directory, so a copy of it beside a fake for each step runs
+# them — no test-only seam in the script, and no risk of the real steps
+# re-entering this suite through pytest.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 stop_checks="$script_dir/stop_checks.sh"
@@ -30,13 +30,13 @@ write_step() { # write_step <steps dir> <step name> <body>
 }
 
 # Builds a fixture directory: a copy of stop_checks.sh plus a do-nothing fake
-# for each of its three steps. A case overrides only the steps it is about.
+# for each of its steps. A case overrides only the steps it is about.
 make_steps_dir() { # make_steps_dir  -> prints the directory
   local steps_dir
   steps_dir=$(mktemp -d "$test_script_root/steps.XXXXXX")
   cp "$stop_checks" "$steps_dir/"
   local step
-  for step in format.sh mypy-check.sh run_tests.sh; do
+  for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh; do
     write_step "$steps_dir" "$step" "exit 0"
   done
   echo "$steps_dir"
@@ -45,7 +45,7 @@ make_steps_dir() { # make_steps_dir  -> prints the directory
 # --- the steps run in a fixed order -----------------------------------------
 
 steps=$(make_steps_dir)
-for step in format.sh mypy-check.sh run_tests.sh; do
+for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh; do
   write_step "$steps" "$step" "echo $step >> $steps/order.log"
 done
 "$steps/stop_checks.sh" > /dev/null
@@ -53,7 +53,8 @@ done
 expect "formatting runs before the checks, which run in order" \
   test "$(cat "$steps/order.log")" = "format.sh
 mypy-check.sh
-run_tests.sh"
+run_tests.sh
+ruff-lint.sh"
 
 # --- a clean run says nothing -----------------------------------------------
 
@@ -110,6 +111,18 @@ verdict=$("$steps/stop_checks.sh")
 
 expect "a formatter's output does not garble the verdict" \
   test "$(jq -r '.stopReason' <<< "$verdict")" = "error: Incompatible types"
+
+# --- a lint finding reaches the user ----------------------------------------
+
+# The mirror of the case above: the formatter drops its copy of the lint
+# findings, leaving the lint step as the only path from ruff to the user.
+steps=$(make_steps_dir)
+write_step "$steps" "ruff-lint.sh" 'echo "B905 zip() without explicit strict="
+exit 1'
+reason=$(jq -r '.stopReason' <<< "$("$steps/stop_checks.sh")")
+
+expect "a lint finding becomes the reason rather than being dropped" \
+  test "$reason" = "B905 zip() without explicit strict="
 
 # --- a broken formatter halts rather than going unnoticed -------------------
 

@@ -41,22 +41,22 @@ halt_turn() { # halt_turn <text shown to the user>
 # A non-zero exit means the step could not do its job: either the step script
 # itself would not run — missing, or not executable — or a tool it drives could
 # not. Both halt rather than passing silently. A tool's own findings are not a
-# failure; the step leaves those on the stdout dropped here.
-#
-# TODO(tasks.md #ruff-lint-at-stop): add ruff lint as a check step, so its
-# findings reach the user rather than being dropped here.
+# failure; the step leaves those on the stdout dropped here, and `ruff-lint.sh`
+# below runs the lint pass again to report whatever ruff could not fix.
 breakage=$("$hooks_dir/format.sh" 2>&1 > /dev/null)
 format_status=$?
 [ $format_status -eq 0 ] \
   || halt_turn "${breakage:-format.sh exited $format_status without output}"
 
 # The first check to fail halts the turn and the rest are skipped — a type error
-# usually explains the test failures that would follow it.
+# usually explains the test failures that would follow it. Lint runs last, where
+# a finding explains nothing above it and, left unfixed, masks neither a type
+# error nor a broken test.
 #
 # Both streams are captured, so a step is free to report on either: stderr is
 # the natural stream for a diagnostic, and a check that used it would otherwise
 # halt the turn with nothing but its exit status.
-for check in mypy-check.sh run_tests.sh; do
+for check in mypy-check.sh run_tests.sh ruff-lint.sh; do
   failure=$("$hooks_dir/$check" 2>&1)
   check_status=$?
   [ $check_status -eq 0 ] && continue

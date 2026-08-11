@@ -858,8 +858,8 @@ def _reflow_comment_group(
 
   One subprocess covers the whole group, with a per-chunk retry when a chunk's
   own text breaks the sentinel split (real prettier passes the sentinel through
-  verbatim). Failures propagate as PrettierError; the caller owns the
-  degradation policy.
+  verbatim), so the result always holds one part per index. Failures propagate
+  as PrettierError; the caller owns the degradation policy.
   """
   separator = f'\n\n{_CHUNK_SEPARATOR}\n\n'
   combined = separator.join(chunks[i].markdown for i in indices)
@@ -922,7 +922,7 @@ def _reflow_chunks(
         failure = error
     if parts is None:
       parts = [_fill_chunk(chunks[i]) for i in indices]
-    for index, part in zip(indices, parts):
+    for index, part in zip(indices, parts, strict=True):
       results[index] = part
   if failure is not None:
     # The trade is silently losing markdown-aware layout, so leave a breadcrumb
@@ -1047,7 +1047,9 @@ def reflow_source(
 
   # Replace bottom-up so earlier line numbers stay valid as lengths change.
   by_position = sorted(
-    zip(chunks, reflowed), key=lambda pair: pair[0].first_line, reverse=True
+    zip(chunks, reflowed, strict=True),
+    key=lambda pair: pair[0].first_line,
+    reverse=True,
   )
   for chunk, markdown in by_position:
     keeps_content = _preserves_content(chunk.markdown, markdown)
