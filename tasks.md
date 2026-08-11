@@ -268,3 +268,18 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `rules/claude-configuration.md` was sent the warning on 2026-08-04, though a
     file only ever read as context has nothing to fire and so no
     installed-versus-worktree hazard.
+
+- [ ] **Stop the worktree cleanup tripping on already-landed diffs** —
+      `fanout-teardown` step 7 removes the lane's worktree, and on every
+      teardown the removal errors out over uncommitted diffs. The work is
+      already on `main` by then, so the lane spends a turn confirming that
+      before retrying the removal. Research where the check and the repository
+      disagree, and whether a different removal path or teardown order drops the
+      round trip.
+  - Rationale: queued 2026-08-10. The error recurs on every lane, so it is a
+    per-lane tax on fanouts rather than a one-off.
+  - Note: `fanout/notes.md` records the three removal paths — `ExitWorktree`'s
+    remove path, the interactive exit dialog, and `git worktree remove` — and
+    that both automatic cleanups deliberately refuse a worktree whose
+    `git status --porcelain` is non-empty. Which path step 7 takes, and what it
+    counts as dirty, is where to start.
