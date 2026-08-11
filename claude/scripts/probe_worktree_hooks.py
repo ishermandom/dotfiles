@@ -25,6 +25,12 @@ workspace, and delete what it creates once the probe is done: an uncommitted
 file left behind keeps the automatic worktree cleanups from ever reaping the
 worktree.
 
+A Stop hook's verdict never shows in the default text output: a halted turn
+prints the model's reply and nothing else, reading exactly like a clean one.
+Pass `--output-format json` and read `terminal_reason`, which is
+`stop_hook_prevented` when a Stop hook halted the turn and `completed` when none
+did.
+
 Three limits worth knowing:
 
 - Only the hook commands move, so whether a probe reaches a script the hook
