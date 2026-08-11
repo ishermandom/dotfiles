@@ -138,10 +138,9 @@ only the durable design choices behind it:
   anything that keeps a tool from running at all — the step script missing, or
   the tool itself absent or broken — halts the turn with its reason on stderr.
 - **Ruff lints in a check step of its own**: ruff both fixes and finds, and the
-  fixing half runs in `format.sh`, so the findings ruff cannot fix are lost with
-  that step's dropped stdout. `ruff-lint.sh` runs the lint pass again as an
-  ordinary check, where a non-zero exit halts the turn with the findings as the
-  reason.
+  fixing half already runs in `format.sh`. `ruff-lint.sh` runs the lint pass
+  again as an ordinary check, where a non-zero exit halts the turn with the
+  findings as the reason.
 - **Formatting and linting stay separate passes**: folding the lint back into
   the format step would drop a ruff run and let that step share the checks'
   loop, but the two want different file sets — formatting sweeps the dotfiles

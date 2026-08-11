@@ -197,20 +197,32 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     than shape it (necessity check in `rules/claude-configuration.md`
     #writing-a-rule).
 
-- [ ] **Resolve a hook's downstream scripts against its own checkout** — a hook
-      that names a helper through `$HOME/.claude/scripts/` reaches the installed
-      copy however the hook itself was reached, so a worktree's edit to that
-      helper is never the code a probe exercises. `stop_checks.sh` shows the
-      other shape: it finds its steps through `${BASH_SOURCE[0]}`, and they
-      travel with whichever checkout holds it. Explore whether every downstream
-      script can be reached that way, so a probe covers the whole chain rather
-      than only its first link.
+- [ ] **Resolve a hook's downstream scripts against its own checkout**
+      {#hook-downstream-scripts} — a hook that names a helper through
+      `$HOME/.claude/scripts/` reaches the installed copy however the hook
+      itself was reached, so a worktree's edit to that helper is never the code
+      a probe exercises. `stop_checks.sh` shows the other shape: it finds its
+      steps through `${BASH_SOURCE[0]}`, and they travel with whichever checkout
+      holds it. Explore whether every downstream script can be reached that way,
+      so a probe covers the whole chain rather than only its first link.
   - Rationale: queued 2026-08-04, from the format-anchoring lane, where the
     split was written up as a probe limitation rather than fixed — see
     `claude/scripts/probe_worktree_hooks.py`'s header.
   - Open question: `~/.claude/scripts/` is also the by-hand invocation path that
     CLAUDE.md points at for the `quiet-*.sh` runners, so those have to stay
     reachable there whatever the hooks come to use.
+
+- [ ] **Factor out resolving a repo root** — `rev-parse --show-toplevel` is
+      spelled out at eight sites across `claude/hooks/` and `claude/scripts/`,
+      in two shapes: the root of the current directory, falling back to that
+      directory, and the root of a directory named by the caller. One helper
+      taking an optional directory covers both.
+  - Rationale: queued 2026-08-11 from the ruff-lint lane, where `ruff-lint.sh`
+    added another copy of the first shape and the user asked whether it should
+    be shared.
+  - Note: where the helper lives is the open part — a hook that sources it
+    through `$HOME/.claude/scripts/` reaches the installed copy, so a worktree's
+    edit to the helper would go untested. Depends on #hook-downstream-scripts.
 
 - [ ] **Record that a hook runs in the shell's current directory** — a hook
       inherits whatever directory the turn's own commands left the shell in,

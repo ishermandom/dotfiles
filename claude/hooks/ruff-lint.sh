@@ -18,10 +18,8 @@
 # can see the top-level package layout it classifies against.
 repo_root=$(git rev-parse --show-toplevel 2> /dev/null)
 
-# Straight to ruff rather than through a `quiet-*.sh` runner: a runner exists to
-# hold the flags its tool is always run with, and a lint check has none — ruff
-# reads its whole configuration from the repo. The runner's `--fix` would be
-# wrong here besides, since a check reports rather than rewrites.
+# No --fix: a check reports rather than rewrites, and the format step has
+# already applied whatever ruff could fix on its own.
 #
 # --color never because the findings reach the user inside a JSON string that
 # renders as plain text, while the session environment the hook inherits sets

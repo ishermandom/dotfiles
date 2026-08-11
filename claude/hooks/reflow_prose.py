@@ -858,8 +858,8 @@ def _reflow_comment_group(
 
   One subprocess covers the whole group, with a per-chunk retry when a chunk's
   own text breaks the sentinel split (real prettier passes the sentinel through
-  verbatim), so the result always holds one part per index. Failures propagate
-  as PrettierError; the caller owns the degradation policy.
+  verbatim). Failures propagate as PrettierError; the caller owns the
+  degradation policy.
   """
   separator = f'\n\n{_CHUNK_SEPARATOR}\n\n'
   combined = separator.join(chunks[i].markdown for i in indices)
