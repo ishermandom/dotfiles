@@ -124,6 +124,25 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the shared `log_rotation.py` helper already supports this — pass
     `sessions.md` its own caps if rotation is chosen.
 
+- [ ] **Explore having `pre-compact` update the session log** — only
+      `wrap-session` writes a reflection entry today, so a session that compacts
+      several times reflects at the end on whatever survived the last summary;
+      the transcript its earlier stretches ran in is gone by then. `pre-compact`
+      runs while that transcript is still whole and already routes durable
+      context, which makes it the natural place to capture the stretch about to
+      be summarized.
+  - Open question: how to measure a long-running session at all. `wrap-session`
+    keys one entry per session on `<!-- session: <id> -->` and the SessionEnd
+    hook appends the final `tokens:` line at that marker, so several entries
+    sharing one id needs a call — one entry appended to per compact, or separate
+    entries with the token line landing on just one.
+  - Note: `wrap-session` already carries a guard for a second run in one session
+    ("evaluate only the work since that run"), which is this problem in a
+    different shape.
+  - Note: reflection-entry count is what `distillation_backlog.py` reports
+    against its suggest-a-distill threshold, so writing more entries per session
+    moves when that fires.
+
 - [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities**
       {#consolidation-recheck} — the 2026-07 close-out's consolidation sweep was
       an inline self-review by the session that wrote several of the candidate
