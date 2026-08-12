@@ -176,6 +176,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: shellcheck reports 15 findings today (12 × SC2155 in
     `gh-protect-test.sh`, plus SC2164, SC2086, SC2001), so a gating check needs
     those cleared or consciously accepted first.
+  - Worktree: shell-stop-check
 
 - [ ] **Have Zed run the repo's formatters on save** — the formatting hooks fire
       on Claude's `Edit` and `Write` only, so a file edited by hand in Zed
