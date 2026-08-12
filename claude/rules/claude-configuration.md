@@ -312,3 +312,9 @@ finalizing; add new ones here as they are hit.
   does — the session environment a hook inherits sets `FORCE_COLOR`, so a tool
   emits ANSI codes even into a pipe, and a `stopReason` or `systemMessage`
   renders as plain text where the escapes read as garbage.
+- **A relative path in a hook**: resolve it against a directory the hook
+  determines for itself, such as the repo root. A hook runs in the shell's
+  current directory, wherever the turn's own `cd` commands left the shell —
+  below the repo root, or inside another repo entirely. A pass over `.`, written
+  out or taken as a tool's default, then covers one subtree, skips the rest, and
+  reports success. `format.sh` anchors on `git rev-parse --show-toplevel`.
