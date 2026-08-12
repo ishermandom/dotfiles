@@ -33,6 +33,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: two accounts writing into one venv is the open question. The shared
     ACLs grant each of them read and write, but installed files stay owned by
     whichever account ran the install. Verify before committing to the approach.
+  - Worktree: project-venv
 
 - [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
       (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring
@@ -237,6 +238,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     rewrapped.
   - Note: `format.sh` now anchors on the repo root, so the trap is closed where
     it was found; the entry is for whichever hook is written next.
+  - Worktree: hook-cwd-gotcha
 
 - [ ] **Say how to validate a hook's steps from a worktree** —
       `rules/claude-configuration.md` #worktree-live-validation splits the world
@@ -283,3 +285,4 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     that both automatic cleanups deliberately refuse a worktree whose
     `git status --porcelain` is non-empty. Which path step 7 takes, and what it
     counts as dirty, is where to start.
+  - Worktree: worktree-cleanup
