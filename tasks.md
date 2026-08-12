@@ -226,21 +226,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     through `$HOME/.claude/scripts/` reaches the installed copy, so a worktree's
     edit to the helper would go untested. Depends on #hook-downstream-scripts.
 
-- [ ] **Record that a hook runs in the shell's current directory** — a hook
-      inherits whatever directory the turn's own commands left the shell in,
-      rather than the one the session started in, so any hook reaching for a
-      relative path silently narrows its scope. `rules/claude-configuration.md`
-      #gotchas is the home: its entries are exactly the mechanical traps that
-      fail without a sound.
-  - Rationale: queued 2026-08-04 from the format-anchoring lane, where nothing
-    on record settled the question and an experiment had to. With the shell
-    moved into `claude/hooks/`, a Markdown file edited at the repo root that
-    same turn came back unformatted, while one edited in `claude/hooks/` was
-    rewrapped.
-  - Note: `format.sh` now anchors on the repo root, so the trap is closed where
-    it was found; the entry is for whichever hook is written next.
-  - Worktree: hook-cwd-gotcha
-
 - [ ] **Say how to validate a hook's steps from a worktree** —
       `rules/claude-configuration.md` #worktree-live-validation splits the world
       into scripts, run from their path in the worktree, and hooks, fired with
