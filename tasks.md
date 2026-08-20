@@ -277,4 +277,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     that both automatic cleanups deliberately refuse a worktree whose
     `git status --porcelain` is non-empty. Which path step 7 takes, and what it
     counts as dirty, is where to start.
+  - Note: `ExitWorktree`'s refusal is not about uncommitted diffs at all. With a
+    clean `git status`, and the branch tip identical to both `main` and
+    `origin/main`, it still refused: "Worktree has 3 commits on <branch>.
+    Removing will discard this work permanently." So it counts commits on the
+    branch without asking whether `main` already holds them, and landing first
+    cannot satisfy it — only `discard_changes: true` clears it. Seen 2026-08-20.
   - Worktree: worktree-cleanup
