@@ -53,6 +53,12 @@ or Write, so match the post-reflow wording, not the pre-reflow snapshot.
   not be passed, prefer a bash array (`args=()` / `args=(-m "not wip")` /
   `"${args[@]}"`) over a string variable — an unquoted string variable
   word-splits on spaces, silently breaking multi-word flags.
+- **Quote the command substitution when splitting output into a zsh array**:
+  `lines=(${(f)"$(cmd)"})` gives one element per line, while
+  `lines=(${(f)$(cmd)})` silently gives a single element holding every line
+  joined by spaces — the unquoted substitution collapses the newlines before `f`
+  can split on them. Both forms yield zero elements for empty output, so a check
+  that exercises only the empty case will not expose the difference.
 - **Never use `set -e` (or `set -o errexit`)**: many common commands return
   non-zero in expected situations — `grep` returns 1 when there is no match, for
   example — and `set -e` will silently exit the script in those cases. Handle
