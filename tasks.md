@@ -118,6 +118,12 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: reflection-entry count is what `distillation_backlog.py` reports
     against its suggest-a-distill threshold, so writing more entries per session
     moves when that fires.
+  - Note: two entries under one id already happens without compaction. A session
+    whose process exits and restarts keeps its id, so SessionEnd writes a
+    stats-only entry for the first stretch and `wrap-session` later writes a
+    reflection entry beside it — both carrying the same marker, which is what
+    the open question above has to resolve. Seen 2026-08-20 for session
+    a80e121e.
 
 - [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities**
       {#consolidation-recheck} — the 2026-07 close-out's consolidation sweep was
