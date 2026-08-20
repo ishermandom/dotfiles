@@ -3,12 +3,13 @@
 # SPDX-License-Identifier: MIT
 #
 # Test suite for the dotfiles repo — the Python unit tests under claude/hooks
-# and claude/scripts, plus the standalone shell tests sitting beside them. Run
-# directly, or via ~/.claude/scripts/quiet-tests.sh (which the Stop test hook
-# invokes). Honors PYTEST_ADDOPTS, which the quiet runner sets to --tb=short.
-# The import paths the test modules need live in the root pyproject.toml.
-# Arguments are forwarded to pytest; naming a path narrows the run to that path,
-# and to pytest alone — the shell tests take no arguments.
+# and claude/scripts, plus the standalone shell tests, which sit beside the code
+# they cover or under tests/. Run directly, or via
+# ~/.claude/scripts/quiet-tests.sh (which the Stop test hook invokes). Honors
+# PYTEST_ADDOPTS, which the quiet runner sets to --tb=short. The import paths
+# the test modules need live in the root pyproject.toml. Arguments are forwarded
+# to pytest; naming a path narrows the run to that path, and to pytest alone —
+# the shell tests take no arguments.
 
 # Resolve the test directories against the script's own location so the suite
 # runs identically regardless of the caller's working directory; per the testing
@@ -38,7 +39,8 @@ if [ "$names_test_path" = false ]; then
   # The shell tests are standalone executables, which pytest cannot collect, so
   # the suite runs them itself. They go first so a passing run still ends on
   # pytest's summary — the one line quiet-tests.sh keeps on success.
-  shell_tests=("$root"/claude/hooks/*-test.sh "$root"/claude/scripts/*-test.sh)
+  shell_tests=("$root"/claude/hooks/*-test.sh "$root"/claude/scripts/*-test.sh
+    "$root"/tests/*/*-test.sh)
   for shell_test in "${shell_tests[@]}"; do
     # An unmatched glob stays literal in bash, so -e skips the pattern itself.
     [ -e "$shell_test" ] || continue

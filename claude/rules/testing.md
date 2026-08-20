@@ -103,10 +103,14 @@ paths:
 
 ## Shell
 
-- **Test file naming**: `<script>-test.sh` beside the script it covers, matching
-  Python's `<module>_test.py`. Keep a sourced helper file outside that pattern —
-  a suite that collects its tests by glob would otherwise run the helper as a
-  test.
+- **Test file naming**: `<script>-test.sh`, matching Python's
+  `<module>_test.py`. Keep a sourced helper file outside that pattern — a suite
+  that collects its tests by glob would otherwise run the helper as a test.
+- **Test file placement**: beside the script it covers, or under `tests/`
+  mirroring the script's directory when that directory installs somewhere else.
+  `zsh/.claude-keychain.zsh` is covered by `tests/zsh/claude-keychain-test.sh`,
+  since a test in `zsh/` would be symlinked into `$HOME` along with the shell
+  config it sits among.
 - **In the dotfiles repo, source `claude/scripts/shell-test-framework.sh` rather
   than copying assertions into a new test**: shell has no runner, so that file
   plays pytest's part; its header documents the contract. When another project
