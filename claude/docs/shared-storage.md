@@ -1,15 +1,18 @@
 # Shared LLM storage and tooling
 
 _Layout for model weights, corpora, and Python tooling on the two-account setup
-(`ishermandom` + `claude-sandbox`; see `account-setup.md`). Decided 2026-07-02
-during the crosswords fine-tuning probe; the research findings cited here were
-verified then._
+(`ishermandom` + `claude-sandbox`; see `account-setup.md`). The model-store
+findings cited below were verified 2026-07-02, during the crosswords fine-tuning
+probe._
 
 ## Principle
 
-Share what is expensive and static — model weights, corpora. Keep per-account
-what is cheap and mutable — venvs. Both accounts get write access to shared
-stores, via the same inheritable-ACL mechanism `/Users/Shared/code` uses.
+Two kinds of thing get shared, for unrelated reasons. Model weights and corpora,
+because they are expensive and static. A project's venv, because an editor and a
+test runner both look for one at the project root — and the project root is
+itself shared, so a per-account venv there is a contradiction. Both accounts get
+write access to shared stores, via the same inheritable-ACL mechanism
+`/Users/Shared/code` uses.
 
 Sandbox write access was weighed against the threat model in `account-setup.md`
 (2026-07-02) and accepted: every stored artifact is a reproducible copy of a
@@ -67,14 +70,43 @@ layout belongs to the tool (Ollama, the Hugging Face cache); `data/` holds plain
 files arranged by hand. Same inheritable ACLs (`share-directory.sh`), same
 user-run download rule.
 
-## Python tooling — per-account, no shared venv
+## Python tooling — one venv per repo, shared by both accounts
 
-The established pattern stands: each project declares dependencies in its
-`pyproject.toml`; each account materializes them into its own `~/.venvs/default`
-via editable installs (`pip install -e '.[group]'`). Dependency changes land as
-reviewable `pyproject.toml` edits; running the sync that installs
-already-declared packages is routine and Claude does it freely. No uv migration:
-its gains (speed, lockfiles) don't bind on a single-machine setup.
+Each project declares its dependencies in `pyproject.toml`, and `uv sync`
+materializes them into a `.venv` at that repo's root. Most projects here are not
+packages — their code is standalone scripts run by path — so they set
+`package = false` and uv installs the dependencies without building or
+installing the project itself.
+
+uv rather than pip, for three things pip has no native answer to. A lockfile, so
+a venv rebuilt later, or by the other account, resolves to the same versions
+rather than to whatever is current. Installing declared dependencies without
+building the project, which is what a repo of standalone scripts needs. And
+workspaces, so several subprojects under one repo share a single lockfile and
+environment instead of one venv each. uv also owns the venv's lifecycle —
+`uv sync` builds it from the lockfile, `uv run` brings it up to date before
+running — where pip assumes a venv already exists and that something else keeps
+it in step with what `pyproject.toml` declares.
+
+The venv sits inside the repo because that is where Zed looks for one. A venv
+under `~/.venvs/` is invisible to the other account, and to any editor not
+configured per-account. A project-root `.venv` is found automatically, by Zed
+and by `uv run` alike, with nothing configured anywhere.
+
+Sharing one venv between the accounts takes three settings, because every uv
+default here assumes a single account — over the interpreter's location, over
+how installed files are linked out of the cache, and over where that cache
+lives. Each failure appears only for whichever account did not build the venv,
+and none of them announces itself. `uv/uv.toml` holds the settings and the
+reason for each.
+
+What the shape forecloses: `.venv` is effectively a cache, and any command that
+clears the venv temporarily breaks access to every tool it provides. Recovery is
+`uv sync`.
+
+`~/.venvs/default` still exists on each account, and still serves the hooks and
+the interactive shell, which find their tools through PATH. Ending that split is
+queued as tasks.md #self-describing-hooks.
 
 ## Ollama binary — interim until Homebrew fix
 

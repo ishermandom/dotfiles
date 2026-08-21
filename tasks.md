@@ -17,14 +17,52 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     shaped fix is wanted. That shape also caught prose already wrapped across
     two compliant lines whose merge would have overflowed.
 
-- [ ] **Bring `claude/docs/shared-storage.md` up to date** — its "Python tooling
-      — per-account, no shared venv" section and its "No uv migration" line both
-      describe a setup the repos have left behind: bridge has run a uv workspace
-      with a `.venv` in the shared tree since July, and this repo now does the
-      same. Record what replaced them.
-  - Note: the three settings now in `uv/uv.toml` are not optional polish. Each
-    closes a gap that fails only for whichever account did not build the venv,
-    and none of them announces itself.
+- [ ] **Re-examine the shared uv cache as a sandbox-escape path**
+      {#shared-cache-threat-model} — `uv/uv.toml` sets `cache-dir` machine-wide,
+      so every uv project on this machine hardlinks its packages out of
+      `/Users/Shared/cache/uv`, including projects outside `/Users/Shared`.
+      Hardlinks share an inode, so a write by the sandbox account to a cached
+      file changes that package in every venv linked from it — and the account
+      owning that venv executes the change on its next import. Decide whether
+      that is acceptable, and constrain it if not.
+  - Note: the sharp part is reach beyond the shared tree. Inside
+    `/Users/Shared/code` the venv adds nothing new — the sandbox account can
+    already write the source there, so it can already run code as the other
+    account, which `account-setup.md`'s threat model accepted. A project in a
+    private directory was never part of that bargain, and the shared cache
+    reaches it.
+  - Open question: whether any uv project exists outside `/Users/Shared`. If
+    none does and none is planned, the exposure is theoretical and the entry can
+    say so and close.
+  - Note: uv offers no per-path cache scoping, so the realistic options are one
+    shared cache or none. A per-account cache restores isolation but gives up
+    the hardlinking that makes a venv writable by both accounts — that is the
+    trade to weigh. uv verifies package hashes against the lockfile when
+    installing, never on read, so a later write to a cached file goes unnoticed.
+
+- [ ] **Refresh the Ollama section of `claude/docs/shared-storage.md`** — it
+      describes an interim that has ended. Homebrew's multi-user breakage is
+      fixed and `ollama` is installed at `/opt/homebrew/bin/ollama` (0.32.5), so
+      the shared brew binary the section anticipates is already in place. Record
+      that instead, and delete the leftover unpacked copy at `~/tmp/ollama` on
+      the sandbox account.
+
+- [ ] **Say when naming a hazard helps and when it arms one**
+      {#footgun-documentation} — a note that spells out the exact command
+      causing the damage also places that command in front of whichever session
+      reads the note, where it becomes something to reach for. Write the test
+      for when to spell it out and when to describe the failure alone.
+  - Note: the test turns on propensity, not on how bad the failure is. Naming a
+    command earns its place where Claude already reaches for it and needs
+    stopping — the note then corrects a mistake that actually happens. Where
+    Claude would not have arrived at the command unprompted, the note is the
+    only reason it is in context at all, and it adds risk while preventing
+    nothing.
+  - Rationale: `claude/docs/shared-storage.md` describes what clearing a venv
+    costs without naming the command that clears it, on exactly this reasoning.
+  - Open question: where it belongs. CLAUDE.md's documentation section governs
+    prose everywhere, but the rule fires only while writing a hazard note, which
+    may be narrow enough for `rules/claude-configuration.md`.
 
 - [ ] **Bring every other repo under the same setup** {#repo-tidy-up} — each
       repo under `/Users/Shared/code` should carry a `.venv` its editor finds
@@ -39,7 +77,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `bridge-scoresheets` declares no dependencies at all. The crosswords repos
     are installable packages on purpose, for the `clue-gen` entry point, and
     should stay that way, though `uv sync` would still give each an
-    editor-visible `.venv`.
+    editor-visible `.venv`. Record that reasoning in the crosswords repo, where
+    the packaging decision belongs, rather than in the shared design doc.
   - Note: keep `[project] name` matching the directory. uv derives the venv's
     prompt from it and Zed's status bar shows that prompt, so a copied name
     makes the editor look like it picked another project's venv.
