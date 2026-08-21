@@ -51,7 +51,11 @@ if [ "$names_test_path" = false ]; then
   set -- "$root/claude/hooks" "$root/claude/scripts" "$@"
 fi
 
-python3 -m pytest "$@"
+# `uv run --project` uses this checkout's own `.venv`, building it from uv.lock
+# when absent — so a fresh clone or a new worktree runs green with no setup
+# step, and each worktree tests against its own environment rather than
+# whichever venv the caller's shell activated.
+uv run --project "$root" pytest "$@"
 pytest_status=$?
 
 # Either half failing fails the run.

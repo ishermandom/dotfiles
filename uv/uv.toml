@@ -1,0 +1,40 @@
+# Copyright 2026 Ilya Sherman (ishermandom@)
+# SPDX-License-Identifier: MIT
+#
+# Machine-level uv configuration, linked to ~/.config/uv/uv.toml. Every setting
+# here exists for this machine's two-account arrangement rather than for any one
+# project, so it belongs to the machine and applies to every repo. A project's
+# own `[tool.uv]` table still wins where the two overlap.
+#
+# Together they let a single `.venv` inside /Users/Shared/code serve both
+# accounts. Each setting closes a gap that fails only for whichever account did
+# not create the venv, and none of them announces itself — the venv simply
+# refuses to work for the other account.
+
+# A cache both accounts can reach, rather than one under a single account's
+# home. Its inheritable ACLs — see claude/scripts/share-directory.sh — are what
+# make the hardlinked installs below usable from either account.
+cache-dir = "/Users/Shared/cache/uv"
+
+# Hardlink installed files out of that cache. A hardlink shares the cached
+# file's inode, and therefore its ACL, which is why the cache has to be shared
+# for this to work at all.
+#
+# uv's default on APFS is a copy-on-write clone. A clone shares disk blocks but
+# arrives carrying no ACL even when the cached original has one, so the other
+# account can read a package but never add, remove, or replace it. Copying
+# inherits correctly but gives up the sharing: hardlinked, the dotfiles repo's
+# venv adds about 3 MB on top of the cache it shares with, where a copy would
+# add 96 MB.
+link-mode = "hardlink"
+
+# Never one of uv's own managed interpreters. Those install under
+# ~/.local/share/uv/python/, inside one account's home, and the other account
+# cannot execute them — leaving every import in the venv unresolvable.
+#
+# Relocating them into the shared tree, the way `cache-dir` does above, is not
+# an option: their location is settable only through the UV_PYTHON_INSTALL_DIR
+# environment variable or a flag on `uv python install`, never from this file.
+# An environment variable would leave the arrangement dependent on shell setup
+# and silently absent from anything not launched by a shell.
+python-preference = "only-system"

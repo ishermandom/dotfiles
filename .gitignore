@@ -2,6 +2,10 @@
 __pycache__/
 *.pyc
 
+# The project venv, built by `uv sync` from the committed uv.lock. Machine
+# state, not source — the lockfile is what pins the contents.
+.venv/
+
 # The config-review run ledger: run-scoped scratch, deleted at close.
 claude/skills/config-review/ledger.md
 

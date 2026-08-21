@@ -2,10 +2,12 @@
 # SPDX-License-Identifier: MIT
 #
 # Project metadata and tool configuration for the dotfiles repo. This is not an
-# installable package (there is intentionally no [build-system]): the [project]
-# table documents the Python dependencies the hooks need present in the runtime
-# venv, and the [tool.*] sections centralize test and type-check configuration.
-# Provision the venv directly, e.g. `pip install bashlex` plus the dev tools.
+# installable package (there is intentionally no [build-system]): the hooks and
+# scripts are standalone files, run by path. The [project] table documents the
+# Python dependencies they need, and the [tool.*] sections centralize test and
+# type-check configuration.
+#
+# Run `uv sync` to materialize the dependencies into `.venv` at the repo root.
 
 [project]
 name = "dotfiles-hooks"
@@ -19,12 +21,20 @@ dependencies = [
   "bashlex",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "mypy",
   "pytest",
   "ruff",
 ]
+
+[tool.uv]
+# This repo is not a Python package — its hooks and scripts are standalone
+# files that Claude Code runs by path, never imported from an installed
+# distribution. `package = false` says so: `uv sync` installs the dependencies
+# declared above into `.venv` and does not try to build or install this repo
+# itself. Without it uv looks for a build backend and fails.
+package = false
 
 [tool.pytest.ini_options]
 # Neither directory below is a package, so put each on sys.path for the test

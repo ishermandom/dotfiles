@@ -17,23 +17,82 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     shaped fix is wanted. That shape also caught prose already wrapped across
     two compliant lines whose merge would have overflowed.
 
-- [ ] **Give the repo a project-local `.venv`** — the dev tools live in
-      `/Users/claude-sandbox/.venvs/default`, inside one account's home, which
-      the other account cannot read. Nothing in the repo root points an editor
-      at it, and neither `/usr/bin/python3` nor `/opt/homebrew/bin/python3` has
-      pytest, so Zed's language server reports `import pytest` as unresolved in
-      the repo's test files (observed 2026-07-29).
-  - Note: a `.venv` at the repo root is the one location both accounts and any
-    editor find without per-account configuration. It needs gitignoring, and
-    `pyproject.toml`'s header ("Provision the venv directly") then describes the
-    wrong setup.
-  - Note: check what the move does to everything that shells out to `python3` —
-    `run_tests.sh`, the Stop hooks, and `~/.claude/scripts/quiet-*.sh` resolve
-    whatever is on PATH, which is the per-account venv today.
-  - Note: two accounts writing into one venv is the open question. The shared
-    ACLs grant each of them read and write, but installed files stay owned by
-    whichever account ran the install. Verify before committing to the approach.
-  - Worktree: project-venv
+- [ ] **Bring `claude/docs/shared-storage.md` up to date** — its "Python tooling
+      — per-account, no shared venv" section and its "No uv migration" line both
+      describe a setup the repos have left behind: bridge has run a uv workspace
+      with a `.venv` in the shared tree since July, and this repo now does the
+      same. Record what replaced them.
+  - Note: the three settings now in `uv/uv.toml` are not optional polish. Each
+    closes a gap that fails only for whichever account did not build the venv,
+    and none of them announces itself.
+
+- [ ] **Bring every other repo under the same setup** {#repo-tidy-up} — each
+      repo under `/Users/Shared/code` should carry a `.venv` its editor finds
+      and its `run_tests.sh` uses, so the arrangement is uniform rather than
+      true of the dotfiles repo alone. Per repo: a `pyproject.toml` declaring
+      dependencies, `[tool.uv] package = false` where nothing is meant to be
+      installable, `uv sync`, `.venv/` gitignored, and `run_tests.sh` going
+      through `uv run --project`.
+  - Note: the state as surveyed. `bridge` is already the model — a uv workspace
+    with a shared-tree `.venv` since July — and needs only the machine config.
+    `google-photos-deduper` carries a legacy `.pytest.ini` and pins Python 3.9.
+    `bridge-scoresheets` declares no dependencies at all. The crosswords repos
+    are installable packages on purpose, for the `clue-gen` entry point, and
+    should stay that way, though `uv sync` would still give each an
+    editor-visible `.venv`.
+  - Note: keep `[project] name` matching the directory. uv derives the venv's
+    prompt from it and Zed's status bar shows that prompt, so a copied name
+    makes the editor look like it picked another project's venv.
+  - Note: a repo Zed has opened before may hold a toolchain choice predating its
+    `.venv`, which survives reopening. Zed keys that choice by path, in
+    `~/Library/Application Support/Zed/db/`; re-picking from the toolchain
+    selector clears it. Fresh repos autodiscover correctly with no interaction.
+
+- [ ] **Align mypy, ruff, and basedpyright on one standard** — the three
+      disagree about this codebase, and only mypy's verdict is enforced.
+      `mypy --strict` passes and gates at Stop; basedpyright at its own default
+      reports ~130 findings, and at pyright's `standard` still reports six. Work
+      out which checks the repo actually wants, which tool should own each, and
+      configure to match, rather than letting the editor disagree with the gate.
+  - Note: most of the ~130 are style opinions against deliberate choices —
+    sibling imports in non-package directories, discarded return values,
+    implicit string concatenation. Roughly 67 are `Any` leaking from bashlex,
+    which ships no stubs; mypy could enforce the same through
+    `--disallow-any-expr`, which `--strict` does not include.
+  - Note: the six that survive at `standard` are all unavoidable, and both live
+    in `gate_git.py`. `bashlex` is imported under a `try` guarded by a boolean
+    no checker can follow, and `bashlex.ast.node` assigns its attributes via
+    `self.__dict__.update(kwargs)`, so the `_Node` protocol it satisfies at
+    runtime cannot be verified statically.
+
+- [ ] **Decide whether `[tool.pytest.ini_options] pythonpath` earns its place**
+      — the suite passes with it disabled, because pytest inserts each test
+      file's own directory under its default `prepend` import mode and every
+      first-party import here is a sibling. Its comment claims it is needed for
+      exactly those imports, which is untrue.
+  - Note: the entry stops being inert under `--import-mode=importlib`, which
+    inserts no basedirs. Keeping it as deliberate insurance is defensible; the
+    comment needs correcting either way.
+
+- [ ] **Have the hooks find their own tools** {#self-describing-hooks} — every
+      hook reaches its Python dependencies through PATH, which `zsh/.zshrc`
+      sets, so a hook running outside a shell that sourced it loses them
+      silently. Resolve the repo's `.venv` from each script's own location
+      instead, and the shell config stops being load-bearing for anything but
+      interactive convenience.
+  - Note: both mechanisms are verified. A Python hook reached through
+    `~/.claude/hooks/` resolves `Path(__file__).resolve().parents[2]` to the
+    real checkout, and putting that venv's `site-packages` on `sys.path` imports
+    `bashlex` under the system interpreter — no re-exec, no second process. A
+    shell hook does the same from `${BASH_SOURCE[0]}`, the idiom
+    `stop_checks.sh` already uses to find its steps.
+  - Note: build the `site-packages` path from `sys.version_info` rather than
+    writing the version out. A mismatch between the running interpreter and the
+    venv's would leave the path absent, skipping the injection and degrading
+    `gate_git.py` to `_HAS_BASHLEX = False` — log that rather than pass quietly.
+  - Note: this settles the open question in #hook-downstream-scripts and in
+    "Factor out resolving a repo root". Resolving a script's own real path
+    reaches the checkout that holds it, so a shared helper travels with it.
 
 - [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
       (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring

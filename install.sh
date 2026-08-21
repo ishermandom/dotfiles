@@ -103,9 +103,26 @@ packages="
   git:$HOME
   prettier:$HOME
   ruff:$HOME/.config/ruff
+  uv:$HOME/.config/uv
   zed:$HOME/.config
   zsh:$HOME
 "
+
+# The shared cache tree, which uv/uv.toml points into. Create it here rather
+# than leaving it to uv: uv would make the directory itself, without the
+# inheritable ACLs, and every package it then hardlinks into a venv would be
+# unwritable by the other account — a failure that surfaces only when that
+# account tries to change a dependency.
+#
+# The ACLs go on the parent so a cache added later for another tool inherits
+# them by being created inside. share-directory.sh is recursive and safe to
+# re-run on an existing tree.
+shared_cache_dir="/Users/Shared/cache"
+if [ -z "$is_dry_run" ]; then
+  mkdir -p "$shared_cache_dir/uv" \
+    && "$DOTFILES_DIR/claude/scripts/share-directory.sh" "$shared_cache_dir" \
+      > /dev/null
+fi
 
 # Per-account overlays live under accounts/<account>/, mirroring the package
 # layout, and override only the files that must differ per account (e.g. git's
