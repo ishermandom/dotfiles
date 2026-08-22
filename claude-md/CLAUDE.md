@@ -370,6 +370,10 @@ Every session, without being asked:
   language that sounds defensive or thorny.
 - **Less is more**: Before explaining something, ask whether the explanation is
   needed. Often the facts speak for themselves.
+- **When warning about an antipattern, spell it out only if Claude already
+  reaches for it** {#spelling-out-antipatterns}: later sessions read the warning
+  into context, so spelling the antipattern out is what puts it within reach — a
+  destructive command most of all, since it arrives as a footgun ready to run.
 - **Factual precision**: Verify physical, operational, and real-world details
   against the source. Don't paraphrase when exact behavior matters.
 - **Don't write predictably stale content**: When a statement tracks a moving

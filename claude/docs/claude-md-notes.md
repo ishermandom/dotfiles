@@ -79,3 +79,24 @@ versus reference:
 - A bare slug references.
 - A backticked slug is prose about the token itself. This lets the rules state
   their own templates and examples without those becoming citations.
+
+## Spelling out an antipattern (CLAUDE.md #spelling-out-antipatterns)
+
+The grounding case: `shared-storage.md`'s Python tooling section says what
+clearing a project's venv costs without naming the command that clears it.
+Spelling it out would have been the only reason that command appeared in a
+session's context, and naming it prevents nothing — the mistake it would guard
+against is not one Claude was going to make unprompted.
+
+`set -e` is the contrasting case, named outright in `rules/shell.md`. It is the
+reflexive way to write the mistake, so the rule has something real to interrupt
+and naming it pays for itself. The two together are the fastest way to calibrate
+a new case.
+
+The rule lives in CLAUDE.md rather than `rules/claude-configuration.md` because
+warnings get written in code comments as often as in config prose, and that
+rules file loads only for config paths.
+
+What made this worth a rule is that severity is the intuitive test and the wrong
+one: a worse failure pulls harder toward spelling the command out, which is
+exactly backwards when Claude would never have reached for it.

@@ -47,23 +47,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       that instead, and delete the leftover unpacked copy at `~/tmp/ollama` on
       the sandbox account.
 
-- [ ] **Say when naming a hazard helps and when it arms one**
-      {#footgun-documentation} — a note that spells out the exact command
-      causing the damage also places that command in front of whichever session
-      reads the note, where it becomes something to reach for. Write the test
-      for when to spell it out and when to describe the failure alone.
-  - Note: the test turns on propensity, not on how bad the failure is. Naming a
-    command earns its place where Claude already reaches for it and needs
-    stopping — the note then corrects a mistake that actually happens. Where
-    Claude would not have arrived at the command unprompted, the note is the
-    only reason it is in context at all, and it adds risk while preventing
-    nothing.
-  - Rationale: `claude/docs/shared-storage.md` describes what clearing a venv
-    costs without naming the command that clears it, on exactly this reasoning.
-  - Open question: where it belongs. CLAUDE.md's documentation section governs
-    prose everywhere, but the rule fires only while writing a hazard note, which
-    may be narrow enough for `rules/claude-configuration.md`.
-
 - [ ] **Bring every other repo under the same setup** {#repo-tidy-up} — each
       repo under `/Users/Shared/code` should carry a `.venv` its editor finds
       and its `run_tests.sh` uses, so the arrangement is uniform rather than
