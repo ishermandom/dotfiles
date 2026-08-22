@@ -37,11 +37,17 @@ dev = [
 package = false
 
 [tool.pytest.ini_options]
-# Neither directory below is a package, so put each on sys.path for the test
-# modules' sibling imports — `from gate_git import ...` and
-# `from distillation_backlog import ...`. Which directories hold tests is
-# run_tests.sh's to say.
-pythonpath = ["claude/hooks", "claude/scripts"]
+# Deliberately empty of import roots. The test modules import their siblings by
+# bare name — `import gate_git` — which resolves on its own: pytest's default
+# `prepend` import mode puts each test file's own directory on `sys.path`.
+#
+# The empty table still earns its place. pytest treats a `pyproject.toml` as its
+# config file only when this table is present, and anchors rootdir at whichever
+# one it finds. Drop the table and pytest walks past this checkout into the one
+# above it — a worktree under `.claude/worktrees/` then runs against the main
+# checkout's configuration.
+#
+# Which directories hold tests is run_tests.sh's to say.
 
 [tool.mypy]
 # bashlex ships no type stubs (no py.typed marker). Treat its imports as

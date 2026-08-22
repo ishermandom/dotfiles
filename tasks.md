@@ -17,6 +17,17 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     shaped fix is wanted. That shape also caught prose already wrapped across
     two compliant lines whose merge would have overflowed.
 
+- [ ] **Finish the venv setup on both accounts once the branch lands**
+      {#venv-landing} — the work sits on `worktree-project-venv`. Landing it is
+      not enough on its own: run `install.sh` on each account, which links
+      `~/.config/uv/uv.toml` and creates `/Users/Shared/cache` with its
+      inheritable ACLs, then `uv sync` in the main checkout to build `.venv`
+      there. Until both run, the machine config the venv depends on is absent.
+  - Note: Zed has opened this repo before, so it may hold a toolchain choice
+    that predates `.venv` and keep using it — the venv appearing does not
+    dislodge it. One pick from the toolchain selector clears that. A repo Zed
+    has never opened autodiscovers correctly with no interaction.
+
 - [ ] **Re-examine the shared uv cache as a sandbox-escape path**
       {#shared-cache-threat-model} — `uv/uv.toml` sets `cache-dir` machine-wide,
       so every uv project on this machine hardlinks its packages out of
@@ -87,14 +98,22 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `self.__dict__.update(kwargs)`, so the `_Node` protocol it satisfies at
     runtime cannot be verified statically.
 
-- [ ] **Decide whether `[tool.pytest.ini_options] pythonpath` earns its place**
-      — the suite passes with it disabled, because pytest inserts each test
-      file's own directory under its default `prepend` import mode and every
-      first-party import here is a sibling. Its comment claims it is needed for
-      exactly those imports, which is untrue.
-  - Note: the entry stops being inert under `--import-mode=importlib`, which
-    inserts no basedirs. Keeping it as deliberate insurance is defensible; the
-    comment needs correcting either way.
+- [ ] **Weigh inline script metadata for the hooks** {#inline-script-metadata} —
+      PEP 723 lets a script declare its own dependencies in a comment block at
+      the top, and `#!/usr/bin/env -S uv run --script` makes it self-contained:
+      no venv to find, no PATH to inherit, nothing outside the file. That is the
+      current standard answer for a standalone script with dependencies, which
+      is exactly what `gate_git.py` is.
+  - Note: the cost is a `uv run` on every invocation, measured at roughly 25 ms
+    warm against 17 ms for a direct interpreter. Tolerable for a Stop-time
+    check; `gate_auto_tools.py` fires on every Bash call, where it is not
+    obviously worth paying.
+  - Note: `uv lock --script <file>` pins a script's dependencies in a lockfile
+    beside it, so the reproducibility the repo venv gives is not lost.
+  - Note: this reaches the same goal as #self-describing-hooks by another route.
+    Settle which one before building either — inline metadata makes the script
+    independent of any venv, where #self-describing-hooks keeps the shared venv
+    and teaches the script to find it.
 
 - [ ] **Have the hooks find their own tools** {#self-describing-hooks} — every
       hook reaches its Python dependencies through PATH, which `zsh/.zshrc`
