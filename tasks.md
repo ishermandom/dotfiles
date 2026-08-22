@@ -51,13 +51,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     trade to weigh. uv verifies package hashes against the lockfile when
     installing, never on read, so a later write to a cached file goes unnoticed.
 
-- [ ] **Refresh the Ollama section of `claude/docs/shared-storage.md`** — it
-      describes an interim that has ended. Homebrew's multi-user breakage is
-      fixed and `ollama` is installed at `/opt/homebrew/bin/ollama` (0.32.5), so
-      the shared brew binary the section anticipates is already in place. Record
-      that instead, and delete the leftover unpacked copy at `~/tmp/ollama` on
-      the sandbox account.
-
 - [ ] **Bring every other repo under the same setup** {#repo-tidy-up} — each
       repo under `/Users/Shared/code` should carry a `.venv` its editor finds
       and its `run_tests.sh` uses, so the arrangement is uniform rather than

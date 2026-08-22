@@ -107,10 +107,3 @@ clears the venv temporarily breaks access to every tool it provides. Recovery is
 `~/.venvs/default` still exists on each account, and still serves the hooks and
 the interactive shell, which find their tools through PATH. Ending that split is
 queued as tasks.md #self-describing-hooks.
-
-## Ollama binary — interim until Homebrew fix
-
-The official app install is rejected on purpose: it registers a login-launched
-background daemon. An unpacked copy under the sandbox account's `~/tmp` serves
-in the interim; when Homebrew fixes the multi-user package breakage, the brew
-install resumes as the shared binary.
