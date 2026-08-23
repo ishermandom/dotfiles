@@ -148,6 +148,79 @@ def test_fmt_off_region_is_not_reflowed() -> None:
   )
 
 
+def test_script_metadata_block_is_not_reflowed() -> None:
+  """An inline script metadata block passes through untouched."""
+  source = (
+    '# /// script\n'
+    '# requires-python = ">=3.11"\n'
+    '# dependencies = ["bashlex"]\n'
+    '# ///\n'
+    '# tail one\n'
+    '# tail two\n'
+    'x = 1\n'
+  )
+
+  result = reflow_source(source, fill_markdown)
+
+  assert result == (
+    '# /// script\n'
+    '# requires-python = ">=3.11"\n'
+    '# dependencies = ["bashlex"]\n'
+    '# ///\n'
+    '# tail one tail two\n'
+    'x = 1\n'
+  )
+
+
+def test_prose_above_script_metadata_does_not_absorb_it() -> None:
+  """The opening delimiter breaks the paragraph above rather than merging in."""
+  source = (
+    '# lead one\n'
+    '# lead two\n'
+    '# /// script\n'
+    '# requires-python = ">=3.11"\n'
+    '# ///\n'
+    'x = 1\n'
+  )
+
+  result = reflow_source(source, fill_markdown)
+
+  assert result == (
+    '# lead one lead two\n'
+    '# /// script\n'
+    '# requires-python = ">=3.11"\n'
+    '# ///\n'
+    'x = 1\n'
+  )
+
+
+def test_blank_comment_inside_script_metadata_does_not_close_it() -> None:
+  """A bare `#` ends a paragraph elsewhere; inside the block it is content."""
+  source = (
+    '# /// script\n'
+    '# requires-python = ">=3.11"\n'
+    '#\n'
+    '# dependencies = ["bashlex"]\n'
+    '# ///\n'
+    '# tail one\n'
+    '# tail two\n'
+    'x = 1\n'
+  )
+
+  result = reflow_source(source, fill_markdown)
+
+  # The lines after `#` stay verbatim, so the block did not end early.
+  assert result == (
+    '# /// script\n'
+    '# requires-python = ">=3.11"\n'
+    '#\n'
+    '# dependencies = ["bashlex"]\n'
+    '# ///\n'
+    '# tail one tail two\n'
+    'x = 1\n'
+  )
+
+
 def test_todo_line_starts_its_own_paragraph() -> None:
   """A TODO never merges into preceding prose; its continuation joins it."""
   source = (

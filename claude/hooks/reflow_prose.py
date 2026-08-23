@@ -65,7 +65,8 @@
 #   notices.
 # - Machine directives never reflow: shebangs, `noqa`, `fmt:`, `type:`,
 #   `shellcheck`, and kin are configuration, not prose, as is any region under
-#   `fmt: off`. Wrapping a `shellcheck disable=` line, or letting it merge into
+#   `fmt: off` or inside an inline script metadata block, `# /// script` through
+#   `# ///`. Wrapping a `shellcheck disable=` line, or letting it merge into
 #   neighboring prose, would silently stop suppressing anything. License tag
 #   lines (`Copyright`, `SPDX-License-Identifier`) are likewise verbatim — to
 #   markdown they are adjacent one-line paragraphs that would otherwise merge.
@@ -159,6 +160,20 @@ _DIRECTIVE_PATTERN = re.compile(rf'\s*(?:{_DIRECTIVE_NAMES})')
 # formatter's own convention.
 _FORMAT_OFF_PATTERN = re.compile(r'\s*fmt:\s*off\b')
 _FORMAT_ON_PATTERN = re.compile(r'\s*fmt:\s*on\b')
+
+# An inline script metadata block (PEP 723) opens with `# /// <type>` and closes
+# with a bare `# ///`. Between them sits TOML that a runner reads to set the
+# script up — `uv run --script` is one such reader, `pipx run` another — and the
+# type names which schema applies, so the pattern takes any type rather than
+# only `script`.
+#
+# Both delimiters and everything between them are verbatim: merged into a
+# paragraph the block stops parsing, and the script quietly loses whatever it
+# declared. The delimiters take the single space PEP 723 fixes. An opener with
+# no closer freezes the rest of the file, the same way an unmatched `fmt: off`
+# does.
+_SCRIPT_METADATA_OPEN_PATTERN = re.compile(r' /// [a-zA-Z0-9-]+$')
+_SCRIPT_METADATA_CLOSE_PATTERN = re.compile(r' ///$')
 
 # The style guide puts every TODO on its own line; starting a fresh paragraph at
 # each TODO keeps one from merging into neighboring prose.
@@ -612,12 +627,14 @@ def _comment_chunks(
   """Split whole-line comments into reflowable prose chunks.
 
   A chunk is a maximal run of adjacent `# `-prefixed prose lines at one indent.
-  Blank `#` lines, directives, `#`-stuck text, indented blocks, and `fmt: off`
-  regions end the current chunk and stay verbatim.
+  Blank `#` lines, directives, `#`-stuck text, indented blocks, `fmt: off`
+  regions, and inline script metadata blocks end the current chunk and stay
+  verbatim.
   """
   chunks: list[ProseChunk] = []
   run: list[tuple[int, str]] = []
   is_formatting_disabled = False
+  is_in_script_metadata = False
   # Both track structure within the current run, so both reset when it ends.
   has_open_list = False
   is_in_fence = False
@@ -654,6 +671,18 @@ def _comment_chunks(
     if _FORMAT_OFF_PATTERN.match(content):
       flush()
       is_formatting_disabled = True
+      continue
+    # No flush inside the block: the opener flushed, and every line since has
+    # continued past the point where a run accumulates, so there is nothing
+    # held. The closing `# ///` is part of the block, consumed here rather than
+    # falling through to the prose path below.
+    if is_in_script_metadata:
+      if _SCRIPT_METADATA_CLOSE_PATTERN.match(content):
+        is_in_script_metadata = False
+      continue
+    if _SCRIPT_METADATA_OPEN_PATTERN.match(content):
+      flush()
+      is_in_script_metadata = True
       continue
     # A bare `#` is a paragraph break; keep it verbatim between chunks.
     if not content:
