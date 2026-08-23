@@ -95,18 +95,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     part to settle.
   - Note: `run_tests.sh` already went through `uv run --project`.
 
-- [ ] **Record `rg -r` as a footgun** {#ripgrep-replace-flag} — `-r` is
-      ripgrep's replace flag, not a spelling of `-n`, and reaching for `-rn` out
-      of grep habit is the way it happens. Nothing fails: ripgrep prints the
-      matched lines with the substitution applied, so paths and code come back
-      altered and read as genuine output. Hit three times in the 2026-08-22
-      session, twice reported as real content before the substitution was
-      noticed.
-  - Note: this passes the test in CLAUDE.md #spelling-out-antipatterns — naming
-    the exact form worth avoiding is warranted precisely because it is the one
-    already being reached for. The home is CLAUDE.md #prefer-rg, which already
-    warns about the `grep` shim's BRE mode.
-
 - [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
       (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring
       prose only when that file is next edited, so files untouched since the

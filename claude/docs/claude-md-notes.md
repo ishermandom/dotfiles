@@ -60,12 +60,30 @@ per-operation gap is small (a ~500-line file is a few thousand output tokens vs.
 model at $50/MTok output, as of June 2026) — a
 soft default, not worth a confirmation round-trip.
 
-## Prefer to search code with rg (CLAUDE.md #prefer-rg)
+## No rule for choosing a search tool
 
-The inline clause carries the misfire risk (BRE mode). The fuller picture: the
-`grep` shim runs ugrep with `-G`, so `|`, `+`, `(` are literal without `-E`; rg
-defaults to recursive, smart-case, gitignore-aware search with an ERE-ish flavor
-that matches how patterns are typically written.
+A rule steering toward `rg` existed and was removed; re-adding one is the
+tempting move this entry exists to head off. `grep` is what Claude reaches for
+unprompted, and it is a Claude Code shell function rather than the system
+binary: `ugrep -G --ignore-files --hidden -I --exclude-dir=.git …`. The
+gitignore awareness and VCS skipping that argued for rg were already present,
+and hidden files — which rg drops unless asked for — were already included.
+
+rg's regex is a subset, not a superset: ugrep's `-P` handles lookaround and
+backreferences, which Rust's regex crate omits by design, so `rg "colo(?!u)r"`
+is a parse error where `grep -P` matches. Speed is a wash at repo scale.
+
+The steering also cost something. `rg -r` takes a replacement, so `-rn` — the
+spelling grep habits produce — silently rewrites every match to `n` and drops
+line numbers, leaving output that reads as genuine. That fired four times in one
+session while the rule was in force, twice reaching the user as fact. No warning
+about it survives here: unprompted, `rg` is not what gets reached for, so naming
+the flag would load the footgun rather than interrupt a real reach (see
+#spelling-out-antipatterns).
+
+Re-measuring is easy to get wrong. Because the shim is a shell function,
+anything reaching `grep` through `subprocess` without a shell gets raw ugrep
+carrying none of those flags, and appears to descend into gitignored trees.
 
 ## Cross-references (CLAUDE.md #cross-references)
 

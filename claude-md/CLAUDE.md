@@ -341,13 +341,8 @@ Every session, without being asked:
   which won't quite match what the hook would have produced.
 - **Don't reflexively measure line width by hand where a formatter owns the
   file** — the reflow hooks settle it on every edit. Where no formatter runs,
-  find over-long lines with `rg -n '.{81,}'`; `wc -L` and `awk length` both
+  find over-long lines with `grep -rnE '.{81,}'`; `wc -L` and `awk length` both
   count bytes, overcounting every em dash.
-- **Prefer to search code with `rg`** {#prefer-rg}: ripgrep for recursive
-  searches. The bundled `grep` shim (backed by ugrep) handles quick literal or
-  piped lookups, and is the better pick for compressed/archived logs and fuzzy
-  matching — but it runs in BRE mode: `|`, `+`, `(` are literal without `-E`.
-  `rg` skips hidden files and directories unless passed `--hidden`.
 - **Read files incrementally**: use `grep`/`find` to locate relevant sections,
   then read only those ranges with `offset`/`limit`. For edits, grep for the
   insertion point and read a small window around it — a full file read is rarely
