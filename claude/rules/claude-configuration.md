@@ -308,6 +308,11 @@ home, no drift.
 Mechanical traps whose failure is silent. Check the matching entry before
 finalizing; add new ones here as they are hit.
 
+- **Measuring which interpreter or tool `uv run` resolves**: clear `VIRTUAL_ENV`
+  from the probe's environment first. uv honours an active virtual environment
+  over the project it was pointed at, so a measurement taken from an activated
+  shell reports that venv's version whatever the project pins — and reports
+  success where the real, unactivated case fails.
 - **`SKILL.md` frontmatter value containing `: `**: quote it or use a `>-` block
   scalar — a `: ` inside a plain (unquoted) YAML scalar is a parse error that
   voids the skill's entire frontmatter block. Claude Code then falls back to the

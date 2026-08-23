@@ -56,6 +56,12 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     no checker can follow, and `bashlex.ast.node` assigns its attributes via
     `self.__dict__.update(kwargs)`, so the `_Node` protocol it satisfies at
     runtime cannot be verified statically.
+  - Note: those counts predate the check runners moving to `uv run`, which now
+    resolves ruff and mypy from each repo's own pins rather than from
+    `~/.venvs/default` — here 0.16.4 and 2.3.1 against the 0.15.13 and 2.1.0
+    they were measured under. Re-measure before acting on them. The upside is
+    that which version gates a repo is now deterministic, which is what makes
+    aligning three tools on one standard tractable at all.
 
 - [ ] **Decide whether `~/.venvs/default` can go** {#retire-default-venv} — the
       toolchain no longer reaches for it: the Python hooks declare their own
@@ -74,8 +80,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     supplies a bare `python3` newer than Apple's 3.9.6. What depends on that,
     and whether `uv run` covers those uses, is part of the answer.
   - Note: `websockets` is there, and google-photos-deduper's `tools/cdp.py`
-    needs it. Declaring that dependency is what lane 35101164 was for — confirm
-    it landed before deleting anything.
+    needs it. That repo now declares the dependency itself, so this no longer
+    waits on it — but the same question applies to every other entry in `bin/`:
+    which are reached by something that declares them, and which only by hand.
 
 - [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
       (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring
