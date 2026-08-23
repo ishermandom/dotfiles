@@ -80,17 +80,21 @@ expect "an unparseable file exits 2 or more" test "$exit_code" -ge 2
 
 # `check` breaking while `format` only reports findings is the pairing that
 # tells "worst wins" apart from "the last one wins". Real ruff cannot be made to
-# produce it, so a stub earlier on PATH stands in.
+# produce it, so a stub stands in. The runner reaches ruff through `uv run`, so
+# the stub is a uv that reads the subcommand out of its own arguments — the last
+# one, since everything before it configures uv rather than ruff.
 begin_project_case takes-the-worse-of-two-statuses
 mkdir "$case_dir/stub"
-cat > "$case_dir/stub/ruff" << 'STUB'
+cat > "$case_dir/stub/uv" << 'STUB'
 #!/usr/bin/env bash
-case "$1" in
-  check) exit 2 ;;
-  format) exit 1 ;;
-esac
+for argument in "$@"; do
+  case "$argument" in
+    check) exit 2 ;;
+    format) exit 1 ;;
+  esac
+done
 STUB
-chmod +x "$case_dir/stub/ruff"
+chmod +x "$case_dir/stub/uv"
 printf 'X = 1\n' > "$case_dir/clean.py"
 PATH="$case_dir/stub:$PATH" "$quiet_ruff" "$case_dir" > /dev/null 2>&1
 exit_code=$?
@@ -98,12 +102,15 @@ exit_code=$?
 expect "a breakage in check outranks findings from format" \
   test "$exit_code" -eq 2
 
-begin_project_case reports-a-missing-ruff
+# The runner supplies its own ruff through uv, so an empty PATH is no longer a
+# missing tool — this is what reaching ruff through the project rather than
+# through the environment buys.
+begin_project_case runs-with-nothing-on-path
 printf 'X = 1\n' > "$case_dir/clean.py"
 PATH=/usr/bin:/bin "$quiet_ruff" "$case_dir" > /dev/null 2>&1
 exit_code=$?
 
-expect "a missing ruff exits 127" test "$exit_code" -eq 127
+expect "a bare PATH still runs ruff" test "$exit_code" -eq 0
 
 # --- summary ----------------------------------------------------------------
 

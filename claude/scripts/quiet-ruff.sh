@@ -14,6 +14,13 @@
 # two repos in one turn — the project and the dotfiles checkout. Outside a repo,
 # run in place.
 
+# Hooks and subshells may run with a minimal environment; Homebrew's bin
+# directory may not be on PATH, so append it. uv lives there, and every
+# invocation below goes through it. Appended rather than prepended so that a uv
+# placed earlier on PATH still wins: `quiet-ruff-test.sh` substitutes a stub
+# that way to produce a check/format status pairing real ruff cannot.
+export PATH="$PATH:/opt/homebrew/bin"
+
 paths=("$@")
 [ ${#paths[@]} -eq 0 ] && paths=(.)
 
@@ -50,11 +57,22 @@ first_dir=${abs_paths[0]}
 repo_root=$(cd "$first_dir" && git rev-parse --show-toplevel 2> /dev/null)
 run_dir="${repo_root:-$PWD}"
 
+# Reach ruff through uv rather than through PATH, so the version is whatever the
+# target repo pins rather than whatever a venv happens to have been activated.
+# `--project` names the repo explicitly, so uv resolves that project and never
+# walks past it into an unrelated one above. `--with` supplies a ruff for a repo
+# that declares none — it does not override a declared pin, so a repo that pins
+# one still gets it.
+#
+# uv syncs the project before running, which is what makes the pin take effect.
+# In a repo that declares dependencies but has no lockfile yet, that writes one.
+ruff=(uv run --project "$run_dir" --with ruff ruff)
+
 # Each cd runs in its command-substitution subshell, so the script's own
 # directory is unaffected.
-check_output=$(cd "$run_dir" && ruff check --fix "${abs_paths[@]}" 2>&1)
+check_output=$(cd "$run_dir" && "${ruff[@]}" check --fix "${abs_paths[@]}" 2>&1)
 check_status=$?
-format_output=$(cd "$run_dir" && ruff format "${abs_paths[@]}" 2>&1)
+format_output=$(cd "$run_dir" && "${ruff[@]}" format "${abs_paths[@]}" 2>&1)
 format_status=$?
 
 if [ $check_status -eq 0 ] && [ $format_status -eq 0 ]; then

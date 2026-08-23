@@ -96,20 +96,25 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `self.__dict__.update(kwargs)`, so the `_Node` protocol it satisfies at
     runtime cannot be verified statically.
 
-- [ ] **Give the shell hooks their tools without PATH** {#self-describing-hooks}
-      — the Python hooks now declare their own interpreter and dependencies, but
-      the shell side still resolves its tools through PATH: `quiet-ruff.sh`,
-      `quiet-mypy.sh`, and `quiet-prettier.sh` each invoke a bare `ruff`,
-      `mypy`, or `prettier`, and `ruff-lint.sh` calls `ruff` directly. Launched
-      outside a shell that sourced `zsh/.zshrc`, none of them finds its tool.
-  - Note: the runners work against whatever repo is current, not only this one,
-    so a project venv is the wrong source. `uv tool run` (`uvx`) is the analogue
-    of what the Python hooks got — it runs a tool out of uv's own cache with
-    nothing installed anywhere.
-  - Open question: prettier is a Node tool, so uv has no answer for it. `npx` is
-    the parallel, and whether to take it — accepting a second mechanism — is the
-    part to settle.
-  - Note: `run_tests.sh` already went through `uv run --project`.
+- [ ] **Decide whether `~/.venvs/default` can go** {#retire-default-venv} — the
+      toolchain no longer reaches for it: the Python hooks declare their own
+      interpreter and dependencies, the check runners reach ruff and mypy
+      through `uv run` against the repo being checked, and `run_tests.sh` goes
+      through `uv run --project`. Work out what still would, then either delete
+      the directory on both accounts and drop the activation from
+      `zsh/.zshrc:101`, or write down what keeps it alive.
+  - Note: it is not only ruff and mypy. Its `bin/` holds 72 entries, among them
+    project entry points installed with an editable install — `clue-gen` is
+    crosswords' — and unrelated tooling picked up over time: cmake, fastapi,
+    huggingface-cli, mlx_lm and its dozen subcommands, playwright, streamlit,
+    transformers, websockets. Deleting it takes all of those with it, so the
+    question is which are still wanted and where each should come from instead.
+  - Note: the activation is unconditional for interactive shells, so it also
+    supplies a bare `python3` newer than Apple's 3.9.6. What depends on that,
+    and whether `uv run` covers those uses, is part of the answer.
+  - Note: `websockets` is there, and google-photos-deduper's `tools/cdp.py`
+    needs it. Declaring that dependency is what lane 35101164 was for — confirm
+    it landed before deleting anything.
 
 - [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
       (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring
