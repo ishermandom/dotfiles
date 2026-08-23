@@ -88,6 +88,11 @@ when an entry stays.
 - **Goal**: open each phase with a `**Goal:**` statement — one sentence that
   orients a reader without requiring them to read all the tasks.
 - **Tasks**: one bullet per task, indented notes below as needed.
+- **Repo-wide concerns go in a tracker at the repo root**, created if none
+  exists — or at the project root where that sits lower, beside the
+  `pyproject.toml` and lockfile such work acts on. Have that tracker say further
+  trackers exist below without listing them: an index of paths goes stale as
+  trackers come and go.
 
 ### When annotating a task
 

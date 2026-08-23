@@ -93,6 +93,14 @@ under `~/.venvs/` is invisible to the other account, and to any editor not
 configured per-account. A project-root `.venv` is found automatically, by Zed
 and by `uv run` alike, with nothing configured anywhere.
 
+Two things qualify that automatic discovery. Zed keys a toolchain choice by
+path, under `~/Library/Application Support/Zed/db/`, so a repo it opened before
+the `.venv` existed keeps whatever it chose then — the venv appearing does not
+dislodge it, and one pick from the toolchain selector clears it. A repo Zed has
+never opened needs no interaction at all. Separately, uv derives the venv's
+prompt from `[project] name` and Zed shows that prompt, so a name copied from
+another project makes the editor look like it picked that project's venv.
+
 Sharing one venv between the accounts takes three settings, because every uv
 default here assumes a single account — over the interpreter's location, over
 how installed files are linked out of the cache, and over where that cache
