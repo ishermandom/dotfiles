@@ -47,15 +47,30 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       dependencies, `[tool.uv] package = false` where nothing is meant to be
       installable, `uv sync`, `.venv/` gitignored, `run_tests.sh` going through
       `uv run --project`, and a copy of #dependency-refresh under a Recurring
-      maintenance section of that repo's own tracker.
-  - Note: the state as surveyed. `bridge` is already the model — a uv workspace
-    with a shared-tree `.venv` since July — and needs only the machine config.
-    `google-photos-deduper` carries a legacy `.pytest.ini` and pins Python 3.9.
-    `bridge-scoresheets` declares no dependencies at all. The crosswords repos
-    are installable packages on purpose, for the `clue-gen` entry point, and
-    should stay that way, though `uv sync` would still give each an
-    editor-visible `.venv`. Record that reasoning in the crosswords repo, where
-    the packaging decision belongs, rather than in the shared design doc.
+      maintenance section of a tracker at the repo root — creating that tracker
+      where none exists, and noting in it that further trackers live in
+      subdirectories.
+  - Rationale: the root is where a repo-wide concern belongs. Nested trackers
+    cover work areas, so a lockfile refresh would sit arbitrarily in one of
+    them; and a reader opening a repo whose only trackers are nested finds none
+    at all. The note about subdirectories stays deliberately vague — a listed
+    index of paths goes stale as trackers come and go, and finding them is easy
+    without one. `crosswords` already does a version of this from
+    `cluegen/local/tasks.md`, beside its `pyproject.toml` rather than at the
+    repo root, which is the better spot where the two differ: it sits with the
+    lockfile the refresh acts on.
+  - Note: the state as surveyed 2026-08-22, at depth — projects and trackers
+    nest, so a root-only look misses them. `bridge` is the model: a workspace
+    root holding the one `pyproject.toml` and `uv.lock`, members beneath it, and
+    five trackers with none at the root. `crosswords` is one repo, not three:
+    `crosswords-finetune-probe` and `crosswords-local-ceiling` are long-lived
+    worktrees of it, parked as siblings rather than under `.claude/worktrees/`,
+    so tidying its installable `cluegen/` package once serves all three
+    checkouts. That package should stay installable — it publishes the
+    `clue-gen` entry point. `google-photos-deduper` is pre-uv, carrying
+    `.pytest.ini` and `.python-version`. `bridge-private` and
+    `bridge-scoresheets` hold no Python at all, so confirm they are in scope
+    before doing anything to them.
   - Note: keep `[project] name` matching the directory. uv derives the venv's
     prompt from it and Zed's status bar shows that prompt, so a copied name
     makes the editor look like it picked another project's venv.
