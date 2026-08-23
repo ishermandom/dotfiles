@@ -95,13 +95,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     part to settle.
   - Note: `run_tests.sh` already went through `uv run --project`.
 
-- [ ] **Connect a session like this one to remote-control** {#remote-control} —
-      work out what it takes to drive a background fanout session, of the kind
-      this lane runs in, from remote-control.
-  - Note: queued 2026-08-22 as asked, with no investigation done. The starting
-    point is whatever remote-control expects of a session it drives, and whether
-    a session started another way can attach after the fact.
-
 - [ ] **Record `rg -r` as a footgun** {#ripgrep-replace-flag} — `-r` is
       ripgrep's replace flag, not a spelling of `-n`, and reaching for `-rn` out
       of grep habit is the way it happens. Nothing fails: ripgrep prints the
@@ -113,20 +106,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     the exact form worth avoiding is warranted precisely because it is the one
     already being reached for. The home is CLAUDE.md #prefer-rg, which already
     warns about the `grep` shim's BRE mode.
-
-- [ ] **Import `bashlex` only when a command looks git-shaped**
-      {#bashlex-import-cost} — the import builds the library's parser tables and
-      costs 49 ms on its own, against 15 ms to start the interpreter at all.
-      That makes `gate_git.py` answer in 73 ms where `gate_auto_tools.py` —
-      firing on the same event, importing nothing outside the standard library —
-      answers in 19 ms. Both gates run on every Bash call and the turn waits on
-      the slower one. Import `bashlex` inside the parse helper instead, so a
-      command that never reaches a git check never pays for it.
-  - Note: measured 2026-08-22, 25 rounds, medians.
-  - Note: `_HAS_BASHLEX` is set at import time today. A deferred import needs
-    the same "unavailable" signal without re-attempting the import on every call
-    — Python does not cache a failed import, so a retry costs the full
-    resolution each time.
 
 - [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
       (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring

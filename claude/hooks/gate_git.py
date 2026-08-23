@@ -61,24 +61,39 @@
 from __future__ import annotations
 
 import enum
+import functools
 import json
 import sys
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from types import ModuleType
 from typing import Protocol, TextIO
 
-# bashlex has no type stubs and may be absent in some runtimes. Guard the import
-# so a missing dependency degrades to a no-op gate (every command DEFERs to
-# settings.json + the prompt) rather than crashing every Bash call.
-try:
-  import bashlex
-  import bashlex.ast
-  import bashlex.errors
 
-  _HAS_BASHLEX = True
-except ImportError:
-  _HAS_BASHLEX = False
+@functools.cache
+def _load_bashlex() -> ModuleType | None:
+  """Import bashlex on first use, or None where it is unavailable.
+
+  Deferred rather than imported at module scope because bashlex builds its
+  parser tables as it loads, costing about 50 ms against the 15 ms it takes to
+  start the interpreter at all — and only a command mentioning git reaches the
+  parser, so most invocations would pay that for nothing.
+
+  bashlex has no type stubs and may be absent in some runtimes. Returning None
+  there degrades the gate to a no-op — every command DEFERs to settings.json and
+  the prompt — rather than crashing every Bash call.
+  """
+  try:
+    import bashlex
+    import bashlex.ast
+    import bashlex.errors
+  except ImportError:
+    return None
+  # Stubless, so the imported name is untyped (Any); bind it to a typed one, as
+  # `_safe_parse` does with `bashlex.parse`, to keep Any out of the call graph.
+  module: ModuleType = bashlex
+  return module
 
 
 class _Node(Protocol):
@@ -345,8 +360,10 @@ def _safe_parse(command: str) -> Sequence[_Node] | None:
   Returns None when bashlex is unavailable or the command is syntactically
   unparseable — both are "uncertain", which the caller treats as DEFER.
   """
-  if not _HAS_BASHLEX:
+  bashlex = _load_bashlex()
+  if not bashlex:
     return None
+
   try:
     # bashlex.parse is untyped (Any); bind it to a typed name so this function
     # returns a typed value instead of leaking Any to every caller.
@@ -365,6 +382,12 @@ def _iter_nodes(node: _Node) -> Iterator[_Node]:
   This walks into command-substitution bodies too, so a dangerous git call
   hidden inside `$(...)` — which would actually execute — is still seen.
   """
+  bashlex = _load_bashlex()
+  if not bashlex:
+    # Only a successful parse produces nodes, and that needs bashlex — so
+    # reaching here means the module vanished mid-run rather than was absent.
+    raise RuntimeError('bashlex is unavailable, but a parse produced nodes')
+
   yield node
   for value in vars(node).values():
     if isinstance(value, bashlex.ast.node):

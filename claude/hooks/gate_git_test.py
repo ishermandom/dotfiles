@@ -348,7 +348,7 @@ def test_defers_when_bashlex_unavailable(
 ) -> None:
   # With bashlex absent the gate can't parse, so even a clear destructive op
   # degrades to a prompt — the settings.json deny entries are the fallback.
-  monkeypatch.setattr(gate_git, '_HAS_BASHLEX', False)
+  monkeypatch.setattr(gate_git, '_load_bashlex', lambda: None)
   assert _decision_for('git reset --hard') is None
 
 
