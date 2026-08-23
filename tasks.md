@@ -45,8 +45,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       and its `run_tests.sh` uses, so the arrangement is uniform rather than
       true of the dotfiles repo alone. Per repo: a `pyproject.toml` declaring
       dependencies, `[tool.uv] package = false` where nothing is meant to be
-      installable, `uv sync`, `.venv/` gitignored, and `run_tests.sh` going
-      through `uv run --project`.
+      installable, `uv sync`, `.venv/` gitignored, `run_tests.sh` going through
+      `uv run --project`, and a copy of #dependency-refresh under a Recurring
+      maintenance section of that repo's own tracker.
   - Note: the state as surveyed. `bridge` is already the model — a uv workspace
     with a shared-tree `.venv` since July — and needs only the machine config.
     `google-photos-deduper` carries a legacy `.pytest.ini` and pins Python 3.9.
@@ -349,3 +350,20 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     branch without asking whether `main` already holds them, and landing first
     cannot satisfy it — only `discard_changes: true` clears it. Seen 2026-08-20.
   - Worktree: worktree-cleanup
+
+---
+
+## Recurring maintenance
+
+**Goal:** keep what this repo depends on current, on a chosen cadence rather
+than by surprise. Entries here never complete — a finished run leaves the task
+in place for its next turn — so never prune them.
+
+- [ ] **Refresh pinned dependencies** {#dependency-refresh} — about monthly, run
+      `uv lock --upgrade` and then `uv sync`, so everything this repo pins picks
+      up improvements on a chosen schedule instead of drifting. `--dry-run`
+      previews what would move, and the Stop checks report within one turn
+      whether the new versions object to anything — read those before committing
+      the lockfile.
+  - Note: Use `git log -1 --format=%as -- uv.lock` to determine when this last
+    ran.
