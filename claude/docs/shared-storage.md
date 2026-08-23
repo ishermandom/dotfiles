@@ -104,6 +104,8 @@ What the shape forecloses: `.venv` is effectively a cache, and any command that
 clears the venv temporarily breaks access to every tool it provides. Recovery is
 `uv sync`.
 
-`~/.venvs/default` still exists on each account, and still serves the hooks and
-the interactive shell, which find their tools through PATH. Ending that split is
-queued as tasks.md #self-describing-hooks.
+`~/.venvs/default` still exists on each account, serving the interactive shell
+and the check runners, which find their tools through PATH. The Python hooks no
+longer need it: each declares its own interpreter and dependencies, so it runs
+from any process regardless of what PATH holds. Closing the same gap on the
+shell side is queued as tasks.md #self-describing-hooks.

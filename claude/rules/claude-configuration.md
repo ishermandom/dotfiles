@@ -277,6 +277,14 @@ home, no drift.
   external script at `~/.claude/hooks/<name>` — shell or Python, whichever fits
   the logic; prefer Python once it outgrows string-mangling. External scripts
   are readable, auditable, and testable without running the hook.
+- **Give every directly-invoked Python hook a self-contained launch header**:
+  first line `#!/usr/bin/env -S uv run --script`, then a `# /// script` block
+  declaring `requires-python` and any dependencies. A hook launched outside a
+  shell that sourced `.zshrc` otherwise runs under Apple's `python3` — 3.9.6,
+  carrying no third-party packages — where this repo needs 3.11 or newer, and a
+  hook written to degrade rather than crash fails silently there. Keep the block
+  with `dependencies = []` even when nothing outside the standard library is
+  imported: such a hook still needs the declared interpreter version.
 - **Test hooks run on Stop**: a single turn often has multiple interdependent
   edits; running tests after each edit produces false failures mid-turn. Wire
   test hooks to `Stop` so they run once, after all edits have landed.

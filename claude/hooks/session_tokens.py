@@ -1,4 +1,8 @@
-#!/usr/bin/env python3
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 """Record per-session token counts in the global session log.

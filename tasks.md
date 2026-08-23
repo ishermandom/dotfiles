@@ -17,17 +17,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     shaped fix is wanted. That shape also caught prose already wrapped across
     two compliant lines whose merge would have overflowed.
 
-- [ ] **Finish the venv setup on both accounts once the branch lands**
-      {#venv-landing} — the work sits on `worktree-project-venv`. Landing it is
-      not enough on its own: run `install.sh` on each account, which links
-      `~/.config/uv/uv.toml` and creates `/Users/Shared/cache` with its
-      inheritable ACLs, then `uv sync` in the main checkout to build `.venv`
-      there. Until both run, the machine config the venv depends on is absent.
-  - Note: Zed has opened this repo before, so it may hold a toolchain choice
-    that predates `.venv` and keep using it — the venv appearing does not
-    dislodge it. One pick from the toolchain selector clears that. A repo Zed
-    has never opened autodiscovers correctly with no interaction.
-
 - [ ] **Re-examine the shared uv cache as a sandbox-escape path**
       {#shared-cache-threat-model} — `uv/uv.toml` sets `cache-dir` machine-wide,
       so every uv project on this machine hardlinks its packages out of
@@ -91,42 +80,53 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `self.__dict__.update(kwargs)`, so the `_Node` protocol it satisfies at
     runtime cannot be verified statically.
 
-- [ ] **Weigh inline script metadata for the hooks** {#inline-script-metadata} —
-      PEP 723 lets a script declare its own dependencies in a comment block at
-      the top, and `#!/usr/bin/env -S uv run --script` makes it self-contained:
-      no venv to find, no PATH to inherit, nothing outside the file. That is the
-      current standard answer for a standalone script with dependencies, which
-      is exactly what `gate_git.py` is.
-  - Note: the cost is a `uv run` on every invocation, measured at roughly 25 ms
-    warm against 17 ms for a direct interpreter. Tolerable for a Stop-time
-    check; `gate_auto_tools.py` fires on every Bash call, where it is not
-    obviously worth paying.
-  - Note: `uv lock --script <file>` pins a script's dependencies in a lockfile
-    beside it, so the reproducibility the repo venv gives is not lost.
-  - Note: this reaches the same goal as #self-describing-hooks by another route.
-    Settle which one before building either — inline metadata makes the script
-    independent of any venv, where #self-describing-hooks keeps the shared venv
-    and teaches the script to find it.
+- [ ] **Give the shell hooks their tools without PATH** {#self-describing-hooks}
+      — the Python hooks now declare their own interpreter and dependencies, but
+      the shell side still resolves its tools through PATH: `quiet-ruff.sh`,
+      `quiet-mypy.sh`, and `quiet-prettier.sh` each invoke a bare `ruff`,
+      `mypy`, or `prettier`, and `ruff-lint.sh` calls `ruff` directly. Launched
+      outside a shell that sourced `zsh/.zshrc`, none of them finds its tool.
+  - Note: the runners work against whatever repo is current, not only this one,
+    so a project venv is the wrong source. `uv tool run` (`uvx`) is the analogue
+    of what the Python hooks got — it runs a tool out of uv's own cache with
+    nothing installed anywhere.
+  - Open question: prettier is a Node tool, so uv has no answer for it. `npx` is
+    the parallel, and whether to take it — accepting a second mechanism — is the
+    part to settle.
+  - Note: `run_tests.sh` already went through `uv run --project`.
 
-- [ ] **Have the hooks find their own tools** {#self-describing-hooks} — every
-      hook reaches its Python dependencies through PATH, which `zsh/.zshrc`
-      sets, so a hook running outside a shell that sourced it loses them
-      silently. Resolve the repo's `.venv` from each script's own location
-      instead, and the shell config stops being load-bearing for anything but
-      interactive convenience.
-  - Note: both mechanisms are verified. A Python hook reached through
-    `~/.claude/hooks/` resolves `Path(__file__).resolve().parents[2]` to the
-    real checkout, and putting that venv's `site-packages` on `sys.path` imports
-    `bashlex` under the system interpreter — no re-exec, no second process. A
-    shell hook does the same from `${BASH_SOURCE[0]}`, the idiom
-    `stop_checks.sh` already uses to find its steps.
-  - Note: build the `site-packages` path from `sys.version_info` rather than
-    writing the version out. A mismatch between the running interpreter and the
-    venv's would leave the path absent, skipping the injection and degrading
-    `gate_git.py` to `_HAS_BASHLEX = False` — log that rather than pass quietly.
-  - Note: this settles the open question in #hook-downstream-scripts and in
-    "Factor out resolving a repo root". Resolving a script's own real path
-    reaches the checkout that holds it, so a shared helper travels with it.
+- [ ] **Connect a session like this one to remote-control** {#remote-control} —
+      work out what it takes to drive a background fanout session, of the kind
+      this lane runs in, from remote-control.
+  - Note: queued 2026-08-22 as asked, with no investigation done. The starting
+    point is whatever remote-control expects of a session it drives, and whether
+    a session started another way can attach after the fact.
+
+- [ ] **Record `rg -r` as a footgun** {#ripgrep-replace-flag} — `-r` is
+      ripgrep's replace flag, not a spelling of `-n`, and reaching for `-rn` out
+      of grep habit is the way it happens. Nothing fails: ripgrep prints the
+      matched lines with the substitution applied, so paths and code come back
+      altered and read as genuine output. Hit three times in the 2026-08-22
+      session, twice reported as real content before the substitution was
+      noticed.
+  - Note: this passes the test in CLAUDE.md #spelling-out-antipatterns — naming
+    the exact form worth avoiding is warranted precisely because it is the one
+    already being reached for. The home is CLAUDE.md #prefer-rg, which already
+    warns about the `grep` shim's BRE mode.
+
+- [ ] **Import `bashlex` only when a command looks git-shaped**
+      {#bashlex-import-cost} — the import builds the library's parser tables and
+      costs 49 ms on its own, against 15 ms to start the interpreter at all.
+      That makes `gate_git.py` answer in 73 ms where `gate_auto_tools.py` —
+      firing on the same event, importing nothing outside the standard library —
+      answers in 19 ms. Both gates run on every Bash call and the turn waits on
+      the slower one. Import `bashlex` inside the parse helper instead, so a
+      command that never reaches a git check never pays for it.
+  - Note: measured 2026-08-22, 25 rounds, medians.
+  - Note: `_HAS_BASHLEX` is set at import time today. A deferred import needs
+    the same "unavailable" signal without re-attempting the import on every call
+    — Python does not cache a failed import, so a retry costs the full
+    resolution each time.
 
 - [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
       (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring
@@ -312,6 +312,11 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Open question: `~/.claude/scripts/` is also the by-hand invocation path that
     CLAUDE.md points at for the `quiet-*.sh` runners, so those have to stay
     reachable there whatever the hooks come to use.
+  - Note: sibling imports already behave the right way, verified 2026-08-22. A
+    Python hook reached through the `~/.claude/hooks/` symlink gets the real
+    directory as `sys.path[0]`, not the symlinked one, so `import log_rotation`
+    resolves inside whichever checkout holds the hook. Only the helpers named by
+    an explicit `$HOME/...` path are still pinned to the installed copy.
 
 - [ ] **Factor out resolving a repo root** — `rev-parse --show-toplevel` is
       spelled out at eight sites across `claude/hooks/` and `claude/scripts/`,
