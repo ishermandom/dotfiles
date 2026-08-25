@@ -254,6 +254,21 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     than shape it (necessity check in `rules/claude-configuration.md`
     #writing-a-rule).
 
+- [ ] **Tell Claude to prefer active voice over passive** — nothing binds prose
+      voice today outside config files, so a passive construction reaches chat
+      responses, comments, docstrings, and documentation unchallenged. CLAUDE.md
+      `## Style` is the likely home, beside the other rules that reach all four
+      surfaces.
+  - Note: `rules/claude-configuration.md` #writing-a-rule already names passive
+    constructions in its slip-pattern scan, but only for rule text in config
+    files. A CLAUDE.md rule either generalizes that one or leaves it alone — see
+    #canonical-location, and that file's own directive to consolidate rather
+    than accumulate.
+  - Open question: whether the rule earns its place at all. The necessity check
+    in #writing-a-rule asks whether Claude would have gone wrong without it, and
+    a general preference for active voice may already be default behavior rather
+    than something a rule has to shape.
+
 - [ ] **Resolve a hook's downstream scripts against its own checkout**
       {#hook-downstream-scripts} — a hook that names a helper through
       `$HOME/.claude/scripts/` reaches the installed copy however the hook
