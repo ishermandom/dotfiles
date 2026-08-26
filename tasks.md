@@ -366,6 +366,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     #land-go-ahead work — the user approved commit 1 and held commit 2 for
     review, which `git land` has no way to express.
 
+- [ ] **Measure how long the Stop hook takes, and speed up what is slow** —
+      `hooks/stop_checks.sh` is the only hook wired to `Stop`, and it runs at
+      the end of every turn, so whatever it costs is paid per turn. Time it end
+      to end and per check inside it, then optimize whatever dominates.
+  - Rationale: queued 2026-08-26 — the cost lands on every turn, making a slow
+    check a tax on the whole session rather than a one-off.
+
 ---
 
 ## Recurring maintenance
