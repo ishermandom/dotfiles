@@ -38,10 +38,12 @@ teardown from anywhere else wraps the wrong one. Work the steps in order.
    user-approved — the tracker change belongs in the same landing as the work it
    describes.
 
-6. **Land, then confirm before pushing**: run `git land`, which fast-forwards
-   `main` and stops there. Push only if the user has requested a push, or if the
-   landed commits are the only unpushed state — otherwise, `main` may carry
-   other commits not ready to go out.
+6. **Land, then confirm before pushing**: invoking this skill is the user's
+   go-ahead to land this worktree (CLAUDE.md #land-go-ahead), the step 5 tracker
+   commit included. Run `git land`, which fast-forwards `main` and stops there.
+   Push only if the user has requested a push, or if the landed commits are the
+   only unpushed state — otherwise, `main` may carry other commits not ready to
+   go out.
 
 7. **Clean up the worktree and its branch**: the session lands back in the main
    checkout with the worktree and its branch removed. Landing already

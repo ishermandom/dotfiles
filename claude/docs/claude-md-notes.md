@@ -118,3 +118,30 @@ rules file loads only for config paths.
 What made this worth a rule is that severity is the intuitive test and the wrong
 one: a worse failure pulls harder toward spelling the command out, which is
 exactly backwards when Claude would never have reached for it.
+
+## Before `git land` (CLAUDE.md #land-go-ahead)
+
+The failure this rule exists to prevent, concretely: the user approved landing
+one set of changes, and it landed. The user then requested a follow-up change,
+and Claude made the edit, committed it, landed it, and pushed it without asking
+again — reasoning that the user had asked for the change, so approval was
+implied. What the user had approved was the state of the code before the edit,
+and the edit in concept. The diff itself they never saw.
+
+The cost showed up on `main` and stayed there. The follow-up needed a correction
+of its own minutes later, by which point it had already landed and been pushed,
+so it sits in the history as its own commit. Had it waited on the branch for
+review, the correction would have folded into it and `main` would carry one
+clean commit.
+
+Pushes need no gate of their own, and adding one would be redundant rather than
+safer. Only `main` is ever pushed, and a branch reaches `main` by landing, so
+anything a push carries has already cleared the go-ahead — work ready to land is
+generally ready to go out.
+
+The trigger says any landing rather than any worktree landing for simplicity:
+the general case is sufficient, even though branches here typically live in
+worktrees. `git land` only ever runs from a branch regardless, so a "from a
+worktree" qualifier would narrow nothing while adding a precondition that has to
+hold before the rule can fire.
+

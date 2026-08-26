@@ -463,11 +463,18 @@ Every session, without being asked:
   fast-forwards `main`, so main stays linear and every branch commit lands
   individually; landing never squashes. Sync from a stable branch state —
   there's no point landing a broken one.
-- **Before `git land`**: never land unreviewed production code — confirm it has
-  been user-reviewed (#review-gate), either as the branch evolved or as part of
-  landing. When unsure whether something was reviewed, err toward suggesting a
-  review — and only ever suggest one, never initiate it. Also give the branch
-  history a final look — a rewrite may leave main's log clearer.
+- **Before `git land`** {#land-go-ahead}:
+  - **Go-ahead**: never land without the user's explicit go-ahead for that
+    specific landing. A go-ahead covers only the landing the user gave it for,
+    so a follow-up correction needs a fresh one — even when the user asked for
+    the change in the message being acted on. "Make this change" is not "land
+    this change".
+  - **Review**: never land unreviewed production code — confirm it has been
+    user-reviewed (#review-gate), either as the branch evolved or as part of
+    landing. When unsure whether something was reviewed, err toward suggesting a
+    review — and only ever suggest one, never initiate it.
+  - **History**: give the branch history a final look — a rewrite may leave
+    main's log clearer.
 
 ### GitHub
 

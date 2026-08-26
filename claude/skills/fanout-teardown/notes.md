@@ -18,6 +18,14 @@ Maintainer rationale for the `fanout-teardown` skill. The `fanout` skill's
   needing `/ownership-walkthrough` the same way it would in any session. A
   review step here would restate a rule that already fires.
 
+- **Invoking the skill is the go-ahead**: `CLAUDE.md #land-go-ahead` requires
+  the user's explicit approval for each landing, and step 6 lands without
+  pausing to ask for one. Running a skill whose stated purpose is landing the
+  worktree supplies that approval, on the same reading that makes "commit the
+  dotfiles change" a commit permission. Step 6 says so at its own site rather
+  than CLAUDE.md carrying the exception, which keeps the gate unqualified where
+  it is read most.
+
 - **The branch outlives its worktree**: `git worktree remove` leaves
   `worktree-<slug>` behind, so the branch needs deleting on its own. Landing has
   already fast-forwarded `main` to that tip by then.
