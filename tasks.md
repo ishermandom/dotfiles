@@ -372,6 +372,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       to end and per check inside it, then optimize whatever dominates.
   - Rationale: queued 2026-08-26 — the cost lands on every turn, making a slow
     check a tax on the whole session rather than a one-off.
+  - Worktree: stop-hook-timing
 
 ---
 
