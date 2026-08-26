@@ -391,9 +391,9 @@ ownership review.
 Rejected alternatives: a filename suffix (relies on naming discipline) and a
 structural `/prototype` worktree-plus-branch layer with hook enforcement — the
 failure it guards (committing throwaway code as production) is rare in solo
-hobby work and not worth a mandatory worktree, a branch flag, and a three-way
-exit skill. Built-in `EnterWorktree` covers the occasional genuine isolation
-need. Operative wording in CLAUDE.md #exploratory-mode.
+hobby work and not worth a branch flag and a three-way exit skill on top of the
+worktree the default already provides (CLAUDE.md #worktree-default). Operative
+wording in CLAUDE.md #exploratory-mode.
 
 ### Build vs. buy
 

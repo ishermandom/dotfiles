@@ -315,10 +315,10 @@ Every session, without being asked:
   state why the current context is insufficient. If the file appeared in any
   prior tool result this session, use that; don't fetch again.
 - **Don't spend a tool call re-verifying state already guaranteed** — when a
-  standing instruction fixes a value (e.g. commit to `main` rather than checking
-  the current branch) or a wrong value would fail loudly on the next step, skip
-  the confirming query; it costs a call, often a permission prompt, for no new
-  information.
+  standing instruction fixes a value (e.g. the reflow hooks settle line width on
+  every edit, so don't measure it) or a wrong value would fail loudly on the
+  next step, skip the confirming query; it costs a call, often a permission
+  prompt, for no new information.
 - **Prefer `Edit` over `Write` for an existing file** {#prefer-edit} — output
   tokens drive cost, and `Edit` regenerates only the changed lines while `Write`
   regenerates the whole file. `Edit` is cheaper for focused changes; `Write` for
@@ -403,10 +403,10 @@ Every session, without being asked:
 
 ## Git
 
-- **Default**: commit directly to `main`; don't branch first. The user works one
-  thread at a time and reviews locally, so the harness branch-first default
-  doesn't apply. Branch or use a worktree only for a specific need — an
-  abandonable spike, parallel agents, etc.
+- **Default** {#worktree-default}: prefer a worktree — call `EnterWorktree` at
+  the start of the work rather than committing straight to `main`. The branch
+  holds the work until the user approves the landing (#land-go-ahead), leaving
+  one checkpoint on everything that reaches `main`.
 
 ### Committing
 
@@ -443,7 +443,7 @@ Every session, without being asked:
   after. Exception: it's fine to commit a mid-turn snapshot to preserve a
   milestone.
 
-### Working on a branch (typically a worktree)
+### Working on a branch
 
 - **Branch commit quality**: hold every branch commit to main's bar — code
   quality, message standards, `scratch/` for relaxed rigor — because it lands on
