@@ -2,13 +2,16 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Tests for statusline.sh: feeds it one status-line input object on stdin and
-# asserts on the line it prints.
+# Tests for statusline.sh, at the two levels the script is built in.
 #
-# The script reads the wall clock to turn a reset timestamp into a burn pace and
-# a countdown, so a stubbed `date` placed first on PATH freezes that clock. Each
-# case gives its reset times as offsets from the frozen instant, so both the
-# color and the countdown come out exact rather than approximate.
+# The colors and the countdown are pure functions of their arguments, so those
+# cases source the script and call them directly — no input object, no jq, no
+# subprocess, and the instant to measure from passed in rather than stubbed.
+#
+# Reading the input, asking git and assembling the line only happen when the
+# script runs, so the cases about those feed it an input object on stdin and
+# assert on the line it prints. Those runs read the wall clock, which a stubbed
+# `date` first on PATH freezes.
 #
 # Runs offline against a temporary tree, so it is safe to run anywhere. Requires
 # jq, which statusline.sh uses to read its input.
@@ -20,16 +23,24 @@ statusline="$script_dir/statusline.sh"
 
 require_commands jq
 
+# Sourcing defines the functions and stops at the guard, so nothing runs. The
+# path is spelled out rather than reusing `$statusline` above, matching how the
+# framework is sourced — shellcheck follows a source it can resolve, and reads
+# neither through a second variable.
+. "$script_dir/statusline.sh"
+
 # --- frozen clock -----------------------------------------------------------
 
-# An arbitrary instant; only the offsets the cases add to it carry meaning.
+# An arbitrary instant; only the offsets the cases add to it carry meaning. The
+# unit cases pass it as an argument, and the runs below reach it through the
+# stub, so both halves measure from the same place.
 export FROZEN_NOW=1800000000
 
-mkdir "$test_script_root/bin"
 # Quoted delimiter: $FROZEN_NOW must reach the stub unexpanded and resolve when
 # the stub runs.
+mkdir -p "$test_script_root/bin"
 cat > "$test_script_root/bin/date" << 'STUB'
-#!/usr/bin/env bash
+#!/bin/sh
 # Stubbed date: statusline.sh asks only for epoch seconds, so any other
 # request means the script grew a call this stub has to answer.
 if [ "$1" != "+%s" ]; then
@@ -66,14 +77,22 @@ printf 'first\nSECOND\nthird\nfourth\n' > "$repository/notes.txt"
 
 # --- expected colors --------------------------------------------------------
 
-# The codes statusline.sh emits, named so a case can say which color it wants.
-GREEN=$'\033[38;2;51;189;38m'
-YELLOW=$'\033[38;2;174;173;37m'
-RED=$'\033[38;2;195;56;32m'
-GRAY=$'\033[38;5;245m'
-RESET=$'\033[0m'
+# The codes statusline.sh emits, spelled out here rather than read from the
+# script, so a case asserts against a value of its own. Lower case, since the
+# script's own names are in scope after the sourcing above and reassigning them
+# would change what the functions emit.
+green=$'\033[38;2;51;189;38m'
+yellow=$'\033[38;2;174;173;37m'
+red=$'\033[38;2;195;56;32m'
+gray=$'\033[38;5;245m'
+reset=$'\033[0m'
 
 # --- helpers ----------------------------------------------------------------
+
+# The reset instant a case means, from seconds remaining in the window.
+resets_in() { # resets_in <seconds from now>
+  echo $((FROZEN_NOW + $1))
+}
 
 # Builds the input object from the fields a case names, runs the script on that
 # object, and leaves the printed line in `output`. A field left unnamed is
@@ -93,11 +112,11 @@ run_statusline() { # run_statusline [--model M] [--context P] ...
       --context) program+=" | .context_window.used_percentage = $2" ;;
       --five-hour) program+=" | .rate_limits.five_hour.used_percentage = $2" ;;
       --five-hour-resets-in)
-        program+=" | .rate_limits.five_hour.resets_at = $((FROZEN_NOW + $2))"
+        program+=" | .rate_limits.five_hour.resets_at = $(resets_in "$2")"
         ;;
       --seven-day) program+=" | .rate_limits.seven_day.used_percentage = $2" ;;
       --seven-day-resets-in)
-        program+=" | .rate_limits.seven_day.resets_at = $((FROZEN_NOW + $2))"
+        program+=" | .rate_limits.seven_day.resets_at = $(resets_in "$2")"
         ;;
       *)
         # Ends the run rather than the call: returning would leave `output`
@@ -117,7 +136,70 @@ run_statusline() { # run_statusline [--model M] [--context P] ...
   output=$(printf '%s' "$input_object" | "$statusline")
 }
 
-# --- cases ------------------------------------------------------------------
+# --- the coloring and countdown functions -----------------------------------
+
+# Context coloring is absolute: green below 50%, yellow below 80%, red at or
+# above 80%.
+begin_case context-coloring
+expect_equal "colors 49% green" "$(context_color 49)" "$green"
+expect_equal "colors 50% yellow" "$(context_color 50)" "$yellow"
+expect_equal "colors 79% yellow" "$(context_color 79)" "$yellow"
+expect_equal "colors 80% red" "$(context_color 80)" "$red"
+
+# Pace coloring measures usage against how far into the window we are, not
+# against a fixed threshold. Half the 5h window has elapsed here, so 50% used is
+# exactly on pace.
+begin_case quota-pace-coloring
+half_gone=$(resets_in $((2 * 3600 + 30 * 60)))
+expect_equal "colors on-pace usage green" \
+  "$(quota_color 50 "$half_gone" 18000 "$FROZEN_NOW")" "$green"
+expect_equal "colors a point over pace yellow" \
+  "$(quota_color 51 "$half_gone" 18000 "$FROZEN_NOW")" "$yellow"
+expect_equal "colors 15 points over pace yellow" \
+  "$(quota_color 65 "$half_gone" 18000 "$FROZEN_NOW")" "$yellow"
+expect_equal "colors 16 points over pace red" \
+  "$(quota_color 66 "$half_gone" 18000 "$FROZEN_NOW")" "$red"
+# 90% of the window has gone by, which leaves 85% used under pace.
+expect_equal "keeps a high number green while it stays under pace" \
+  "$(quota_color 85 "$(resets_in $((30 * 60)))" 18000 "$FROZEN_NOW")" "$green"
+
+# A window that has only just opened counts as 1% elapsed rather than 0%, so the
+# first percent used still reads as on pace.
+begin_case quota-pace-at-window-start
+just_opened=$(resets_in $((5 * 3600)))
+expect_equal "colors the first percent green" \
+  "$(quota_color 1 "$just_opened" 18000 "$FROZEN_NOW")" "$green"
+expect_equal "colors 20% at the window start red" \
+  "$(quota_color 20 "$just_opened" 18000 "$FROZEN_NOW")" "$red"
+
+# With no reset time there is no window to pace against, so the quota falls back
+# to fixed thresholds: green below 70%, yellow below 90%, red at or above 90%.
+begin_case quota-thresholds-without-a-reset-time
+expect_equal "colors 69% green" \
+  "$(quota_color 69 -1 18000 "$FROZEN_NOW")" "$green"
+expect_equal "colors 70% yellow" \
+  "$(quota_color 70 -1 18000 "$FROZEN_NOW")" "$yellow"
+expect_equal "colors 89% yellow" \
+  "$(quota_color 89 -1 18000 "$FROZEN_NOW")" "$yellow"
+expect_equal "colors 90% red" \
+  "$(quota_color 90 -1 18000 "$FROZEN_NOW")" "$red"
+
+# The countdown shows the two coarsest units in play, and stops once the window
+# it counts down to has arrived.
+begin_case reset-countdown
+expect_equal "counts days and hours" \
+  "$(reset_suffix "$(resets_in $((2 * 86400 + 5 * 3600)))" "$FROZEN_NOW")" \
+  " ${gray}(2d 5h)${reset}"
+expect_equal "counts hours and minutes" \
+  "$(reset_suffix "$(resets_in $((3 * 3600 + 50 * 60)))" "$FROZEN_NOW")" \
+  " ${gray}(3h 50m)${reset}"
+expect_equal "counts minutes alone" \
+  "$(reset_suffix "$(resets_in $((45 * 60)))" "$FROZEN_NOW")" \
+  " ${gray}(45m)${reset}"
+expect_equal "shows nothing at the reset instant" \
+  "$(reset_suffix "$FROZEN_NOW" "$FROZEN_NOW")" ""
+
+# --- the line the script assembles ------------------------------------------
 
 # Every segment at once, in the order the line assembles them.
 begin_case assembles-the-whole-line
@@ -126,9 +208,9 @@ run_statusline --model "Opus 5" --effort high \
   --five-hour 20 --five-hour-resets-in "$((3 * 3600 + 50 * 60))" \
   --seven-day 55 --seven-day-resets-in "$((2 * 86400 + 5 * 3600))"
 expected="[Opus 5 · high] workspace"
-expected+=" | ctx ${GREEN}42%${RESET}"
-expected+=" | 5h ${GREEN}20%${RESET} ${GRAY}(3h 50m)${RESET}"
-expected+=" | 7d ${GREEN}55%${RESET} ${GRAY}(2d 5h)${RESET}"
+expected+=" | ctx ${green}42%${reset}"
+expected+=" | 5h ${green}20%${reset} ${gray}(3h 50m)${reset}"
+expected+=" | 7d ${green}55%${reset} ${gray}(2d 5h)${reset}"
 expect "prints the model, directory, context and both quotas" \
   [ "$output" = "$expected" ]
 
@@ -139,18 +221,6 @@ expect "joins the model and the effort" contains "$output" "[Opus 5 · high]"
 run_statusline --model "Opus 5"
 expect "drops the separator when effort is absent" \
   contains "$output" "[Opus 5]"
-
-# Context coloring is absolute: green below 50%, yellow below 80%, red at or
-# above 80%.
-begin_case context-coloring
-run_statusline --context 49
-expect "colors 49% green" contains "$output" "ctx ${GREEN}49%"
-run_statusline --context 50
-expect "colors 50% yellow" contains "$output" "ctx ${YELLOW}50%"
-run_statusline --context 79
-expect "colors 79% yellow" contains "$output" "ctx ${YELLOW}79%"
-run_statusline --context 80
-expect "colors 80% red" contains "$output" "ctx ${RED}80%"
 
 # used_percentage is null right after /compact and missing before the first
 # response; either way there is no number to show.
@@ -167,76 +237,26 @@ run_statusline --context 42
 expect "omits the 5h segment" not_contains "$output" "5h"
 expect "omits the 7d segment" not_contains "$output" "7d"
 
-# Pace coloring measures usage against how far into the window we are, not
-# against a fixed threshold. Half the 5h window has elapsed in the first four
-# runs, so 50% used is exactly on pace.
-begin_case quota-pace-coloring
-run_statusline --five-hour 50 --five-hour-resets-in "$((2 * 3600 + 30 * 60))"
-expect "colors on-pace usage green" contains "$output" "5h ${GREEN}50%"
-run_statusline --five-hour 51 --five-hour-resets-in "$((2 * 3600 + 30 * 60))"
-expect "colors a point over pace yellow" contains "$output" "5h ${YELLOW}51%"
-run_statusline --five-hour 65 --five-hour-resets-in "$((2 * 3600 + 30 * 60))"
-expect "colors 15 points over pace yellow" contains "$output" "5h ${YELLOW}65%"
-run_statusline --five-hour 66 --five-hour-resets-in "$((2 * 3600 + 30 * 60))"
-expect "colors 16 points over pace red" contains "$output" "5h ${RED}66%"
-# 90% of the window has gone by, which leaves 85% used under pace.
-run_statusline --five-hour 85 --five-hour-resets-in "$((30 * 60))"
-expect "keeps a high number green while it stays under pace" \
-  contains "$output" "5h ${GREEN}85%"
-
-# A window that has only just opened counts as 1% elapsed rather than 0%, so the
-# first percent used still reads as on pace.
-begin_case quota-pace-at-window-start
-run_statusline --five-hour 1 --five-hour-resets-in "$((5 * 3600))"
-expect "colors the first percent green" contains "$output" "5h ${GREEN}1%"
-run_statusline --five-hour 20 --five-hour-resets-in "$((5 * 3600))"
-expect "colors 20% at the window start red" contains "$output" "5h ${RED}20%"
-
-# The same pace rule against the other window: half a week gone with half the
-# quota used is on pace. Nothing else pins the 7d window's length.
-begin_case seven-day-window-length
+# Nothing else pins the window length each quota is paced against, which the
+# script supplies at the call site rather than the function deciding: half a
+# week gone with half the quota used is on pace.
+begin_case window-lengths
 run_statusline --seven-day 50 \
   --seven-day-resets-in "$((3 * 86400 + 12 * 3600))"
-expect "colors on-pace usage green" contains "$output" "7d ${GREEN}50%"
+expect "paces the 7d quota over a week" contains "$output" "7d ${green}50%"
 run_statusline --seven-day 51 \
   --seven-day-resets-in "$((3 * 86400 + 12 * 3600))"
-expect "colors a point over pace yellow" contains "$output" "7d ${YELLOW}51%"
-
-# With no reset time there is no window to pace against, so the quota falls back
-# to fixed thresholds: green below 70%, yellow below 90%, red at or above 90%.
-begin_case quota-thresholds-without-a-reset-time
-run_statusline --five-hour 69
-expect "colors 69% green" contains "$output" "5h ${GREEN}69%"
-run_statusline --five-hour 70
-expect "colors 70% yellow" contains "$output" "5h ${YELLOW}70%"
-run_statusline --five-hour 89
-expect "colors 89% yellow" contains "$output" "5h ${YELLOW}89%"
-run_statusline --five-hour 90
-expect "colors 90% red" contains "$output" "5h ${RED}90%"
-
-# The countdown shows the two coarsest units in play, and stops once the window
-# it counts down to has arrived.
-begin_case reset-countdown
-run_statusline --seven-day 10 \
-  --seven-day-resets-in "$((2 * 86400 + 5 * 3600))"
-expect "counts days and hours" contains "$output" "${GRAY}(2d 5h)${RESET}"
-run_statusline --five-hour 10 --five-hour-resets-in "$((3 * 3600 + 50 * 60))"
-expect "counts hours and minutes" contains "$output" "${GRAY}(3h 50m)${RESET}"
-run_statusline --five-hour 10 --five-hour-resets-in "$((45 * 60))"
-expect "counts minutes alone" contains "$output" "${GRAY}(45m)${RESET}"
-run_statusline --five-hour 10 --five-hour-resets-in 0
-expect "shows no countdown at the reset instant" \
-  not_contains "$output" "$GRAY"
+expect "so a point over reads as over pace" contains "$output" "7d ${yellow}51%"
 
 # Git state goes last, after the quotas, so the segments ahead of it hold their
 # position as edits come and go.
 begin_case git-state
 run_statusline --model "Opus 5" --dir "$repository" --context 42 --five-hour 10
-expected="[Opus 5] repository | ctx ${GREEN}42%${RESET}"
-expected+=" | 5h ${GREEN}10%${RESET}"
+expected="[Opus 5] repository | ctx ${green}42%${reset}"
+expected+=" | 5h ${green}10%${reset}"
 # The fixture rewrote one line and appended another, and a rewrite counts as a
 # deletion plus an addition.
-expected+=" | ⎇ statusline-fixture ${GREEN}+2${RESET} ${RED}-1${RESET}"
+expected+=" | ⎇ statusline-fixture ${green}+2${reset} ${red}-1${reset}"
 expect "ends with the branch and its line counts" \
   [ "$output" = "$expected" ]
 

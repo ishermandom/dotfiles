@@ -130,3 +130,30 @@ paths:
   plays pytest's part; its header documents the contract. When another project
   needs a shell test framework, flag it to the user — the two should share one
   rather than each growing its own.
+- **Test functions, not programs, wherever the behavior allows it**
+  {#shell-unit-default}: the shell counterpart of the I/O-boundary rule above.
+  Running a script costs a process for the script and another for each thing it
+  drives, so an assertion made that way costs tens of milliseconds where a
+  function call costs a fraction of one. Keep the decisions in functions taking
+  what they need as arguments — the clock included, since a function reading
+  `date` is neither pure nor cheap — and let the top level be the wiring that
+  reads input, asks git, and prints. `claude/scripts/statusline.sh` is the
+  worked example: its colors and countdowns are functions the test calls
+  directly, while assembling the line stays under the guard.
+- **Give a script a source guard so its test can reach those functions**: one
+  line, below the definitions and above the top level.
+
+  ```bash
+  # Everything below runs only when this file is executed, not when sourced.
+  [ "${BASH_SOURCE[0]}" = "$0" ] || return 0
+  ```
+
+  The test then sources the script and calls what it wants. `expect` already
+  runs a command and reads its status, so a function needs no wrapper to be
+  asserted on.
+
+- **Reserve a whole-program test for a whole-program contract**: which stream
+  carries a message, what the exit status is, the order steps run in, what a
+  script resolves through `$PATH` or `$HOME`, and how a real tool behaves. None
+  of those exist until there is a process. `claude/hooks/stop_checks-test.sh` is
+  the case in point — its subject is the sequencing itself.

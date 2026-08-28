@@ -4,22 +4,12 @@
 #
 # Status line for Claude Code: model + effort, directory, git branch and line
 # changes, context-window usage, and 5h/7d quota usage colored by burn pace.
-
-input=$(cat)
-
-IFS=$'\t' read -r model effort directory context_percentage \
-  five_hour_percentage five_hour_resets_at \
-  seven_day_percentage seven_day_resets_at <<< "$(
-    jq -r '[.model.display_name,
-            (.effort.level // "-"),
-            (.workspace.current_dir // "."),
-            (.context_window.used_percentage // -1 | floor),
-            (.rate_limits.five_hour.used_percentage // -1 | floor),
-            (.rate_limits.five_hour.resets_at // -1 | floor),
-            (.rate_limits.seven_day.used_percentage // -1 | floor),
-            (.rate_limits.seven_day.resets_at // -1 | floor)]
-           | @tsv' <<< "$input"
-  )"
+#
+# The colors and the countdown are decided by the functions below, which take
+# everything they need as arguments — the instant to measure from included — so
+# they are pure and `statusline-test.sh` can source this file and call them
+# directly. Reading the input, asking git, and assembling the line stay under
+# the guard near the bottom, which runs only when this file is executed.
 
 # Stated as 24-bit color rather than as ANSI indices, because terminals disagree
 # about what the indices mean. Terminal.app draws `\033[31m` from its profile's
@@ -40,7 +30,7 @@ GRAY=$'\033[38;5;245m'
 RESET=$'\033[0m'
 
 # Context coloring: green below 50%, yellow below 80%, red at or above 80%.
-context_color() {
+context_color() { # context_color <used percentage>
   if [ "$1" -lt 50 ]; then
     printf '%s' "$GREEN"
   elif [ "$1" -lt 80 ]; then
@@ -53,8 +43,8 @@ context_color() {
 # Quota coloring by burn pace: compare usage against how far into the window we
 # are. Green at or under pace, yellow up to 15 points over, red beyond. Falls
 # back to absolute 70/90 thresholds when resets_at is absent.
-quota_color() {
-  local used="$1" resets_at="$2" window_seconds="$3"
+quota_color() { # quota_color <used> <resets at> <window seconds> <now>
+  local used="$1" resets_at="$2" window_seconds="$3" now="$4"
   if [ "$resets_at" -le 0 ]; then
     if [ "$used" -lt 70 ]; then
       printf '%s' "$GREEN"
@@ -66,8 +56,7 @@ quota_color() {
     return
   fi
 
-  local now elapsed_seconds elapsed_percentage
-  now=$(date +%s)
+  local elapsed_seconds elapsed_percentage
   elapsed_seconds=$((window_seconds - (resets_at - now)))
   elapsed_percentage=$((elapsed_seconds * 100 / window_seconds))
   [ "$elapsed_percentage" -lt 1 ] && elapsed_percentage=1
@@ -83,10 +72,9 @@ quota_color() {
 }
 
 # Gray " (3h 50m)" until the window resets — the context behind the pace color.
-reset_suffix() {
-  local resets_at="$1" now seconds days hours minutes
+reset_suffix() { # reset_suffix <resets at> <now>
+  local resets_at="$1" now="$2" seconds days hours minutes
   [ "$resets_at" -le 0 ] && return
-  now=$(date +%s)
   seconds=$((resets_at - now))
   [ "$seconds" -le 0 ] && return
   days=$((seconds / 86400))
@@ -104,14 +92,38 @@ reset_suffix() {
 # One quota's segment — " | 5h 63% (3h 50m)", colored by pace. Empty when the
 # quota is absent: rate_limits is missing on API-key accounts and before the
 # first response.
-quota_segment() {
-  local label="$1" used="$2" resets_at="$3" window_seconds="$4"
+quota_segment() { # quota_segment <label> <used> <resets at> <window> <now>
+  local label="$1" used="$2" resets_at="$3" window_seconds="$4" now="$5"
   [ "$used" -lt 0 ] && return
   local color suffix
-  color=$(quota_color "$used" "$resets_at" "$window_seconds")
-  suffix=$(reset_suffix "$resets_at")
+  color=$(quota_color "$used" "$resets_at" "$window_seconds" "$now")
+  suffix=$(reset_suffix "$resets_at" "$now")
   printf '%s' " | $label ${color}${used}%${RESET}${suffix}"
 }
+
+# Everything below runs only when this file is executed. Sourcing it — which is
+# how the tests reach the functions above — stops here.
+[ "${BASH_SOURCE[0]}" = "$0" ] || return 0
+
+input=$(cat)
+
+IFS=$'\t' read -r model effort directory context_percentage \
+  five_hour_percentage five_hour_resets_at \
+  seven_day_percentage seven_day_resets_at <<< "$(
+    jq -r '[.model.display_name,
+            (.effort.level // "-"),
+            (.workspace.current_dir // "."),
+            (.context_window.used_percentage // -1 | floor),
+            (.rate_limits.five_hour.used_percentage // -1 | floor),
+            (.rate_limits.five_hour.resets_at // -1 | floor),
+            (.rate_limits.seven_day.used_percentage // -1 | floor),
+            (.rate_limits.seven_day.resets_at // -1 | floor)]
+           | @tsv' <<< "$input"
+  )"
+
+# Asked once and passed down, so every segment measures against one instant
+# rather than each reading a clock that has moved on.
+now=$(date +%s)
 
 model_label="$model"
 [ "$effort" != "-" ] && model_label="$model · $effort"
@@ -140,8 +152,10 @@ else
   line+=" | ctx –"
 fi
 
-line+=$(quota_segment 5h "$five_hour_percentage" "$five_hour_resets_at" 18000)
-line+=$(quota_segment 7d "$seven_day_percentage" "$seven_day_resets_at" 604800)
+line+=$(quota_segment 5h "$five_hour_percentage" "$five_hour_resets_at" \
+  18000 "$now")
+line+=$(quota_segment 7d "$seven_day_percentage" "$seven_day_resets_at" \
+  604800 "$now")
 
 # Git state goes last: its width changes as edits come and go, and trailing
 # position keeps the rest of the line from shifting.
