@@ -45,10 +45,12 @@ begin_project_case() { # begin_project_case <name>
 
 # Runs the runner inside the case's project against its fake HOME, leaving both
 # streams in the case directory as stdout. Returns the runner's exit status,
-# which is the level claude/hooks/format.sh reads.
+# which is the level claude/hooks/format.sh reads. TMPDIR points at the case so
+# the runner's prettier cache is built and left inside it, rather than in the
+# one the machine's real runs share.
 run_runner() { # run_runner [runner arguments...]
-  (cd "$case_dir/project" && HOME="$case_dir/home" "$quiet_prettier" "$@") \
-    > "$case_dir/stdout" 2>&1
+  (cd "$case_dir/project" && HOME="$case_dir/home" TMPDIR="$case_dir" \
+    "$quiet_prettier" "$@") > "$case_dir/stdout" 2>&1
 }
 
 # --- cases ------------------------------------------------------------------
@@ -166,6 +168,32 @@ exit_code=$?
 expect "a named target that is not there is breakage" test "$exit_code" -ge 2
 expect "and the error names the missing target" \
   contains "$(cat "$case_dir/stdout")" "gone.md"
+
+# The runner caches what prettier has already formatted, which is only safe
+# while the cache cannot stand between an edit and the formatter. Both cases
+# below run the runner twice against one case directory, and so against one
+# cache.
+begin_project_case reformats-a-file-the-cache-has-seen
+printf '#   Title\n' > "$case_dir/project/doc.md"
+run_runner
+printf '#   Changed\n' > "$case_dir/project/doc.md"
+run_runner
+
+expect_equal "a file edited after being cached is formatted again" \
+  "$(head -1 "$case_dir/project/doc.md")" "# Changed"
+
+# The file is already formatted under the first config, so the first run leaves
+# it alone and caches it as it stands. Nothing but the config change can explain
+# it being rewritten after that.
+begin_project_case reformats-when-the-config-changes
+printf '{"semi": true}\n' > "$case_dir/home/.prettierrc"
+printf 'const a = 1;\n' > "$case_dir/project/app.js"
+run_runner
+printf '{"semi": false}\n' > "$case_dir/home/.prettierrc"
+run_runner
+
+expect_equal "a changed config reaches a file the cache had seen" \
+  "$(cat "$case_dir/project/app.js")" "const a = 1"
 
 # --- summary ----------------------------------------------------------------
 

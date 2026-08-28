@@ -49,7 +49,27 @@ if ! prettier --find-config-path ./placeholder > /dev/null 2>&1; then
   config_args=(--config "$HOME/.prettierrc")
 fi
 
-output=$(prettier "${config_args[@]}" --log-level warn \
+# Prettier reparses every file it is handed, while a typical turn changes only
+# one or two files, so let prettier skip what it has already seen. Caching takes
+# this step from about 500ms to about 165ms, measured on this repo 2026-08-31.
+#
+# `content` rather than the default `metadata` strategy: metadata keys a file on
+# its size and its modification time in milliseconds, and one millisecond
+# comfortably holds two writes, so a same-length rewrite can leave both
+# unchanged and the file unformatted. Hashing the contents measured no slower,
+# so the stricter key costs nothing.
+#
+# One cache per formatted directory, because prettier records each path it was
+# handed relative to the directory the run started in — one shared cache would
+# leave two projects arguing over the entry for `README.md`. The user id keeps
+# the `/tmp` fallback, used when TMPDIR is unset, from colliding between this
+# machine's accounts.
+cache_dir="${TMPDIR:-/tmp}/prettier-cache-$UID"
+mkdir -p "$cache_dir"
+cache_args=(--cache --cache-strategy content
+  --cache-location "$cache_dir/$(printf '%s' "$PWD" | md5 -q)")
+
+output=$(prettier "${config_args[@]}" "${cache_args[@]}" --log-level warn \
   --write "${targets[@]}" 2>&1)
 status=$?
 
