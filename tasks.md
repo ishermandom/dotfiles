@@ -374,6 +374,51 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     check a tax on the whole session rather than a one-off.
   - Worktree: stop-hook-timing
 
+- [ ] **Move the shell environment setup from `.zprofile` to `.zshenv`**
+      {#zshenv-environment} — `zsh/.zprofile` sets Homebrew's `shellenv` and
+      `PLAYWRIGHT_BROWSERS_PATH`, and only a login shell reads it. Anything
+      entering the account another way starts with no Homebrew, no
+      `~/.local/bin`, and no browser path.
+  - Rationale: found 2026-08-31, when `claudify` moved from `sudo -u … -i` to
+    ssh. The login shell that `-i` had supplied disappeared, and the resulting
+    shell could not find `claude` at all.
+  - Note: `claudify` works around it today by ending in `exec zsh -l`. Moving
+    what every shell needs into `.zshenv` lets that go back to plain `zsh`, and
+    closes the same gap for every other non-login entry point.
+  - Note: `.zshenv` is read by every zsh, scripts included, so only environment
+    belongs there — nothing interactive, and nothing that prints.
+
+- [ ] **Track `claudify` in this repo** {#track-claudify} — the command that
+      enters the sandbox account exists only as a root-owned file at
+      `/usr/local/bin/claudify`, checked in nowhere, with no history and no
+      review.
+  - Rationale: it gained real content on 2026-08-31 — an ssh invocation, a key
+    path, a working directory — edited in place with `sudo tee`, with a dated
+    copy beside it as the only backup.
+  - Open question: where it installs from. Every package here targets `$HOME` or
+    `$HOME/.config`, so a `bin` package linking into `$HOME/.local/bin` needs no
+    root, where `/usr/local/bin` would. Only `ishermandom` runs it, so
+    `accounts/ishermandom/` may fit better than the common set.
+  - Note: whatever it becomes, the isolation it exists for is undone by
+    backgrounding the session — see #backgrounding-leaves-the-ssh-session.
+
+- [ ] **Work out how to keep a backgrounded session inside the ssh context**
+      {#backgrounding-leaves-the-ssh-session} — a session started through the
+      ssh `claudify` reports `launchctl managername` of `Background`, as
+      intended; backgrounding it moves it to `Aqua`, uid 501, inside the user's
+      own session.
+  - Rationale: found 2026-08-31. Claude Code keeps a per-uid daemon and a pool
+    of spare host processes under `/tmp/cc-daemon-505/`; backgrounding hands the
+    session to a spare, which inherits the daemon's bootstrap namespace rather
+    than the shell's. That daemon was started from the old `sudo -u` claudify
+    and outlived it.
+  - Note: the isolation is silently lost, not broken loudly — the session keeps
+    working, and only `launchctl managername` says anything is different. Any
+    check of the boundary has to run after backgrounding, not before.
+  - Open question: whether killing the daemon so it respawns from an ssh shell
+    is enough, and whether it stays that way, or whether foreground-only is the
+    honest answer.
+
 ---
 
 ## Recurring maintenance
