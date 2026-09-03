@@ -1,0 +1,99 @@
+# Maintainer notes: deep-review
+
+Rationale that informs future editing of this skill but isn't needed to run it.
+Not referenced from `SKILL.md` — only `SKILL.md` is injected when the skill
+runs, so this companion file costs zero runtime context.
+
+## Design decisions
+
+### Skill name
+
+"deep" tab-completes uniquely across the installed skills. "review" does not —
+it is ambiguous among `code-review`, `config-review`, and `security-review` — so
+only one of the two words is a usable prefix. That was chosen deliberately over
+a collision-free single word such as "converge", which completes on either half
+but says nothing about what the skill does.
+
+### Why the proofreading check runs as its own pass
+
+The built-in `/code-review` has no extension point for a custom check. Its
+argument parser recognizes four flags — `--comment`, `--fix`, `--post`,
+`--no-post` — plus an optional leading effort level, and treats every remaining
+token as the review target. Instruction text appended to the invocation would be
+read as a path, branch, or pull request number rather than as an added check
+(verified against the 2.1.259 binary).
+
+The second reason is that the built-in's own prompt pushes against this check.
+Its lower-effort variants tell the reviewer to prefer real failure modes over
+style, and every variant caps its findings — both at odds with proofreading that
+reports every issue it finds.
+
+### Why `xhigh` rather than `high`
+
+The built-in routes each effort level through a per-model table. Under Opus 5,
+`medium` and `high` land on the same cell, whose prompt is a single careful diff
+pass capped at 15 findings; `xhigh` is the first level that reaches the
+ten-angle prompt with a gap-sweep phase. So `high` would have bought nothing
+over `medium` on the model this config targets.
+
+That table is internal and version-specific (read from the 2.1.259 binary).
+Re-check it if rounds start coming back thin for no visible reason.
+
+### Why the built-in pass withholds `--fix`
+
+Finding and fixing stay separate roles, and both passes report before anything
+is edited. That also buys the parallelism: with `--fix`, the built-in would be
+rewriting files while the proofreading agent was still reading them, so the two
+passes would have to be serialized.
+
+Both passes are cold, which is the property the loop is built on. The built-in
+resolves its execution mode as: coordinator mode runs inline, report-findings
+mode runs inline, everything else forks. Neither environment variable is
+normally set, so the review runs as a fork — an agent that reads the diff
+without having watched it being written. Its instruction to run the finder
+angles "in THIS context — do NOT spawn subagents" governs the angles inside that
+forked agent; it does not make the review itself inline.
+
+Withholding `--fix` matters more because of the fork, not less: with `--fix` the
+cold agent both finds and fixes, which puts the edits in the context least
+equipped to weigh them against the surrounding work.
+
+### Why nothing re-reports finding outcomes
+
+The built-in carries an instruction to call `ReportFindings` a second time, with
+an outcome per finding, whenever reported findings are fixed later in the
+session. That instruction is attached conditionally, gated on the same
+report-findings flag that forces the review inline. So it never reaches a forked
+review: coldness and text-reported findings always travel together, and a step
+telling this skill to re-report outcomes would be dead in every run it actually
+has.
+
+### Why the proofreading agent is single, cold, and read-only
+
+Sympathetic review under-finds: a session that just wrote a passage reads past
+its own clunky phrasing. Read-only keeps the two roles apart, so every rewrite
+passes through the session's own judgment before landing rather than arriving as
+a fait accompli.
+
+One agent rather than a fan-out. Proofreading does not gain from independent
+angles the way bug-hunting does — a second reader over the same prose mostly
+re-finds what the first one did, and returns overlapping rewrites of the same
+sentences for the session to reconcile. Splitting by file would also cost the
+agent the surrounding context the check tells it to read.
+
+### Why the skill is user-invoked only
+
+A round costs an `xhigh` review plus a subagent fan-out, and the skill runs
+rounds until they go quiet. That is too expensive to fire on the model's own
+initiative; `config-review`, the closest analogue in cost and shape, is
+user-invoked for the same reason.
+
+## TODOs and follow-ups
+
+### Overlap with the convergence loop in `ownership-walkthrough`
+
+Step 1 of `ownership-walkthrough` specifies its own `/code-review --fix`
+convergence loop, with effort scaled to risk rather than fixed. The two
+descriptions of the loop will drift. Unification is deferred and tracked in the
+dotfiles `tasks.md`, alongside the two queued legibility-pass entries that aim a
+related prose check at config files specifically.

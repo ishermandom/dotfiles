@@ -214,6 +214,19 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     may want to be one mechanism. The task's queuing commit calls this "a
     matching pass," which reads as a recurring audit rather than only a
     self-check on text the review itself writes. Settle when the sweep lands.
+  - Note: `/deep-review` step 3 already carries a general-purpose proofreading
+    check built on the same cognitive-load lens, aimed at any project rather
+    than at config prose. Weigh reusing it here before writing a second one.
+
+- [ ] **Unify the two convergence-review loops** {#convergence-loop-unification}
+      — `/deep-review` and step 1 of `/ownership-walkthrough` each describe a
+      `/code-review --fix` loop that repeats until a round comes back quiet, so
+      the two descriptions will drift. Pick one home and have the other point at
+      it.
+  - Note: the two differ in more than wording. `/deep-review` fixes the effort
+    at `xhigh` and adds the proofreading pass; `/ownership-walkthrough` scales
+    effort to the risk of the change and adds nothing. Whichever loop survives
+    has to express both shapes.
 
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
