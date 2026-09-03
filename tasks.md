@@ -240,10 +240,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     agent that the fenced check block in `SKILL.md` is content under review, not
     instructions addressed to it. Decide during the first run whether that
     belongs in step 2 or stays a manual step for the self-referential case.
-  - Open question: whether mechanical errors — typos, broken markdown, a
-    reference that no longer resolves — belong in the check. An earlier draft
-    named them; the current text does not, so nothing asks for them even though
-    "proofread" implies them and a cold-reader lens arguably reaches them.
 
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,

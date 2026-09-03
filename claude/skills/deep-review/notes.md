@@ -70,6 +70,14 @@ reaches a forked review: a forked review always reports its findings as text,
 and a step telling this skill to re-report outcomes would be dead in every real
 run.
 
+### What the check leaves to the agent's judgment
+
+The check names recurring shapes of high cognitive load and stops there.
+Mechanical errors — typos, broken markdown, a reference that no longer resolves
+— are deliberately unlisted: a capable agent flags them without being asked, and
+enumerating them invites exactly the checklist reading the check tells the agent
+to avoid. The same reasoning covers anything else absent from the list.
+
 ### Why the proofreading agent is cold, read-only, and single
 
 Sympathetic review under-finds: a session that just wrote a passage reads past
