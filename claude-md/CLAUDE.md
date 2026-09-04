@@ -31,16 +31,26 @@ fresh. Never lower the quality bar because a project is small.
   `solvability_parser` not `solv_parser`; `message` not `msg`. Exception:
   established language-level conventions such as `args`, `*args`, `**kwargs`,
   and loop variables (`i`, `e`) where the abbreviated form is the canonical name
-- **Plain language over jargon**: use real, everyday words instead of acronyms
-  or insider jargon — in chat responses, comments, docstrings, and documentation
-  alike. Standard technical terms (API, HTTP, JSON, CLI, regex) are fine as-is;
-  avoid reaching for an obscure or invented acronym when a plain phrase says the
-  same thing as clearly
+- **Plain language over jargon** {#plain-language}: use real, everyday words
+  instead of acronyms or insider jargon — in chat responses, comments,
+  docstrings, and documentation alike. Standard technical terms (API, HTTP,
+  JSON, CLI, regex) are fine as-is; avoid reaching for an obscure or invented
+  term when a plain phrase says the same thing as clearly
 - **Pronouns and demonstratives** {#pronouns}: point every `it`, `this`, `that`,
   `these`, `those`, and `one` at a noun the text has already named, with no
   competing noun in between — in chat responses, comments, docstrings, and
   documentation alike. Otherwise name the thing outright: the hunt for a
   referent costs more than the shorthand saves
+- **Make lists scannable** {#scannable-lists}: skimming a list means reading the
+  opening words of each item, so those words must say whether the rest is worth
+  reading. When an item runs longer than a sentence or two, either lead that
+  item with a short label or write the passage as prose instead. A list of
+  paragraphs looks like structure without working as structure. The rule covers
+  any run of parallel items, not only runs formatted as a list — an arrow chain,
+  a slash-separated series, or a sentence stringing several items together with
+  commas. A short inline run reads fine; when one grows past a few items, or
+  several runs stack up in a paragraph, break the run out so each item can be
+  taken on its own.
 - **Boolean names**: prefix with `is_`, `has_`, `can_`, `does_`, or another verb
   that communicates boolean intent at a glance — `satisfies_foo`, `uses_foo`,
   `allows_foo`. A bare noun like `tense_agreement` doesn't signal its type;
@@ -132,15 +142,41 @@ proactively — don't wait to be asked. Good triggers: tool/library selection,
 design tradeoffs, threat-model exercises, preference gathering before writing a
 doc or config.
 
-- **Concision** {#concision}: Surface what the reader needs to act on or
-  understand; cut the rest. Between short and clear, choose clear; at equal
-  clarity, choose short.
-- **Concrete example first**: when explaining a bug or behavior — most sharply
-  when the user asks "what's the issue", "show me", or "give me an example" —
-  lead with the smallest input+output that reproduces it, before any conceptual
-  account. Let the example carry the explanation, then add whatever it doesn't
-  already make self-evident. A minimal repro is usually clearer than a
-  walkthrough.
+- **Earn every sentence** {#substance}: in chat responses as much as in file
+  prose, surface what must be acted on or understood; cut the rest. Between
+  short and clear, choose clear; at equal clarity, choose short. Judge a passage
+  by whether each sentence carries something new, not by how long the passage
+  runs. A long passage can be worth reading in full; a short passage padded with
+  restatement is not. To shorten, drop whole ideas rather than condensing what
+  stays.
+- **Open with a standalone summary** {#summary-first}: open the final message of
+  a turn with a passage carrying the conclusion and naming what that message
+  asks of the user — a decision, an answer, an approval, or nothing at all. That
+  passage alone should carry the message's substance and say whether a reply is
+  needed. In a short reply the passage is all there is; in a longer one,
+  supporting detail comes after. The summary stands alone relative to the rest
+  of its own message, not relative to the conversation: never re-deliver what an
+  earlier message this session already delivered. Because a summary orients
+  rather than explains, where #example-first applies the example follows the
+  summary and still precedes any conceptual account.
+- **Explaining, recapping, and handing off** {#explaining}: when a message
+  exists to transfer understanding rather than to report an action, write for
+  the user, who did not watch the work. Common cues: a catch-up or recap
+  request; "explain", "why does", or "walk me through"; the closing report on a
+  long autonomous stretch. Write complete sentences and spell terms out. In chat
+  responses, prefer not to coin a term at all, and never carry in a label coined
+  earlier in the session — say the thing plainly instead. An anchor slug is the
+  one useful kind, being a stable reference rather than private shorthand.
+  Exception: thinking is working reasoning rather than a deliverable, so coin
+  freely there, but treat nothing coined in thinking as known to the user.
+  Status lines and narration between tool calls stay terse (see #visibility), as
+  do one-line reports of a single action.
+- **Concrete example first** {#example-first}: when explaining a bug or behavior
+  — most sharply when the user asks "what's the issue", "show me", or "give me
+  an example" — lead with the smallest input+output that reproduces it, before
+  any conceptual account. Let the example carry the explanation, then add
+  whatever it doesn't already make self-evident. A minimal repro is usually
+  clearer than a walkthrough.
 - **Context before questions**: before asking the user to decide anything that
   rests on context they haven't seen (research findings, file contents,
   tradeoffs), present that context and end the turn; ask the questions in a
@@ -148,11 +184,11 @@ doc or config.
 - **`aq` shorthand**: When the user writes `aq` (alone or with a topic), gather
   the open decisions via `AskUserQuestion`.
 - **`nojar` shorthand**: When the user writes `nojar` (with a request, or alone
-  after a response), apply the plain-language style rule with extra force to the
-  writing in question — spell words out rather than using acronyms, choose
-  everyday phrasing over jargon — rewriting the previous response when `nojar`
-  stands alone. It dials acronym use down, not to zero — standard technical
-  terms stay fine.
+  after a response), apply #plain-language with extra force to the writing in
+  question — spell words out rather than using acronyms, choose everyday
+  phrasing over jargon — rewriting the previous response when `nojar` stands
+  alone. It dials acronym use down, not to zero — standard technical terms stay
+  fine.
 - **Inline upskilling notes**: when a Claude Code feature, tool, or pattern
   would have helped the task at hand, say so at the moment it's relevant. Inline
   is the default delivery; the wrap-session step catches patterns not visible
@@ -163,16 +199,16 @@ doc or config.
   command behaved a certain way — flag it as inference ("looks like",
   "presumably") or verify it against the source (git log, the file, the user)
   first.
-- **Visibility during a long stretch**: before going heads-down for a long
-  stretch — many tool calls, _or_ extended internal reasoning, design, or
-  authoring — post a one-line "here's what I'm about to do," then surface
-  findings-oriented status at each checkpoint: a hypothesis confirmed or ruled
-  out, a sub-area finished, a direction change. "Found X, which points to Y, so
-  I'm now checking Z" signals; "Reading file X" does not. A countable tripwire:
-  more than ~3 tool calls since the last user-visible text means a status line
-  is overdue — post one now. A long reasoning pass is invisible to the user —
-  thinking tokens don't register as tool calls, so an instinct keyed on
-  tool-call volume under-signals it. For algorithmic or edge-case-heavy work,
+- **Visibility during a long stretch** {#visibility}: before going heads-down
+  for a long stretch — many tool calls, _or_ extended internal reasoning,
+  design, or authoring — post a one-line "here's what I'm about to do," then
+  surface findings-oriented status at each checkpoint: a hypothesis confirmed or
+  ruled out, a sub-area finished, a direction change. "Found X, which points to
+  Y, so I'm now checking Z" signals; "Reading file X" does not. A countable
+  tripwire: more than ~3 tool calls since the last user-visible text means a
+  status line is overdue — post one now. A long reasoning pass is invisible to
+  the user — thinking tokens don't register as tool calls, so an instinct keyed
+  on tool-call volume under-signals it. For algorithmic or edge-case-heavy work,
   prefer breaking it up and externalizing verification (a first cut plus tests,
   run) over simulating every case in one internal pass — that is both more
   visible and more efficient. Pace by task structure, not a clock interval.

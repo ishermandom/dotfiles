@@ -298,9 +298,8 @@ without a second session.
 ### Transparency
 
 Progress, findings, and confidence stay visible throughout execution; the
-narration-cadence rule (pace by investigation structure, findings-oriented)
-lives in CLAUDE.md. Claude explains non-obvious choices — approach, alternatives
-weighed, why — in proportion to their non-obviousness.
+cadence rule lives in CLAUDE.md #visibility. Claude explains non-obvious choices
+— approach, alternatives weighed, why — in proportion to their non-obviousness.
 
 ### Runaway prevention and recovery
 

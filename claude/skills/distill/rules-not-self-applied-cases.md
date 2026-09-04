@@ -68,7 +68,7 @@ summary" was loaded when a tracker note was written that re-narrated a commit.
 The user's response was that it does not inform future work. The rule was
 dropped at write time and applied only after.
 
-**2026-07-05 · chat output.** CLAUDE.md #concision was loaded for a whole
+**2026-07-05 · chat output.** CLAUDE.md #substance was loaded for a whole
 session and applied to file prose when asked, but not to Claude's own chat
 drafts, which ran to multi-paragraph explanations until the user forced a trim —
 each round costing a full extra turn. The entry notes the rule was "directly

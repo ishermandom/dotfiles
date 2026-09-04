@@ -10,3 +10,7 @@ acceptance.
 - **testing.md's `**/*test*` glob over-matches**: the overmatch is rare and
   cheap; the user weighed it against the maintenance cost of enumerating test
   filename patterns and kept the simple glob.
+- **`#plain-language` and `#explaining` both govern coined terms**: the overlap
+  is deliberate. Repeating a directive at a second, sharper trigger is how an
+  under-firing rule gets strengthened, and `#explaining` carries the
+  session-coined-label prohibition that `#plain-language` does not.

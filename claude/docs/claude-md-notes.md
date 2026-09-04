@@ -45,6 +45,48 @@ Linux, Kubernetes, and Apache repos all leave docs bare. The every-file
 alternative is the REUSE specification, which trades the noise for
 machine-verifiable per-file licensing; curl follows it.
 
+## Earn every sentence (CLAUDE.md #substance)
+
+The label and slug name different things deliberately. The label states the test
+applied while drafting — does this sentence carry something the reader does not
+already have — because drafting is when the rule has to fire. The slug names the
+property the rule protects, which is what a citation should point at.
+
+`#concision` was the original slug and named the wrong axis: the rule governs
+whether each sentence tells the reader something new, not how long the passage
+runs, and a label reading "be concise" invites cutting words when the fix is
+usually dropping an idea that informs nothing. "Density" was rejected for the
+slug because dense shorthand is the opposite failure, the one CLAUDE.md
+#explaining guards against; the word would point at both problems at once.
+
+## Open with a standalone summary (CLAUDE.md #summary-first)
+
+The rule answers a measurement rather than an incident. Across 377 chat messages
+longer than 800 characters that asked the user for something, the request
+appeared a median of 89% of the way through; restricted to messages over 2500
+characters, 92%, with a median of roughly 2,700 characters standing before it.
+"Asking for something" was matched by an explicit phrase list — `needs input`,
+`say the word`, `your call`, `want me to`, `would you like`, `let me know`,
+`shall I`, `do you want`, `which would you`, `tell me which`, `tell me where`,
+`if you'd rather`, `if you'd prefer` — over every assistant message under
+`~/.claude/projects/*/*.jsonl`. That definition is load-bearing, not incidental:
+measuring the first question mark instead yields 71-80%.
+
+What the rule targets is the consequence. When the request reliably sits at the
+bottom, reading from the bottom is the rational strategy, and everything above
+becomes material to scan past rather than read.
+
+## Make lists scannable (CLAUDE.md #scannable-lists)
+
+Also a measurement. Across 1,762 bullet items in the same corpus the median ran
+166 characters, the 75th percentile 255, the 90th 357; 57% ran past 150
+characters and 39% past 200. An item that long cannot be skimmed by reading its
+opening words, so the list offers a skim it cannot deliver.
+
+The defect is item weight, not over-use of structure — only 17% of messages
+carried a header and 29% carried a bullet at all. A rule aimed at using fewer
+lists would have missed.
+
 ## Prefer Edit over Write (CLAUDE.md #prefer-edit)
 
 Cost driver: output-token generation at call time. Taking input as the 1x
