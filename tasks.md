@@ -221,6 +221,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     earlier sessions. #consolidation-recheck is hunting folds to shrink this
     surface; this rule is not one of them, and "ordinary review already catches
     it" does not justify dropping it.
+  - Note: `grep -n "is what\|are what" tasks.md` finds four more instances in
+    this file, written by earlier sessions. Sweep them once the rule lands —
+    they double as the cheapest check that it fires on real text.
 
 - [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities**
       {#consolidation-recheck} — the 2026-07 close-out's consolidation sweep was
