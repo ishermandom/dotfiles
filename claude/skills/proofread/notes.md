@@ -27,6 +27,15 @@ Mechanical errors — typos, broken markdown, a reference that no longer resolve
 enumerating them invites exactly the checklist mindset the check steers the
 agent away from. The same reasoning covers anything else absent from the list.
 
+### Why no follow-through step on the fixes
+
+`deep-review` closes each of its correctness rounds by reading that round's
+fixes as one change and following through on them, because a correctness fix
+routinely reaches beyond the site it was reported at. No proofreading round
+takes that step, here or inside `deep-review`: proofreading fixes are far more
+isolated — a rewritten sentence rarely obliges a change anywhere else — so the
+step would mostly find nothing to do.
+
 ### Why the skill is user-invoked only
 
 Starting a review is the user's call — CLAUDE.md #land-go-ahead has Claude

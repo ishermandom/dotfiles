@@ -116,6 +116,30 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     should differ only where prose was deliberately cut. A second and third
     reflow confirm the result is a fixed point.
 
+- [ ] **Close the formatting gap that auto mode opens** {#auto-mode-format-gap}
+      — auto mode instructs Claude to change files through `sed`, heredocs, and
+      short scripts rather than `Edit`/`Write`, so the `PostToolUse` formatting
+      hooks never fire. Under auto mode the raw edit is the norm, not the
+      exception the current wiring assumes. Decide what should cover it and wire
+      that up.
+  - Note: the exposure is uneven. `format.sh` runs prettier and ruff at Stop, so
+    markdown and Python code self-heal by end of turn — a Bash-mangled
+    `tasks.md` is ugly only until the turn ends. `reflow_prose.py` is wired to
+    `Edit|Write` alone, so Python comment and docstring prose written through
+    Bash stays un-reflowed with nothing to catch it. See the Stop-safety-net
+    note on the Python rewrap task above, which recorded that omission back when
+    raw edits were rare.
+  - Note: CLAUDE.md's token-and-context-efficiency section already tells Claude
+    to run the formatter after a raw edit, and it did not fire in the session
+    that queued this (2026-09-03) — the rule sits among token-saving advice,
+    while the trigger arrives mid-Bash-call. A mechanism beats a better-worded
+    rule here.
+  - Open question: which mechanism. Adding `reflow_prose.py` to `format.sh`
+    covers every file type uniformly and drops the rule to a backstop, but the
+    reflow was kept out of Stop deliberately — recover that reasoning before
+    overturning it. A `PreToolUse` nudge on file-writing Bash commands is the
+    narrower alternative.
+
 - [ ] **Build a license-header Stop lint** — a Stop-hook check flagging source
       files that lack the license block (copyright line + SPDX identifier, per
       CLAUDE.md #license). Once it exists and holds, shrink the CLAUDE.md
@@ -223,24 +247,31 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       `/code-review` loop that repeats until a round comes back quiet, so the
       two descriptions will drift. Pick one home and have the other point at it.
   - Note: the two differ in more than wording. `/deep-review` fixes the effort
-    at `xhigh`, withholds `--fix` so the session does the fixing, and adds the
-    proofreading pass; `/ownership-walkthrough` scales effort to the risk of the
-    change, passes `--fix`, and adds nothing. Whichever loop survives has to
-    express both shapes.
+    at `xhigh`, withholds `--fix` so the session does the fixing, and closes
+    every correctness round with an inline follow-through on that round's fixes;
+    `/ownership-walkthrough` scales effort to the risk of the change, passes
+    `--fix`, and adds nothing. Whichever loop survives has to express both
+    shapes.
   - Note: `claude/docs/review-passes.md` is the likely home — it already holds
     the scope, weighing, and reporting steps `/deep-review` and `/proofread`
-    share. The loop stayed in `/deep-review` because one caller does not earn
-    the move.
+    share. `/deep-review` runs two loops of its own — correctness, then
+    proofreading — and states the shared convergence rule once for both, so the
+    move has a second caller arguing for it.
 
 - [ ] **Run `/deep-review` end to end at least once** {#deep-review-first-run} —
       the skill has never run as written. `/proofread` has, over the commit that
       split it out, so the pass and its check are exercised. Still unvalidated:
-      the convergence loop, the `xhigh` built-in pass inside this wrapper,
-      launching both passes in one turn, and reading the pass definition from
-      `/proofread`.
+      both convergence loops, the `xhigh` built-in pass inside this wrapper, the
+      inline follow-through closing each correctness round, and reading the pass
+      definition from `/proofread`.
   - Note: the first run is also the cheapest test of whether one round's
-    findings actually thin out by the next, which is the assumption the whole
-    loop rests on.
+    findings actually thin out by the next, which is the assumption both loops
+    rest on.
+  - Open question: whether the inline follow-through actually shortens the loop.
+    The run that motivated it took eighteen cold rounds, most of them reporting
+    damage from earlier rounds' fixes; a comparable run finishing in a handful
+    of rounds is the evidence the step works, and no improvement means the fix
+    damage needs cold eyes after all.
 
 - [ ] **Record how path-matched rules actually load** {#rules-loading-note} —
       `claude/docs/claude-md-notes.md` should carry it: only `Read` triggers a
