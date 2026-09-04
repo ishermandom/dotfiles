@@ -198,6 +198,30 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     the open question above has to resolve. Seen 2026-08-20 for session
     a80e121e.
 
+- [ ] **Add a CLAUDE.md rule against indirect sentence construction**
+      {#direct-sentence-construction} — one rule covering two shapes that both
+      delay a sentence's content for no gain: the passive voice ("the fixes are
+      applied by the session") and the "X is what Y" cleft ("cold rounds are
+      what this skill spends"). Scope it to every surface Claude writes — chat
+      responses, comments, docstrings, documentation.
+  - Rationale: both reorder away from actor-verb-object, so the reader assembles
+    the sentence in two passes instead of one. Naming the two shapes concretely
+    makes the rule fire; a general "write directly" does not.
+  - Note: it belongs in `## Style`, beside #plain-language, #pronouns, and
+    #scannable-lists — the run of prose rules that already reach chat responses
+    as well as files.
+  - Note: `rules/claude-configuration.md` already bans passive constructions in
+    rule text, under **Imperative mood** and the finalizing slip-pattern scan.
+    Scope the CLAUDE.md rule so the two read as one rule at different reach
+    rather than as a duplicate (CLAUDE.md #canonical-location).
+  - Note: the cleft earns always-loaded budget on frequency alone — it recurs
+    constantly in Claude's prose, which is the user's standing observation
+    across sessions rather than a count from any one of them. A grep over the
+    three skill files touched on 2026-09-03 found four instances, two written by
+    earlier sessions. #consolidation-recheck is hunting folds to shrink this
+    surface; this rule is not one of them, and "ordinary review already catches
+    it" does not justify dropping it.
+
 - [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities**
       {#consolidation-recheck} — the 2026-07 close-out's consolidation sweep was
       an inline self-review by the session that wrote several of the candidate
