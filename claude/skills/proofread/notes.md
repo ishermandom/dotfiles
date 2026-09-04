@@ -27,14 +27,14 @@ Mechanical errors — typos, broken markdown, a reference that no longer resolve
 enumerating them invites exactly the checklist mindset the check steers the
 agent away from. The same reasoning covers anything else absent from the list.
 
-### Why no follow-through step on the fixes
+### Why no follow-through step on the fixes {#no-follow-through}
 
 `deep-review` closes each of its correctness rounds by reading that round's
-fixes as one change and following through on them, because a correctness fix
-routinely reaches beyond the site it was reported at. No proofreading round
-takes that step, here or inside `deep-review`: proofreading fixes are far more
-isolated — a rewritten sentence rarely obliges a change anywhere else — so the
-step would mostly find nothing to do.
+fixes as a single change and self-reviewing it, because a correctness fix
+routinely reaches beyond the spot where the finding was reported. No
+proofreading round takes that step, here or inside `deep-review`. Proofreading
+fixes are far more isolated — a rewritten sentence rarely obliges a change
+anywhere else — so the step would mostly find nothing to do.
 
 ### Why the skill is user-invoked only
 
@@ -47,5 +47,5 @@ review.
 
 What a pass covers, what becomes of its findings, and how they are reported are
 the same whichever check runs, so those steps live in `docs/review-passes.md`
-where every skill running a pass can follow one copy. The check is what
-distinguishes this skill from any other pass, so it stays here.
+where every skill running a pass can follow one copy. The check distinguishes
+this skill from any other pass, so it stays here.

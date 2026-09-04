@@ -25,34 +25,37 @@ rounds are there because correctness fixes rewrite comments, docstrings, and
 documentation, so the prose the opening pass cleaned is no longer the prose that
 ships.
 
-Running the check in the middle as well would cost a cold agent per round to
-rewrite prose that the next round's correctness fixes are about to overwrite —
-churn, paid for repeatedly. Only the closing rounds see prose that has stopped
-moving, so only they can converge.
+Running proofreading in the middle as well would spend one more cold agent every
+round, rewriting prose that the next round's correctness fixes are about to
+overwrite — churn, paid for repeatedly. Only the closing rounds see prose that
+has stopped moving, so only they can converge.
 
 ### Why correctness rounds end with an inline follow-through
 
 A convergence run took eighteen cold rounds. Most of them reported damage from
 an earlier round's fixes rather than defects in the work under review — an
-incomplete fix, two fixes pulling against each other, fix code that missed a
-convention. Cold rounds are what this skill spends, so a loop that burns them
-rediscovering its own fix damage runs several times longer than the work needs.
+incomplete fix, two fixes pulling against each other, a fix that missed a
+convention. Cold rounds are this skill's main cost, so a loop that burns them
+rediscovering the damage its own fixes caused runs several times longer than the
+work needs.
 
-Correcting that damage is the one job independence does not help with. The cold
-pass earns its cost by reading work it did not write; a session tracing what its
-own fix implies wants the opposite — the context that says what changed and why.
-So the round hands each job to the reader suited to it, and the inline step is
-deliberately not cold.
+Correcting that damage is the one job that independence does not help with. The
+cold pass earns its cost by reading work it did not write; a session tracing the
+implications of its own fix needs the opposite — the context that says what
+changed and why. So the round hands each job to the reader suited to it, and the
+inline step is deliberately not cold.
 
 The step runs after the fixes because the fixes are its input. It is not a
 second walk through the findings list: findings arrive one at a time and are
-fixed one at a time, so the whole is precisely what no one has looked at yet.
+fixed one at a time, so the change as a whole is precisely what no one has
+looked at yet.
 
 What keeps the inline edits honest is the loop itself. Every round's cold pass
 covers the full scope, and the loop ends only on a quiet cold round, so nothing
 the inline step wrote can ship without at least one cold pass having read it.
 
-The proofreading rounds close without the step; `proofread/notes.md` holds why.
+The proofreading rounds close without the step; `proofread/notes.md`
+#no-follow-through holds why.
 
 ### Why the proofreading check runs as its own pass
 
@@ -74,10 +77,10 @@ proofreading that reports every issue it finds.
 check, and how to launch it. Everything else about the pass comes from
 `docs/review-passes.md` directly.
 
-Invoking `/proofread` would load its framing of the check too — its pointer to
-`docs/review-passes.md` repeats this skill's scope step, and its weigh and
-report steps repeat this skill's own. Reading the file and citing a single
-anchor takes only what this skill uses.
+Invoking `/proofread` would load its framing of the check too — that skill's
+pointer to `docs/review-passes.md` repeats this skill's scope step, and its
+weigh and report steps repeat this skill's own weighing and reporting. Reading
+the file and citing a single anchor takes only what this skill uses.
 
 ### Why `xhigh` rather than `high`
 
@@ -95,15 +98,15 @@ Re-check it if rounds start coming back thin for no visible reason.
 Finding and fixing stay separate roles: the cold pass reports, and every fix
 lands through this session's judgment.
 
-The built-in pass is genuinely cold, which is the property the round is built on
-— the inline follow-through that closes each round is deliberately not. The
-built-in resolves its execution mode from two environment variables — one
-selecting coordinator mode, one selecting report-findings mode. Either one runs
-the review inline; everything else forks. Neither variable is normally set, so
-the review runs as a fork — an agent that reads the diff without having watched
-it being written. The built-in's instruction to run its finder angles "in THIS
-context — do NOT spawn subagents" governs the angles inside that forked agent;
-it does not make the review itself inline.
+The built-in pass is genuinely cold, and the round is built on that coldness.
+(The inline follow-through that closes each correctness round is deliberately
+not cold.) The built-in resolves its execution mode from two environment
+variables — one selecting coordinator mode, one selecting report-findings mode.
+Either one runs the review inline; everything else forks. Neither variable is
+normally set, so the review runs as a fork — an agent that reads the diff
+without having watched it being written. The built-in's instruction to run its
+finder angles "in THIS context — do NOT spawn subagents" governs the angles
+inside that forked agent; it does not make the review itself inline.
 
 Withholding `--fix` matters more because of the fork, not less: with `--fix` the
 cold agent both finds and fixes, which puts the edits in the context least
@@ -122,9 +125,10 @@ run.
 ### Why the skill is user-invoked only
 
 Every round costs a cold agent — an `xhigh` review or a proofreading subagent —
-plus the session's own follow-through, and both loops run until they go quiet.
-That is too expensive to fire on the model's own initiative; `config-review`,
-the closest analogue in cost and shape, is user-invoked for the same reason.
+and every correctness round adds the session's own follow-through. Both loops
+run until they go quiet. That is too expensive to fire on the model's own
+initiative; `config-review`, the closest analogue in cost and shape, is
+user-invoked for the same reason.
 
 ## TODOs and follow-ups
 
