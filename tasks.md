@@ -233,21 +233,24 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     the move.
 
 - [ ] **Run `/deep-review` end to end at least once** {#deep-review-first-run} —
-      the skill has never run as written. Only its proofreading check has been
-      exercised, by hand, on the skill's own text. The convergence loop, the
-      `xhigh` built-in pass inside this wrapper, launching both passes in one
-      turn, and reading the pass definition out of `/proofread` are all
-      unvalidated.
+      the skill has never run as written. `/proofread` has, over the commit that
+      split it out, so the pass and its check are exercised. Still unvalidated:
+      the convergence loop, the `xhigh` built-in pass inside this wrapper,
+      launching both passes in one turn, and reading the pass definition from
+      `/proofread`.
   - Note: the first run is also the cheapest test of whether one round's
     findings actually thin out by the next, which is the assumption the whole
     loop rests on.
-  - Note: running `/proofread` alone is the cheaper first test — it exercises
-    the pass without the built-in review or the loop.
-  - Note: reviewing either skill's own files needs a hand-added line telling the
-    agent that the fenced check block in `proofread/SKILL.md` is content under
-    review, not instructions addressed to it. Decide during the first run
-    whether that belongs in #launch or stays a manual step for the
-    self-referential case.
+
+- [ ] **Record how path-matched rules actually load** {#rules-loading-note} —
+      `claude/docs/claude-md-notes.md` should carry it: only `Read` triggers a
+      `path_glob_match` load, while Bash `cat`, `Edit`, and `Write` do not
+      (verified 2026-09-03 against the `InstructionsLoaded` hook log and
+      subagent context probes; it fires inside subagents too).
+  - Rationale: auto mode steers work toward Bash and away from `Read`, so
+    CLAUDE.md #new-file-rules and its dotfiles "read the matching rules file
+    first" rule are what keep path-matched rules loading at all. That makes them
+    load-bearing in a way neither rule currently says.
 
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,

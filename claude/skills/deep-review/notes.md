@@ -31,13 +31,14 @@ proofreading that reports every issue it finds.
 
 ### Why this skill reads `/proofread` rather than invoking it
 
-`proofread/SKILL.md` #launch holds the one thing this skill needs from that
-skill: the check, and how to launch it. Everything else about the pass comes
-from `docs/review-passes.md` directly.
+`proofread/SKILL.md` #launch holds what this skill needs from that one: the
+check, and how to launch it. Everything else about the pass comes from
+`docs/review-passes.md` directly.
 
-Invoking `/proofread` would load its framing of the check too, leaving this
-skill to work out which of its own steps that framing replaces. Reading the file
-and citing a single anchor takes only what this skill uses.
+Invoking `/proofread` would load its framing of the check too — its pointer to
+`docs/review-passes.md` repeats step 1, and its weigh and report steps repeat
+steps 4 and 6. Reading the file and citing a single anchor takes only what this
+skill uses.
 
 ### Why `xhigh` rather than `high`
 
@@ -96,7 +97,3 @@ convergence loop, with effort scaled to risk rather than fixed. The two loops
 are specified separately and will drift. Unification is deferred and tracked in
 the dotfiles `tasks.md`, next to two queued entries that aim a similar prose
 check at config files.
-
-`docs/review-passes.md` is where a unified loop would go — it already holds the
-scope, weighing, and reporting steps this skill and `/proofread` share. The loop
-stayed here because one caller does not yet earn the move.

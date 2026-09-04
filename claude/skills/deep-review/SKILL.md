@@ -17,10 +17,11 @@ Settle the scope as `~/.claude/docs/review-passes.md` #scope specifies.
 
 ## 2. Launch the proofreading pass
 
-Launch the pass as `~/.claude/skills/proofread/SKILL.md` #launch specifies, in
-the same turn as the built-in pass (step 3) so the two run concurrently. Neither
-pass edits anything, so they cannot collide. Collect both reports before fixing
-anything.
+Launch the pass as `~/.claude/skills/proofread/SKILL.md` #launch specifies —
+only that section applies here, since steps 1, 4, and 6 cover everything around
+it. Launch it in the same turn as the built-in pass (step 3) so the two run
+concurrently. Neither pass edits anything, so they cannot collide. Collect both
+reports before fixing anything.
 
 ## 3. Run the built-in pass
 
