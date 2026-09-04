@@ -472,3 +472,11 @@ in place for its next turn — so never prune them.
       the lockfile.
   - Note: Use `git log -1 --format=%as -- uv.lock` to determine when this last
     ran.
+
+- [ ] **Replace the remaining uses of "a reader" in CLAUDE.md** — the
+      foundational principle, the inline-comment rule, and two sites in
+      #canonical-location use a term `rules/claude-configuration.md` bans as
+      ambiguous. The ban binds CLAUDE.md, not only rules files.
+  - Note: "the user" is the wrong replacement in at least the first two, where
+    the audience is whoever reads the code; those sentences likely need
+    restructuring to avoid naming an audience at all.
