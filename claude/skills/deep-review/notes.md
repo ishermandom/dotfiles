@@ -29,6 +29,16 @@ this check. Its lower-effort variants tell the reviewer to prefer real failure
 modes over style, and every variant caps its findings — both at odds with
 proofreading that reports every issue it finds.
 
+### Why this skill reads `/proofread` rather than invoking it
+
+`proofread/SKILL.md` #launch holds the one thing this skill needs from that
+skill: the check, and how to launch it. Everything else about the pass comes
+from `docs/review-passes.md` directly.
+
+Invoking `/proofread` would load its framing of the check too, leaving this
+skill to work out which of its own steps that framing replaces. Reading the file
+and citing a single anchor takes only what this skill uses.
+
 ### Why `xhigh` rather than `high`
 
 The built-in routes each effort level through a per-model table. Under Opus 5,
@@ -70,27 +80,6 @@ reaches a forked review: a forked review always reports its findings as text,
 and a step telling this skill to re-report outcomes would be dead in every real
 run.
 
-### What the check leaves to the agent's judgment
-
-The check names recurring shapes of high cognitive load and stops there.
-Mechanical errors — typos, broken markdown, a reference that no longer resolves
-— are deliberately unlisted: a capable agent flags them without being asked, and
-enumerating them invites exactly the checklist reading the check tells the agent
-to avoid. The same reasoning covers anything else absent from the list.
-
-### Why the proofreading agent is cold, read-only, and single
-
-Sympathetic review under-finds: a session that just wrote a passage reads past
-its own clunky phrasing. Read-only keeps the two roles apart, so every rewrite
-passes through the session's own judgment before landing rather than arriving
-already applied.
-
-One agent rather than a fan-out. Proofreading does not gain from independent
-angles the way bug-hunting does — a second reader over the same prose mostly
-re-finds what the first one did, and returns overlapping rewrites of the same
-sentences for the session to reconcile. Splitting the work by file would also
-cost each agent the surrounding context the check tells it to read.
-
 ### Why the skill is user-invoked only
 
 A round costs an `xhigh` review plus a cold proofreading subagent, and the skill
@@ -107,3 +96,7 @@ convergence loop, with effort scaled to risk rather than fixed. The two loops
 are specified separately and will drift. Unification is deferred and tracked in
 the dotfiles `tasks.md`, next to two queued entries that aim a similar prose
 check at config files.
+
+`docs/review-passes.md` is where a unified loop would go — it already holds the
+scope, weighing, and reporting steps this skill and `/proofread` share. The loop
+stayed here because one caller does not yet earn the move.

@@ -214,9 +214,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     may want to be one mechanism. The task's queuing commit calls this "a
     matching pass," which reads as a recurring audit rather than only a
     self-check on text the review itself writes. Settle when the sweep lands.
-  - Note: `/deep-review` step 2 already carries a general-purpose proofreading
-    check built on the same cognitive-load lens, aimed at any project rather
-    than at config prose. Weigh reusing it here before writing a second one.
+  - Note: `/proofread` already carries a general-purpose proofreading check
+    built on the same cognitive-load lens, aimed at any project rather than at
+    config prose. Weigh reusing it here before writing a second one.
 
 - [ ] **Unify the two convergence-review loops** {#convergence-loop-unification}
       — `/deep-review` and step 1 of `/ownership-walkthrough` each describe a
@@ -227,19 +227,27 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     proofreading pass; `/ownership-walkthrough` scales effort to the risk of the
     change, passes `--fix`, and adds nothing. Whichever loop survives has to
     express both shapes.
+  - Note: `claude/docs/review-passes.md` is the likely home — it already holds
+    the scope, weighing, and reporting steps `/deep-review` and `/proofread`
+    share. The loop stayed in `/deep-review` because one caller does not earn
+    the move.
 
 - [ ] **Run `/deep-review` end to end at least once** {#deep-review-first-run} —
       the skill has never run as written. Only its proofreading check has been
       exercised, by hand, on the skill's own text. The convergence loop, the
-      `xhigh` built-in pass inside this wrapper, and launching both passes in
-      one turn are all unvalidated.
+      `xhigh` built-in pass inside this wrapper, launching both passes in one
+      turn, and reading the pass definition out of `/proofread` are all
+      unvalidated.
   - Note: the first run is also the cheapest test of whether one round's
     findings actually thin out by the next, which is the assumption the whole
     loop rests on.
-  - Note: reviewing this skill's own files needs a hand-added line telling the
-    agent that the fenced check block in `SKILL.md` is content under review, not
-    instructions addressed to it. Decide during the first run whether that
-    belongs in step 2 or stays a manual step for the self-referential case.
+  - Note: running `/proofread` alone is the cheaper first test — it exercises
+    the pass without the built-in review or the loop.
+  - Note: reviewing either skill's own files needs a hand-added line telling the
+    agent that the fenced check block in `proofread/SKILL.md` is content under
+    review, not instructions addressed to it. Decide during the first run
+    whether that belongs in #launch or stays a manual step for the
+    self-referential case.
 
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
