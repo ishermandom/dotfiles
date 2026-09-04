@@ -161,5 +161,8 @@
   "remoteControlAtStartup": true,
   "showThinkingSummaries": true,
   "theme": "dark",
-  "tui": "fullscreen"
+  "tui": "fullscreen",
+  "worktree": {
+    "baseRef": "head"
+  }
 }
