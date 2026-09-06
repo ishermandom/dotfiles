@@ -296,6 +296,22 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     first" rule are what keep path-matched rules loading at all. That makes them
     load-bearing in a way neither rule currently says.
 
+- [ ] **Find a rule-delivery mechanism that survives auto mode**
+      {#rules-delivery-mechanism} — only `Read` triggers a `path_glob_match`
+      load (see #rules-loading-note), and auto mode injects a reminder steering
+      work toward Bash and away from `Read`. A session can therefore edit the
+      files a style guide governs from end to end without that guide ever
+      loading. Work out what to key the rules on instead.
+  - Rationale: queued 2026-09-05. CLAUDE.md #new-file-rules and the dotfiles
+    "read the matching rules file first" rule are all that keep these rules
+    loading under auto mode today, and both need Claude to remember to invoke
+    them — the same recall the path match exists to remove.
+  - Note: the failure is silent. Nothing reports that a guide went unloaded, so
+    the work looks normal and the gap shows up only as style drift later.
+  - Note: whatever replaces the trigger should keep what makes path matching
+    worth having — a guide costs context only in the sessions that touch its
+    file type, rather than every session paying for every guide.
+
 - [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
       shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
       so nothing catches unformatted or unlinted shell the way Stop catches
