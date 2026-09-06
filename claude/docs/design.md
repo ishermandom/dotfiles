@@ -221,9 +221,9 @@ terminal as a code-reading surface, and broke independent-work flow. The adopted
 model is a post-hoc, attention-routing walkthrough:
 
 - Claude works end-to-end, producing an uncommitted diff.
-- Before presenting it, Claude runs a self-review-and-fix pass
-  (`/code-review --fix`, effort scaled to risk; `/simplify` for quality-only;
-  never cloud `ultra` here) so the user's attention lands on cleaned code.
+- Before presenting it, Claude runs a self-review-and-fix pass (the
+  `deep-review` loops; `/simplify` for quality-only) so the user's attention
+  lands on cleaned code.
 - Claude presents a review map: the diff partitioned into logical units
   ("logical pull requests"), each with a risk tier, recommended review depth, a
   one-line why, and where to read. The user reads real code in their editor;

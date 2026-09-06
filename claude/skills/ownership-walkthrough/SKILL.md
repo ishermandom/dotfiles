@@ -2,40 +2,25 @@
 description:
   Drive a post-hoc ownership review of completed work — self-review and fix,
   then present a risk-labeled map of the work for the user to review before
-  committing. Run when a durable chunk of work is complete. Pass --fix to run
-  only the convergence review-and-fix, skipping the walkthrough.
+  committing. Run when a durable chunk of work is complete.
 ---
 
 Work through each step in order, toward the ownership bar in
 `CLAUDE.md #review-approach`.
 
-The scope is everything not yet reviewed. That is usually the pending diff, but
-commits made ahead of the review count too — a mid-turn snapshot, or a branch
-being reviewed at landing — whether or not they have been pushed. The session
-conversation usually settles the boundary; ask the user when it does not.
-
-When invoked with `--fix`, run only step 1 — the review-and-fix loop, to
-convergence — then report what each round found and fixed, and stop: no
-partition, map, or walkthrough, and no commit. The full walkthrough stays the
-default; `--fix` serves cleanup passes where the user reviews separately.
+Settle the scope as `~/.claude/docs/review-passes.md` #scope specifies.
 
 ## 1. Self-review and fix, to convergence
 
-Clean the code before spending the user's attention on it. Run
-`/code-review --fix` over the scope, effort scaled to risk — `low` or `medium`
-for routine work, higher for core logic, data handling, or security-sensitive
-code. Use `/simplify` instead when there are no correctness concerns, only
-cleanup. Never use the `ultra` effort here — it runs in the cloud and is outside
-this local flow.
+Clean the code before spending the user's attention on it. Run the review as
+`~/.claude/skills/deep-review/SKILL.md` specifies — that skill owns both
+convergence loops and the report they produce. `deep-review` is user-invocable
+only, so read the file and follow it rather than invoking the skill. Its closing
+report ends the review, but not the rest of this walkthrough — carry on to step
+2 from there.
 
-Iterate to convergence: when a round surfaces significant findings, run another
-round after applying its fixes, and stop only when a round comes back without
-any. Each round reviews the full current files, never just the prior round's
-delta. Carry between rounds: what earlier rounds fixed, a ledger of accepted
-decisions finders must not re-flag, and directed scrutiny at the previous
-round's fix code — new fixes are where new bugs concentrate. Prefer finder
-instructions that reproduce findings against real inputs over reasoning-only
-review, and shrink the fanout as findings thin.
+Use `/simplify` and `/proofread` instead when there are no correctness concerns,
+only cleanup.
 
 ## 2. Partition the work into logical units
 

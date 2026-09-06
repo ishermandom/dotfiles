@@ -122,7 +122,7 @@ reaches a forked review: a forked review always reports its findings as text,
 and a step telling this skill to re-report outcomes would be dead in every real
 run.
 
-### Why the skill is user-invoked only
+### Why the skill is user-invoked only {#user-invoked-only}
 
 Every round costs a cold agent — an `xhigh` review or a proofreading subagent —
 and every correctness round adds the session's own follow-through. Both loops
@@ -130,12 +130,7 @@ run until they go quiet. That is too expensive to fire on the model's own
 initiative; `config-review`, the closest analogue in cost and shape, is
 user-invoked for the same reason.
 
-## TODOs and follow-ups
-
-### Overlap with the convergence loop in `ownership-walkthrough`
-
-Step 1 of `ownership-walkthrough` specifies its own `/code-review --fix`
-convergence loop, with effort scaled to risk rather than fixed. The two loops
-are specified separately and will drift. Unification is deferred and tracked in
-the dotfiles `tasks.md`, next to two queued entries that aim a similar prose
-check at config files.
+The gate stops only a direct call. Step 1 of `ownership-walkthrough` follows
+this skill by reading its `SKILL.md`, and that skill is model-invocable — so
+Claude starts both loops on its own initiative whenever the ownership review
+runs.

@@ -12,11 +12,21 @@ Chosen for collision-free tab completion so that either word ("ownership" or
 "walkthrough") completes it. Note that the more natural "review" term is omitted
 as it conflicts with the built in "/review" and "/code-review" skills.
 
+### Why step 1 delegates its loop to `deep-review`
+
+One home for the convergence loop. Two skills each describing a `/code-review`
+loop that repeats until a round comes back quiet drift apart, and that loop is
+the expensive part of both.
+
+`deep-review` is user-invocable only, so step 1 reads its `SKILL.md` and follows
+it — the same move `deep-review` makes when it follows `proofread`. What that
+route costs the invocation gate is in `deep-review/notes.md` #user-invoked-only.
+
 ## TODOs and follow-ups
 
 ### A spec-compliance stage
 
-The skill reviews two axes: code quality (step 1, `/code-review --fix`) and
+The skill reviews two axes: code quality (step 1, the `deep-review` loops) and
 ownership (steps 2–5, the risk-labeled attention map). It does not explicitly
 check spec compliance — whether the change does what the task asked, as distinct
 from whether the code is good or whether the user understands it. A change can
@@ -35,5 +45,5 @@ order (the Superpowers two-stage-review pattern).
 ### Early-use watch items
 
 Two spots remain worth watching for friction while real-change runs are still
-few: partitioning the work into logical units (step 2), and invoking
-`/code-review --fix` from within the skill (step 1).
+few: partitioning the work into logical units (step 2), and following
+`deep-review` from within the skill (step 1).

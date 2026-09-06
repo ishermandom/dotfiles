@@ -269,22 +269,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     built on the same cognitive-load lens, aimed at any project rather than at
     config prose. Weigh reusing it here before writing a second one.
 
-- [ ] **Unify the two convergence-review loops** {#convergence-loop-unification}
-      — `/deep-review` and step 1 of `/ownership-walkthrough` each describe a
-      `/code-review` loop that repeats until a round comes back quiet, so the
-      two descriptions will drift. Pick one home and have the other point at it.
-  - Note: the two differ in more than wording. `/deep-review` fixes the effort
-    at `xhigh`, withholds `--fix` so the session does the fixing, and closes
-    every correctness round with an inline follow-through on that round's fixes;
-    `/ownership-walkthrough` scales effort to the risk of the change, passes
-    `--fix`, and adds nothing. Whichever loop survives has to express both
-    shapes.
-  - Note: `claude/docs/review-passes.md` is the likely home — it already holds
-    the scope, weighing, and reporting steps `/deep-review` and `/proofread`
-    share. `/deep-review` runs two loops of its own — correctness, then
-    proofreading — and states the shared convergence rule once for both, so the
-    move has a second caller arguing for it.
-
 - [ ] **Run `/deep-review` end to end at least once** {#deep-review-first-run} —
       the skill has never run as written. `/proofread` has, over the commit that
       split it out, so the pass and its check are exercised. Still unvalidated:
@@ -294,6 +278,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the first run is also the cheapest test of whether one round's
     findings actually thin out by the next, which is the assumption both loops
     rest on.
+  - Note: step 1 of `/ownership-walkthrough` now follows this skill, so the
+    first run doubles as the first test of the ownership flow's review step.
   - Open question: whether the inline follow-through actually shortens the loop.
     The run that motivated it took eighteen cold rounds, most of them reporting
     damage from earlier rounds' fixes; a comparable run finishing in a handful
