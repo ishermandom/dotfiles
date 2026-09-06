@@ -133,4 +133,7 @@ user-invoked for the same reason.
 The user-only restriction stops only a direct call. Step 1 of
 `ownership-walkthrough` reads this skill's `SKILL.md` and follows it, and
 `ownership-walkthrough` is model-invocable — so Claude starts both loops on its
-own initiative whenever the ownership review runs.
+own initiative whenever the ownership review runs. That route is a deliberate
+choice rather than an oversight: the harness refuses a direct call and asks
+Claude not to reach the workflow by other means either, but the user chose to
+overrule this default.
