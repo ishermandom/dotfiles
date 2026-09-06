@@ -9,8 +9,8 @@ steps.
 
 The scope is everything not yet reviewed — usually the pending diff, plus any
 other unreviewed work, whether or not it has been committed or pushed. Anything
-the user names at invocation overrides that default scope. The session
-conversation usually settles the boundary; ask the user when it does not.
+the user names at invocation overrides that default. When neither the invocation
+nor the session conversation settles what is in scope, ask the user.
 
 ## Weighing and applying findings {#weigh}
 

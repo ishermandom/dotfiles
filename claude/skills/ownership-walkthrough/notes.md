@@ -14,13 +14,14 @@ as it conflicts with the built in "/review" and "/code-review" skills.
 
 ### Why step 1 delegates its loop to `deep-review`
 
-One home for the convergence loop. Two skills each describing a `/code-review`
-loop that repeats until a round comes back quiet drift apart, and that loop is
-the expensive part of both.
+One home for the convergence loop, which repeats `/code-review` rounds until one
+comes back quiet. Two separate descriptions of it drift apart, and it is the
+expensive part of both skills.
 
 `deep-review` is user-invocable only, so step 1 reads its `SKILL.md` and follows
-it — the same move `deep-review` makes when it follows `proofread`. What that
-route costs the invocation gate is in `deep-review/notes.md` #user-invoked-only.
+it — the same move `deep-review` makes when it follows `proofread`. Reading the
+file sidesteps that restriction; `deep-review/notes.md` #user-invoked-only says
+what that costs.
 
 ## TODOs and follow-ups
 

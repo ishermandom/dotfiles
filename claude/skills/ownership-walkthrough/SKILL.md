@@ -13,14 +13,15 @@ Settle the scope as `~/.claude/docs/review-passes.md` #scope specifies.
 ## 1. Self-review and fix, to convergence
 
 Clean the code before spending the user's attention on it. Run the review as
-`~/.claude/skills/deep-review/SKILL.md` specifies — that skill owns both
-convergence loops and the report they produce. `deep-review` is user-invocable
-only, so read the file and follow it rather than invoking the skill. Its closing
-report ends the review, but not the rest of this walkthrough — carry on to step
-2 from there.
+`~/.claude/skills/deep-review/SKILL.md` specifies: `deep-review` is
+user-invocable only, so read that file and follow it rather than invoking the
+skill.
 
-Use `/simplify` and `/proofread` instead when there are no correctness concerns,
-only cleanup.
+When the work has no correctness concerns and needs only cleanup, run
+`/simplify` over the code, and proofread the prose as
+`~/.claude/skills/proofread/SKILL.md` specifies.
+
+A finished review reports and stops there; this walkthrough continues at step 2.
 
 ## 2. Partition the work into logical units
 

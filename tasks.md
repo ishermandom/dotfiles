@@ -278,8 +278,8 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the first run is also the cheapest test of whether one round's
     findings actually thin out by the next, which is the assumption both loops
     rest on.
-  - Note: step 1 of `/ownership-walkthrough` now follows this skill, so the
-    first run doubles as the first test of the ownership flow's review step.
+  - Note: step 1 of `/ownership-walkthrough` follows `/deep-review`, so the
+    first run also tests that step.
   - Open question: whether the inline follow-through actually shortens the loop.
     The run that motivated it took eighteen cold rounds, most of them reporting
     damage from earlier rounds' fixes; a comparable run finishing in a handful
