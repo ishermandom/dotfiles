@@ -450,6 +450,25 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     resolves inside whichever checkout holds the hook. Only the helpers named by
     an explicit `$HOME/...` path are still pinned to the installed copy.
 
+- [ ] **Cover `git-drop-stash.sh` with a test** — the script drops a stash, so a
+      defect destroys work rather than reporting one, and its whole claim is
+      behaviour under a shifting slot list. `gh-protect.sh`, `statusline.sh`,
+      and the `quiet-*.sh` runners all have tests; `git-land.sh` does not, which
+      is why this landed without one.
+  - Note: the cases are already written — the throwaway repos built while
+    validating it covered a shifted slot, a SHA no longer listed, a revision
+    naming no commit, a non-commit revision, no arguments, a slot passed as the
+    argument, and one SHA held at two slots. `claude/scripts/`'s framework
+    (`shell-test-framework.sh`) supplies `begin_case` and `$case_dir`.
+  - Note: producing the duplicate-SHA case needs a second stash pushed before
+    re-storing the first — `git stash store` on the SHA `refs/stash` already
+    points at writes no reflog entry, so the naive fixture silently builds
+    nothing and the test passes without exercising anything.
+  - Note: fix a cosmetic blemish in the same pass — a revision resolving to a
+    non-commit leaks git's own `error: … expected commit type` line ahead of the
+    script's message, since `rev-parse --quiet` suppresses only the
+    invalid-object-name case. A `2>/dev/null` on that call settles it.
+
 - [ ] **Factor out resolving a repo root** — `rev-parse --show-toplevel` is
       spelled out at eight sites across `claude/hooks/` and `claude/scripts/`,
       in two shapes: the root of the current directory, falling back to that
