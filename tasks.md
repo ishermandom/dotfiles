@@ -269,6 +269,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     Williams hit the session's web-search cap mid-run, so this mapping rests on
     partial sourcing — check the lesson list against a primary source before
     acting on it.
+  - Worktree: prose-williams
 
 - [ ] **Settle two weak spots in `docs/prose.md`'s existing principles**
       {#prose-weaknesses} — both surfaced in every cold evaluation of the file
@@ -332,6 +333,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: `/proofread` already carries a general-purpose proofreading check
     built on the same cognitive-load lens, aimed at any project rather than at
     config prose. Weigh reusing it here before writing a second one.
+
+- [ ] **Explore giving `/proofread` a persona** {#proofread-persona} — a named
+      perspective for the pass — a copy editor, a hostile reviewer — may change
+      what it notices, or may only change how it narrates.
+  - Open question: whether the persona shifts the findings themselves. Judge it
+    against the pass's real output rather than in the abstract.
+  - Worktree: proofread-persona
 
 - [ ] **Run `/deep-review` end to end at least once** {#deep-review-first-run} —
       the skill has never run as written. `/proofread` has, over the commit that
@@ -568,6 +576,14 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: `.zshenv` is read by every zsh, scripts included, so only environment
     belongs there — nothing interactive, and nothing that prints.
 
+- [ ] **Stop `install.sh` printing `chmod` noise** {#install-chmod-noise} — a
+      run's output carries permission-setting chatter that buries what the
+      installer actually linked.
+  - Note: `install.sh` runs no `chmod` itself; it calls
+    `claude/scripts/share-directory.sh`, whose `chmod -R +a` is the likely
+    source. Confirm before fixing.
+  - Worktree: install-chmod-noise
+
 - [ ] **Track `claudify` in this repo** {#track-claudify} — the command that
       enters the sandbox account exists only as a root-owned file at
       `/usr/local/bin/claudify`, checked in nowhere, with no history and no
@@ -598,6 +614,11 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Open question: whether killing the daemon so it respawns from an ssh shell
     is enough, and whether it stays that way, or whether foreground-only is the
     honest answer.
+
+- [ ] **Wire up copy and paste for the ssh workflow** {#ssh-clipboard} — text
+      should cross between a session entered through the ssh `claudify` and the
+      pasteboard of the account driving it, rather than being carried by hand.
+  - Worktree: ssh-clipboard
 
 ---
 
