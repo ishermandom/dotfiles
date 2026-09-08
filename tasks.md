@@ -334,6 +334,12 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     built on the same cognitive-load lens, aimed at any project rather than at
     config prose. Weigh reusing it here before writing a second one.
 
+- [ ] **Explore a local code review tool** {#local-review-tool} — review runs
+      through chat today, where a large diff is awkward to present and to walk
+      through; a local tool built for reading diffs may carry the workflow
+      better.
+  - Worktree: local-review-tool
+
 - [ ] **Explore giving `/proofread` a persona** {#proofread-persona} — a named
       perspective for the pass — a copy editor, a hostile reviewer — may change
       what it notices, or may only change how it narrates.
