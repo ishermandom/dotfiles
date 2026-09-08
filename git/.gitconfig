@@ -14,6 +14,10 @@
 [safe]
 	directory = /Users/Shared/code/*
 [alias]
+	# Drops a stash by SHA rather than by slot, since slots renumber
+	# whenever an earlier entry is pushed or dropped; the script
+	# documents how to recover one dropped by mistake.
+	drop-stash = !~/.claude/scripts/git-drop-stash.sh
 	# Lands the current branch onto main with linear history; the script
 	# documents the full workflow.
 	land = !~/.claude/scripts/git-land.sh
