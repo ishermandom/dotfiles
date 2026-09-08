@@ -256,6 +256,35 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     deserves emphasis, which a long constituent may not. It briefly rode in
     #stress-position's label as "or the weighty" with nothing in the body to
     explain it. Comes from Quirk et al. rather than from Gopen.
+  - **Shape and coherence** — two further Williams lessons, surfaced while
+    mapping his ten against prose.md and not yet weighed. Shape answers the
+    question #subject-verb raises and drops: a long sentence stays readable when
+    it grows rightward off a completed clause and collapses when it grows by
+    nesting, so the remedy for wedged material is not only "make it shorter."
+    Coherence is the paragraph-scale companion to #given-first — the same
+    grammatical subject running across consecutive sentences — and it would give
+    the file something above sentence scale, which every principle now lacks.
+    Concision is the third lesson in that region and needs no decision:
+    CLAUDE.md #substance already owns it.
+
+- [ ] **Settle two weak spots in `docs/prose.md`'s existing principles**
+      {#prose-weaknesses} — both surfaced in every cold evaluation of the file
+      and neither is decided.
+  - Open question: #emphasis-match makes two claims, and only one is its own. "A
+    main clause outranks a subordinate one" is new; "a unit's end outranks its
+    middle" restates #stress-position. Narrowing it to clause subordination
+    would leave two clean axes — position for #stress-position, grammatical rank
+    for #emphasis-match — at the cost of departing from Gopen, whose seventh
+    principle deliberately generalizes his second and third. Three cold rounds
+    reported the overlap, and the third found the principle never fired
+    independently: every candidate was already caught by #stress-position or
+    #context-first.
+  - Open question: #topic-position offers no test for identifying the "story",
+    which every cold round named as the file's least actionable principle. Its
+    failure case — a unit that "opens on a subordinate detail" — presupposes the
+    reader can already tell the subordinate detail from the story, which is the
+    hard part. It also idles on imperative prose, where the topic is fixed and
+    units open on verbs.
 
 - [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities**
       {#consolidation-recheck} — the 2026-07 close-out's consolidation sweep was

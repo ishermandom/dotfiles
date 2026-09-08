@@ -10,7 +10,16 @@ running session needs lands here, keyed by rule.
 ## Prose style guide (CLAUDE.md `## Prose`)
 
 `docs/prose.md` adapts the seven reader-expectation principles from Gopen &
-Swan, "The Science of Scientific Writing" (American Scientist, 1990).
+Swan, "The Science of Scientific Writing" (American Scientist, 1990), mirrored
+at `gatsby.ucl.ac.uk/~pel/misc/gopen_swan.pdf` — worth recording because
+checking the guide's wording against the source needs the full text, not the
+seven numbered principles alone.
+
+**The scope line says "write" deliberately.** Six of the seven principles govern
+arrangement alone, so "arrange" would describe the file as it stands — but
+#prose-migration brings CLAUDE.md #plain-language in, and diction sits squarely
+inside "write". Narrowing the verb to match today's contents would only have to
+be undone.
 
 **All seven stay separate.** They collapse to three — 6 and 7 generalize 2, 3,
 and 4, while 3 and 4 both govern the opening slot — but the collapsed form
