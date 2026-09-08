@@ -167,6 +167,15 @@ only the durable design choices behind it:
   auto mode), and a deny would block user-directed commits. The built-in mode
   semantics — prompt in regular mode, scoped autonomy in auto mode — are the
   commit gate, so no settings entry records it.
+- **`dmypy` works and is still not worth taking** {#dmypy}: mypy's daemon halves
+  the type-check step — 307ms to 163ms on the bridge repo, 290ms to 155ms here —
+  and probing found nothing stale about the answers, which is the failure that
+  would matter. What rules it out is the price of keeping a checker resident:
+  426MB on bridge and 158MB here, held between turns, and one daemon per
+  checkout, so every worktree pays again. A restart costs 11s, roughly 75 turns
+  of savings. Meanwhile the type check is around 3% of a Stop chain that test
+  suites dominate, so halving it moves the turn by about 1.5%. The remaining
+  time is in the suites, not the type check.
 
 ### Memory vs. docs
 

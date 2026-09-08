@@ -128,7 +128,8 @@ Why mypy was a defensible starting choice and isn't strictly worse:
 - mypy: the original, most-established checker (not the spec authority),
   behaviorally stable (infrequent, announced changes), pure-Python/no-Node,
   plugin system (Django, SQLAlchemy), most-documented error codes; `dmypy`
-  daemon exists if speed ever matters.
+  daemon exists if speed ever matters — measured for the Stop chain and declined
+  on what a resident checker costs, design.md #dmypy.
 - pyright downsides beyond the usual three (Node dep / stricter default / no
   plugins): stricter inference yields real false positives mypy never emits;
   weekly releases occasionally regress (a checker's verdict can change on
