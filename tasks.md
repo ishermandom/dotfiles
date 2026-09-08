@@ -220,20 +220,39 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     its own audience, not a guide whose subject matter is the reader. Rules
     moving in from CLAUDE.md may use the term the same way.
 
-- [ ] **Decide whether `docs/prose.md` should cover parallelism**
-      {#prose-parallelism} — coordinated items in mismatched grammatical shapes
-      make the reader re-parse each one against a template the first item set, a
-      first-pass cost squarely in prose.md's remit. Nothing catches it today:
-      CLAUDE.md #scannable-lists governs whether an item's opening words are
-      informative, not whether the items share a shape.
-  - Note: a cold evaluation on 2026-09-07 hit non-parallel series twice in
+- [ ] **Decide which further principles `docs/prose.md` should carry**
+      {#prose-additions} — three candidates, ranked below by the evidence behind
+      them. Settle them together: each one that lands widens the file past Gopen
+      & Swan, and the provenance line in `docs/claude-md-notes.md` should be
+      written once for whichever set goes in.
+  - **Single point per unit** — the strongest candidate, and the only one that
+    costs no provenance: Gopen's own mid-article summary states that every unit
+    of discourse, whatever its size, should serve a single function or make a
+    single point, though it never reached his final seven. It reaches a scale
+    the seven do not, asking whether a unit should be one unit at all. A sweep
+    of the longest bullets in the config corpus on 2026-09-08 found CLAUDE.md
+    #visibility carrying six directives, one of them a work-decomposition
+    strategy no one would look for under a rule about status updates, and
+    CLAUDE.md #canonical-location closing on cross-reference guidance that
+    #cross-references already owns — so that rule breaks its own directive
+    inside itself. Open question: a test this sharp fires constantly on a corpus
+    built by accretion, so decide whether the findings would get acted on.
+  - **Parallelism** — coordinated items in mismatched grammatical shapes make
+    the reader re-parse each one against a template the first item set. Nothing
+    catches it today: CLAUDE.md #scannable-lists governs whether an item's
+    opening words are informative, not whether the items share a shape. A cold
+    evaluation on 2026-09-07 hit non-parallel series twice in
     `skills/spec/SKILL.md` alone, both times the most noticeable problem in the
-    passage. prose.md #action-in-verb points the wrong way there, endorsing the
-    one non-parallel item as the more verb-forward option.
-  - Note: the cost is provenance. prose.md currently adapts Gopen & Swan alone;
-    parallelism comes from Strunk and from Williams's Elegance lesson, so adding
-    it makes the file multi-source and needs a line in `docs/claude-md-notes.md`
-    recording that.
+    passage, and prose.md #action-in-verb points the wrong way there by
+    endorsing the one non-parallel item as the more verb-forward option. Comes
+    from Strunk and from Williams's Elegance lesson.
+  - **End-weight** — unresolved, and the weakest of the three on evidence: no
+    instance has turned up in this corpus. Long constituents read more easily
+    last, a claim about processing rather than about emphasis, so
+    #stress-position does not absorb it — that principle now turns on what
+    deserves emphasis, which a long constituent may not. It briefly rode in
+    #stress-position's label as "or the weighty" with nothing in the body to
+    explain it. Comes from Quirk et al. rather than from Gopen.
 
 - [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities**
       {#consolidation-recheck} — the 2026-07 close-out's consolidation sweep was

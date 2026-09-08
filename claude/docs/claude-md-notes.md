@@ -40,6 +40,12 @@ over 40 words in roughly 5,000 lines, against 6 nominalizations. #action-in-verb
 and #subject-verb therefore stand on evidence; #stress-position stands on the
 source alone, since violations of it resist grepping.
 
+**The `there is`/`there are` qualifier is load-bearing.** Claude reaches for the
+pattern rather than the principle, flagging any expletive on sight — it happened
+twice while prose.md was being drafted, once in text quoting #lens-not-checklist
+in the same breath. The qualifier reads as clutter next to the cleft and the
+nominalization, which need none, so the temptation to cut it will recur.
+
 **Spot edits move the stress position.** Deleting a trailing sentence promotes
 whatever preceded it into the closing slot; appending a clause displaces
 whatever held it. Both operations look local while editing, and neither reads
