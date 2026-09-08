@@ -13,26 +13,29 @@ assembling the text rather than on what it says.
 - **Open on whose "story" the unit tells** {#topic-position}: the opening words
   set what the reader takes the unit to be about. A unit that opens on a
   subordinate detail makes the reader re-aim once its real subject arrives.
-- **Start from material the text has already established** {#given-first}: the
-  opening slot also links the unit to what came before, so begin with something
-  already named and let the new material follow — a unit that links backward
-  gives the new material somewhere to land by providing the relevant context.
-  This principle and #topic-position usually select the same opening.
+- **Start from material the text has already established** {#given-first}: begin
+  with something already named and let the new material follow. Established
+  material does double duty — it ties the unit back to what came before, and it
+  frames the new material arriving next.
 - **End on the new or the weighty** {#stress-position}: closing words carry
-  emphasis, so finish on what the unit exists to deliver and move qualifiers and
-  conditions earlier.
+  emphasis, so finish on what the unit exists to deliver.
   - Note: A summary layers on top rather than competing. CLAUDE.md
     #summary-first and #scannable-lists hoist a conclusion into a unit of its
     own, and every unit, the summary included, still runs to its own stress
     position.
-- **Keep the subject next to its verb** {#subject-verb}: anything long wedged
-  between them leaves the clause unresolved while the reader holds the subject
-  open, and reads as an interruption, whatever its importance.
+- **Keep a verb next to its subject, object, and particle** {#subject-verb}:
+  anything long wedged into one of those bonds keeps the clause unresolved while
+  the reader holds it open, and — however important the wedged material is —
+  reads as an interruption. `leave sections the change doesn't touch alone`
+  strands the particle five words from its verb.
 - **Put each clause's action in its verb** {#action-in-verb}: when the real
   action sits anywhere else, the reader assembles the clause in two passes.
-  Recurring shapes include the passive (`the fixes are applied by the session`),
-  the cleft (`cold rounds are what this skill spends`), the nominalization
-  (`perform a comparison of` for `compare`), and `there is`/`there are`.
+  Recurring shapes include the cleft (`cold rounds are what this skill spends`),
+  the nominalization (`perform a comparison of` for `compare`), and
+  `there is`/`there are`.
+  - Note: A passive verb still carries its action, so this principle does not
+    turn on voice. #topic-position and #given-first settle which noun takes the
+    subject slot.
 - **Supply context before the material it frames** {#context-first}: a condition
   before the instruction it governs, a term's definition before its first use, a
   section's purpose before its detail. New material arriving without its frame

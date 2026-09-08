@@ -40,6 +40,14 @@ over 40 words in roughly 5,000 lines, against 6 nominalizations. #action-in-verb
 and #subject-verb therefore stand on evidence; #stress-position stands on the
 source alone, since violations of it resist grepping.
 
+**Spot edits move the stress position.** Deleting a trailing sentence promotes
+whatever preceded it into the closing slot; appending a clause displaces
+whatever held it. Both operations look local while editing, and neither reads
+like a change to emphasis — cutting a remedy sentence from a bullet can leave
+that bullet ending on a bare qualifier, a few lines after #stress-position says
+to finish on the payload. After editing prose under these principles, re-read
+what each unit now ends on.
+
 ## Pronouns and demonstratives (CLAUDE.md #pronouns)
 
 Two elements were drafted into this rule and cut; both are tempting to re-add.

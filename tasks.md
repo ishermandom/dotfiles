@@ -220,6 +220,21 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     its own audience, not a guide whose subject matter is the reader. Rules
     moving in from CLAUDE.md may use the term the same way.
 
+- [ ] **Decide whether `docs/prose.md` should cover parallelism**
+      {#prose-parallelism} — coordinated items in mismatched grammatical shapes
+      make the reader re-parse each one against a template the first item set, a
+      first-pass cost squarely in prose.md's remit. Nothing catches it today:
+      CLAUDE.md #scannable-lists governs whether an item's opening words are
+      informative, not whether the items share a shape.
+  - Note: a cold evaluation on 2026-09-07 hit non-parallel series twice in
+    `skills/spec/SKILL.md` alone, both times the most noticeable problem in the
+    passage. prose.md #action-in-verb points the wrong way there, endorsing the
+    one non-parallel item as the more verb-forward option.
+  - Note: the cost is provenance. prose.md currently adapts Gopen & Swan alone;
+    parallelism comes from Strunk and from Williams's Elegance lesson, so adding
+    it makes the file multi-source and needs a line in `docs/claude-md-notes.md`
+    recording that.
+
 - [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities**
       {#consolidation-recheck} — the 2026-07 close-out's consolidation sweep was
       an inline self-review by the session that wrote several of the candidate
