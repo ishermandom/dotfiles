@@ -46,7 +46,7 @@
     "runnables": false
   },
   "buffer_font_weight": 400.0,
-  "buffer_font_family": "Monaco",
+  "buffer_font_family": "Monego",
   "line_ending": "prefer_lf",
   "soft_wrap": "prefer_line",
   "tab_size": 2,
