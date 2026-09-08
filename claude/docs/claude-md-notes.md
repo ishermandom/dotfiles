@@ -40,6 +40,17 @@ over 40 words in roughly 5,000 lines, against 6 nominalizations. #action-in-verb
 and #subject-verb therefore stand on evidence; #stress-position stands on the
 source alone, since violations of it resist grepping.
 
+**#lens-not-checklist stays after the principles.** Moving it in front was
+tested — four cold agents, two per arm, same file and same prompt, differing
+only in where the paragraph sat. Candidate counts matched (mean 17 in both
+arms), and rewrite counts differed by one (4.5 against 3.5), inside the spread
+between the two runs within each arm. All four described the same procedure:
+sweep the file collecting every fire, then filter in a separate pass. The
+argument for moving it is that the lens frames all seven and #context-first puts
+a frame before what it frames — but that assumes a reader applies the file
+top-down, where this file loads whole through CLAUDE.md's import and is read
+before any of it is applied.
+
 **The `there is`/`there are` qualifier is load-bearing.** Claude reaches for the
 pattern rather than the principle, flagging any expletive on sight — it happened
 twice while prose.md was being drafted, once in text quoting #lens-not-checklist

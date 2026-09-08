@@ -8,7 +8,9 @@ Readers expect material in particular places. Prose that meets those
 expectations costs almost nothing to read; prose that defies them spends the
 reader's attention on assembling the text rather than on what it says. A
 principle that speaks of a unit holds at every scale — a clause, a sentence, a
-paragraph, and a section each have an opening and a close.
+paragraph, and a section each have an opening and a close. Units nest without
+competing: for example, a paragraph opens and closes, and so does every sentence
+inside it.
 
 - **Open on whose "story" the unit tells** {#topic-position}: the opening words
   set what the reader takes the unit to be about. A unit that opens on a
@@ -26,19 +28,22 @@ paragraph, and a section each have an opening and a close.
     on material that merely seems weighty is even worse — the reader takes that
     material as the point and reads on, never noticing that the real point went
     past unmarked.
-  - Note: Where the words before a colon or semicolon could stand as a sentence
-    on their own, they close as though the sentence ended there. Count one place
-    to close at the end and one at each such mark; a sentence runs too long when
-    more of its material deserves emphasis than it has places to close.
-  - Note: Units nest without competing for emphasis. A list can fill the close
-    of the sentence introducing it while each list item still internally closes
-    on its own. CLAUDE.md #summary-first and #scannable-lists hoist a conclusion
-    into a unit of its own on the same principle.
-- **Keep a verb next to its subject, object, and particle** {#subject-verb}:
-  anything long wedged into one of those bonds keeps the clause unresolved while
-  the reader holds it open. However important that material is, it reads as an
-  interruption. `leave sections the change doesn't touch alone` strands the
-  particle five words from its verb.
+  - Note: Front-loading a conclusion does not contradict this principle.
+    CLAUDE.md #summary-first and #scannable-lists hoist the conclusion into a
+    unit of its own, and that unit closes on its own payload.
+- **Give each emphatic point its own close** {#close-per-point}: a sentence has
+  one place to close at its end, plus one wherever the words before a break —
+  for example, a colon, a semicolon, or a dash — could stand as a sentence on
+  their own. A sentence carrying more emphatic material than it has places to
+  close leaves the extra points unmarked, and the reader is left to guess which
+  of them mattered.
+- **Keep a verb next to its subject, object, and particle** {#subject-verb}: a
+  long aside wedged into one of those bonds keeps the clause unresolved while
+  the reader holds it open. However important that aside is, it reads as an
+  interruption. A modifier that identifies what it attaches to is not an aside:
+  `two tasks that edit the same file` names which tasks and costs nothing, where
+  `leave sections the change doesn't touch alone` strands the particle apart
+  from its verb.
 - **Put each clause's action in its verb** {#action-in-verb}: when the real
   action sits anywhere else, the reader assembles the clause in two passes.
   Recurring shapes include the cleft (`cold rounds are what this skill spends`),
@@ -46,8 +51,8 @@ paragraph, and a section each have an opening and a close.
   `there is`/`there are`.
   - Note: `there is`/`there are` earns its place where existence is the point —
     `there are two dangers` buries no action. Count it against this principle
-    only where a real action sits in a noun instead, as
-    `there is a need to validate input` does for `validate input`.
+    only where the real action gets demoted to make room, as in
+    `there is a need to validate input` for `validate input`.
   - Note: A passive verb still carries its action, so this principle does not
     turn on voice. #topic-position and #given-first constrain which noun takes
     the subject slot.
