@@ -265,7 +265,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     grammatical subject running across consecutive sentences — and it would give
     the file something above sentence scale, which every principle now lacks.
     Concision is the third lesson in that region and needs no decision:
-    CLAUDE.md #substance already owns it.
+    CLAUDE.md #substance already owns it. Note: the agent that researched
+    Williams hit the session's web-search cap mid-run, so this mapping rests on
+    partial sourcing — check the lesson list against a primary source before
+    acting on it.
 
 - [ ] **Settle two weak spots in `docs/prose.md`'s existing principles**
       {#prose-weaknesses} — both surfaced in every cold evaluation of the file
