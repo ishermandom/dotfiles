@@ -160,6 +160,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     2026-07-31, so the convention holds today; nothing was kept.
   - Note: build it as a step in `stop_checks.sh`, not as another parallel Stop
     entry.
+  - Note: sequenced behind #shell-stop-check, which is adding a check step to
+    the same file. Running one `stop_checks.sh` task at a time is the user's
+    call, and whichever lands first sets the shape a second check step follows.
 
 - [ ] **Consider rotating `sessions.md` as part of the distillation skill** —
       `sessions.md` is the curated session log; it is deliberately _not_
