@@ -198,32 +198,27 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     the open question above has to resolve. Seen 2026-08-20 for session
     a80e121e.
 
-- [ ] **Add a CLAUDE.md rule against indirect sentence construction**
-      {#direct-sentence-construction} — one rule covering two shapes that both
-      delay a sentence's content for no gain: the passive voice ("the fixes are
-      applied by the session") and the "X is what Y" cleft ("cold rounds are
-      what this skill spends"). Scope it to every surface Claude writes — chat
-      responses, comments, docstrings, documentation.
-  - Rationale: both reorder away from actor-verb-object, so the reader assembles
-    the sentence in two passes instead of one. Naming the two shapes concretely
-    makes the rule fire; a general "write directly" does not.
-  - Note: it belongs in `## Style`, beside #plain-language, #pronouns, and
-    #scannable-lists — the run of prose rules that already reach chat responses
-    as well as files.
-  - Note: `rules/claude-configuration.md` already bans passive constructions in
-    rule text, under **Imperative mood** and the finalizing slip-pattern scan.
-    Scope the CLAUDE.md rule so the two read as one rule at different reach
-    rather than as a duplicate (CLAUDE.md #canonical-location).
-  - Note: the cleft earns always-loaded budget on frequency alone — it recurs
-    constantly in Claude's prose, which is the user's standing observation
-    across sessions rather than a count from any one of them. A grep over the
-    three skill files touched on 2026-09-03 found four instances, two written by
-    earlier sessions. #consolidation-recheck is hunting folds to shrink this
-    surface; this rule is not one of them, and "ordinary review already catches
-    it" does not justify dropping it.
-  - Note: `grep -n "is what\|are what" tasks.md` finds four more instances in
-    this file, written by earlier sessions. Sweep them once the rule lands —
-    they double as the cheapest check that it fires on real text.
+- [ ] **Move CLAUDE.md's prose rules into `docs/prose.md`** {#prose-migration} —
+      #plain-language, #pronouns, and #scannable-lists sit in `## Style` among
+      code-style rules, though they govern prose on every surface Claude writes.
+      `docs/prose.md` now holds the sentence-construction principles and reaches
+      CLAUDE.md through an `@` import, so it is their natural home.
+  - Note: sweep `## Documentation` and #interaction-style in the same pass —
+    #substance, #explaining, and #example-first are candidates. Move a rule only
+    where it shapes the prose itself; leave the ones governing when to write or
+    what to deliver.
+  - Note: sweep the clefts prose.md #action-in-verb now rules out — a grep
+    across CLAUDE.md, rules/, docs/, skills/, and tasks.md found 22 on
+    2026-09-05, including one in `skills/proofread/SKILL.md`.
+  - Note: `rules/claude-configuration.md` bans the passive in rule text twice,
+    under **Imperative mood** and in the finalizing slip-pattern scan, and
+    prose.md #action-in-verb now bans it everywhere. Decide whether the narrower
+    mentions still earn their place, and state the relationship at one site if
+    they do (CLAUDE.md #canonical-location).
+  - Note: prose.md keeps "the reader" throughout. The user settled this on
+    2026-09-07 — the ban #reader-terminology enforces targets prose that names
+    its own audience, not a guide whose subject matter is the reader. Rules
+    moving in from CLAUDE.md may use the term the same way.
 
 - [ ] **Adversarially re-check CLAUDE.md for consolidation opportunities**
       {#consolidation-recheck} — the 2026-07 close-out's consolidation sweep was
@@ -533,10 +528,11 @@ in place for its next turn — so never prune them.
   - Note: Use `git log -1 --format=%as -- uv.lock` to determine when this last
     ran.
 
-- [ ] **Replace the remaining uses of "a reader" in CLAUDE.md** — the
-      foundational principle, the inline-comment rule, and two sites in
-      #canonical-location use a term `rules/claude-configuration.md` bans as
-      ambiguous. The ban binds CLAUDE.md, not only rules files.
+- [ ] **Replace the remaining uses of "a reader" in CLAUDE.md**
+      {#reader-terminology} — the foundational principle, the inline-comment
+      rule, and two sites in #canonical-location use a term
+      `rules/claude-configuration.md` bans as ambiguous. The ban binds
+      CLAUDE.md, not only rules files.
   - Note: "the user" is the wrong replacement in at least the first two, where
     the audience is whoever reads the code; those sentences likely need
     restructuring to avoid naming an audience at all.

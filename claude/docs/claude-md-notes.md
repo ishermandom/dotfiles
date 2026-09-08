@@ -7,6 +7,39 @@ CLAUDE.md injection does not strip HTML comments (verified 2026-07-03), so
 rationale cannot ride in the file for free; anything beyond the inline why a
 running session needs lands here, keyed by rule.
 
+## Prose style guide (CLAUDE.md `## Prose`)
+
+`docs/prose.md` adapts the seven reader-expectation principles from Gopen &
+Swan, "The Science of Scientific Writing" (American Scientist, 1990).
+
+**All seven stay separate.** They collapse to three — 6 and 7 generalize 2, 3,
+and 4, while 3 and 4 both govern the opening slot — but the collapsed form
+trades away the concreteness that makes a rule fire. #action-in-verb names the
+passive, the cleft, and the nominalization for the same reason, rather than
+settling for a general "write directly".
+
+**The guide loads through an `@` import rather than sitting in `rules/`.** Prose
+turns up in every file type, so a path-matched rules file would have to match
+everything. The home-relative form `@~/.claude/docs/prose.md` also sidesteps an
+undocumented question — how a relative import resolves when CLAUDE.md is itself
+a symlink into this repo. A fresh session started outside the repo returned all
+seven anchor slugs, confirming the import fires (verified 2026-09-05).
+
+**#stress-position does not compete with #summary-first.** The principles govern
+how a discourse unit arranges its interior, so a summary — which adds a unit
+ahead of the others rather than inverting one — leaves every unit still running
+old-to-new. Google's guide takes the opposing position ("putting the most
+important information first in a sentence"), and that one genuinely does
+compete, because it reorders the same unit. Do not narrow #stress-position to
+the sentence to resolve an apparent clash; the clash is with Google, not with
+CLAUDE.md.
+
+**Frequency claims rest on one measurement.** A grep across CLAUDE.md, rules/,
+docs/, skills/, and tasks.md on 2026-09-05 found 22 clefts and 156 sentences
+over 40 words in roughly 5,000 lines, against 6 nominalizations. #action-in-verb
+and #subject-verb therefore stand on evidence; #stress-position stands on the
+source alone, since violations of it resist grepping.
+
 ## Pronouns and demonstratives (CLAUDE.md #pronouns)
 
 Two elements were drafted into this rule and cut; both are tempting to re-add.

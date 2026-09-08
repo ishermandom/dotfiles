@@ -14,6 +14,10 @@ Projects here are personal hobby projects, typically long-lived. Rigor and
 consistency are goals in themselves — these projects keep professional skills
 fresh. Never lower the quality bar because a project is small.
 
+## Prose
+
+@~/.claude/docs/prose.md
+
 ## Style
 
 - **Line length**: 80 columns; wrap at 80 unless wrapping is clearly more

@@ -48,9 +48,11 @@ Open every file in scope with the `Read` tool rather than `cat`, `sed`, or
 `git show`. Reading a path is what loads the style rules matching it; a file
 pulled in through the shell arrives without them.
 
-Treat the style rules already in context as part of the lens: CLAUDE.md,
-including its guidance on pronouns, and any rules file matching the files
-under review. Where those rules disagree with anything here, the rules win.
+Treat the style rules already in context as part of the lens: CLAUDE.md, its
+guidance on pronouns, the prose style guide CLAUDE.md imports from
+`~/.claude/docs/prose.md`, and any rules file matching the files under review.
+The prose guide bears most directly on this pass — its principles name the
+sentence-level structures that make a first read expensive.
 
 For every finding, propose a concrete edit or fix.
 
