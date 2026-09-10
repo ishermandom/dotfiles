@@ -132,3 +132,28 @@ Terminal.app does not — it discards the sequence silently, so a copy from insi
 a session reaches nothing at all. Ghostty handles it, with `clipboard-write`
 defaulting to `allow`; its `clipboard-read` defaults to `ask`, which leaves the
 direction this threat model cares about behind a prompt.
+
+If Ghostty proves a poor fit, the planned fallback is Terminal.app with
+osc52pty, which is not in use yet. osc52pty would wrap `claudify`'s ssh on the
+primary account, strip each OSC 52 sequence from the session's output, and hand
+the sequence's text to `pbcopy`. That works only while Claude Code sends the
+sequence without first asking whether the terminal supports OSC 52, as 2.1.267
+does.
+
+The fallback would most likely use
+[fortinmike's fork](https://github.com/fortinmike/osc52pty) rather than the
+original, [roy2220/osc52pty](https://github.com/roy2220/osc52pty), whose author
+has stepped back from it. As of v0.2.0, the original recognizes only BEL as a
+terminator, so any sequence ending in ST (`ESC \`) swallows all later output
+until some BEL arrives; Neovim's copies end that way. The fork handles both.
+
+tmux falls short in either position:
+
+- **On the primary account**, around `claudify`, tmux could pass each copy's
+  text to `pbcopy` through its `pane-set-clipboard` hook. But that would make a
+  large parser running as the primary account read everything the sandbox prints
+  — too much weight, and so too much risk, for one escape sequence.
+- **Inside the sandbox**, tmux passes each copy on as its own OSC 52 sequence,
+  so the terminal still has to implement OSC 52. Beyond that, tmux offers no
+  clear benefit here: Claude Code's background sessions already outlive a closed
+  window, and Ghostty has native splits.
