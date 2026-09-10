@@ -601,30 +601,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     `$HOME/.config`, so a `bin` package linking into `$HOME/.local/bin` needs no
     root, where `/usr/local/bin` would. Only `ishermandom` runs it, so
     `accounts/ishermandom/` may fit better than the common set.
-  - Note: whatever it becomes, the isolation it exists for is undone by
-    backgrounding the session — see #backgrounding-leaves-the-ssh-session.
-
-- [ ] **Work out how to keep a backgrounded session inside the ssh context**
-      {#backgrounding-leaves-the-ssh-session} — a session started through the
-      ssh `claudify` reports `launchctl managername` of `Background`, as
-      intended; backgrounding it moves it to `Aqua`, uid 501, inside the user's
-      own session.
-  - Rationale: found 2026-08-31. Claude Code keeps a per-uid daemon and a pool
-    of spare host processes under `/tmp/cc-daemon-505/`; backgrounding hands the
-    session to a spare, which inherits the daemon's bootstrap namespace rather
-    than the shell's. That daemon was started from the old `sudo -u` claudify
-    and outlived it.
-  - Note: the isolation is silently lost, not broken loudly — the session keeps
-    working, and only `launchctl managername` says anything is different. Any
-    check of the boundary has to run after backgrounding, not before.
-  - Open question: whether killing the daemon so it respawns from an ssh shell
-    is enough, and whether it stays that way, or whether foreground-only is the
-    honest answer.
-
-- [ ] **Wire up copy and paste for the ssh workflow** {#ssh-clipboard} — text
-      should cross between a session entered through the ssh `claudify` and the
-      pasteboard of the account driving it, rather than being carried by hand.
-  - Worktree: ssh-clipboard
+  - Note: the isolation it exists for rests on the Claude Code daemon descending
+    from an ssh shell, not on `claudify` alone — see
+    `claude/docs/account-setup.md` #session-backgrounding.
 
 ---
 
