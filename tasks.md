@@ -551,6 +551,16 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     per-lane tax became a per-session one.
   - Worktree: worktree-cleanup
 
+- [ ] **Stop the worktree git guard refusing commands that only mention `git`**
+      {#guard-git-mentions} — in a worktree-isolated session the guard refused a
+      `curl` of a `raw.githubusercontent.com` URL ("names git in a form too
+      complex to verify"), two Python heredocs whose strings mentioned `git` in
+      prose, and a session-log append whose entry did the same. None ran git;
+      each cost a retry and a workaround.
+  - Rationale: found 2026-09-10 in the ssh-clipboard lane.
+  - Note: refusing `HOME=` and `XDG_CONFIG_HOME=` prefixes, and `zsh -c` with
+    arbitrary text, guards against real git redirection and is out of scope.
+
 - [ ] **Let `git land` land part of a branch** — landing is all-or-nothing: the
       script fast-forwards `main` to the branch tip, so reviewing commit by
       commit and landing only what is approved means hand-rolling the
@@ -567,6 +577,14 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Rationale: queued 2026-08-26 — the cost lands on every turn, making a slow
     check a tax on the whole session rather than a one-off.
   - Worktree: stop-hook-timing
+
+- [ ] **Trim the Stop hook's report to the failing checks**
+      {#stop-report-failures} — when one test suite fails, the Stop hook's
+      reason carries the full output of every suite `run_tests.sh` ran, each
+      passing `ok:` line included. A statusline change that broke 12 assertions
+      put a couple hundred lines of mostly passing output into the session's
+      context.
+  - Rationale: found 2026-09-10 in the ssh-clipboard lane.
 
 - [ ] **Move the shell environment setup from `.zprofile` to `.zshenv`**
       {#zshenv-environment} — `zsh/.zprofile` sets Homebrew's `shellenv` and
@@ -602,6 +620,14 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     target is new would turn from a side effect into a failure. The dry run
     needs to report the directory it would create in place of simulating that
     package's links.
+
+- [ ] **Cover `install.sh` with a test** {#install-test} — the script has no
+      test, and its terminfo step (fresh links, reruns, replacing a stale copy,
+      `-n`) was checked only by a throwaway harness. A test running the script
+      against a scratch `HOME` would pin that down, and #install-dry-run's
+      guarantee with it.
+  - Note: the shared-cache step writes to the fixed path `/Users/Shared/cache`,
+    so a real run under test needs that path injectable too.
 
 - [ ] **Track `claudify` in this repo** {#track-claudify} — the command that
       enters the sandbox account exists only as a root-owned file at
