@@ -100,6 +100,7 @@ stow_package() {
 packages="
   claude:$HOME/.claude
   claude-md:$HOME/.claude
+  ghostty:$HOME/.config/ghostty
   git:$HOME
   prettier:$HOME
   ruff:$HOME/.config/ruff

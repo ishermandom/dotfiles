@@ -1,0 +1,77 @@
+# Copyright 2026 Ilya Sherman (ishermandom@)
+# SPDX-License-Identifier: MIT
+#
+# Ghostty terminal configuration, linked to ~/.config/ghostty/config.
+#
+# This terminal exists to run `claudify`. Ghostty is the choice there because
+# Claude Code's clipboard support over ssh needs a terminal that implements
+# OSC 52 — see claude/docs/account-setup.md #clipboard.
+#
+# Reload after editing with cmd+shift+, — no restart needed. Removing a key is
+# the exception: a reload carries the old value forward, so dropping a setting
+# takes a full quit and reopen.
+#
+# `ghostty +show-config --default --docs` documents every option.
+
+font-family = Monaco
+font-size = 18
+
+# Terminal.app's Pro profile sets `FontAntialias = False`, so it draws Monaco
+# in solid, full-intensity pixels. Ghostty always antialiases, which blends
+# every glyph edge toward the background and reads as dimmer at this size.
+# Thickening puts more full-intensity pixels back into each glyph. Strength
+# defaults to its 255 maximum, so dial `font-thicken-strength` down rather than
+# turning this off if it overshoots.
+font-thicken = true
+
+# Window colors, matching Terminal.app's Pro profile exactly.
+background = #000000
+foreground = #F2F2F2
+bold-color = #FFFFFF
+cursor-color = #4D4D4D
+selection-background = #414141
+
+# Terminal.app's ANSI colors: what it draws `\033[3Nm` and `\033[9Nm` in under
+# its default profiles, measured from its rendering through the display's own
+# color profile. No published table carries these; the ones that exist list
+# Terminal's separate built-in 256-color table, which it uses for
+# `\033[38;5;Nm`. Ghostty draws both from this one palette, so ordinary colored
+# output matches Terminal, but a program asking for colors 0-15 by number does
+# not.
+palette = 0=#303030
+palette = 1=#C33820
+palette = 2=#33BD26
+palette = 3=#AEAD25
+palette = 4=#532FE1
+palette = 5=#D43BD2
+palette = 6=#35BBC7
+palette = 7=#CCCCCC
+palette = 8=#828282
+palette = 9=#FF3B1E
+palette = 10=#2CE622
+palette = 11=#ECEC16
+palette = 12=#5E34FF
+palette = 13=#FF3BFF
+palette = 14=#28EFF0
+palette = 15=#EBEBEB
+
+# Ghostty's own default here is 2px, which reads as no padding at all.
+window-padding-x = 8
+window-padding-y = 8
+
+# Keep the block cursor Terminal.app shows: shell integration's `cursor`
+# feature would swap it for a bar at the prompt.
+shell-integration-features = no-cursor
+
+# Fold the tab bar into the titlebar, so no vertical space goes to chrome.
+macos-titlebar-style = tabs
+
+# Reopen windows where they were, so a restart lands back in place.
+window-save-state = always
+
+# A trackpad is a precision device, and Ghostty scales those by 1 where
+# Terminal.app covers noticeably more ground per gesture. The multiplier is
+# linear, so raise this number to scroll further per swipe.
+mouse-scroll-multiplier = precision:2
+
+mouse-hide-while-typing = true
