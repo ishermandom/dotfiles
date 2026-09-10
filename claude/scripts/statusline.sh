@@ -21,9 +21,18 @@ IFS=$'\t' read -r model effort directory context_percentage \
            | @tsv' <<< "$input"
   )"
 
-GREEN=$'\033[32m'
-YELLOW=$'\033[33m'
-RED=$'\033[31m'
+# Stated as 24-bit color rather than as ANSI indices, because terminals disagree
+# about what the indices mean. Terminal.app draws `\033[31m` from its profile's
+# ANSI colors, while Ghostty treats it as entry 1 of its 256-color palette, so
+# the same index renders as two different reds. A 24-bit value renders the same
+# everywhere that supports it, which includes Terminal.app from macOS 26.
+#
+# The values are Terminal.app's ANSI green, yellow and red — palette entries 2,
+# 3 and 1 in `ghostty/config`, which records where they come from. A change to
+# one belongs in both.
+GREEN=$'\033[38;2;51;189;38m'
+YELLOW=$'\033[38;2;174;173;37m'
+RED=$'\033[38;2;195;56;32m'
 # Countdown color. ANSI dim vanishes on translucent terminal backgrounds; this
 # 256-color gray renders at full strength there — close to the default
 # foreground, which is fine: legibility beats differentiation.

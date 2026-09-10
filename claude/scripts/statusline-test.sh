@@ -67,9 +67,9 @@ printf 'first\nSECOND\nthird\nfourth\n' > "$repository/notes.txt"
 # --- expected colors --------------------------------------------------------
 
 # The codes statusline.sh emits, named so a case can say which color it wants.
-GREEN=$'\033[32m'
-YELLOW=$'\033[33m'
-RED=$'\033[31m'
+GREEN=$'\033[38;2;51;189;38m'
+YELLOW=$'\033[38;2;174;173;37m'
+RED=$'\033[38;2;195;56;32m'
 GRAY=$'\033[38;5;245m'
 RESET=$'\033[0m'
 
