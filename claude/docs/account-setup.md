@@ -96,19 +96,20 @@ backgrounding rather than before.
 ### Terminal capabilities over ssh {#terminfo}
 
 Ghostty sets `TERM=xterm-ghostty` and ships that terminfo entry only inside its
-own app bundle. The sandbox account has no copy of its own, so a session there
-cannot load the terminal's capabilities, and the shell prompt renders without
-color. Install the entry once per account:
+own app bundle. It points its own shells at the bundle through the `TERMINFO`
+variable, but ssh does not carry that variable across, so a shell reached
+through `claudify` cannot resolve the entry and renders its prompt without
+color. `zsh/.zprofile` adds the bundle's terminfo directory to `TERMINFO_DIRS`,
+so each account reads the entry straight from the installed Ghostty.
 
-```sh
-infocmp -x -A /Applications/Ghostty.app/Contents/Resources/terminfo \
-  xterm-ghostty | tic -x -o ~/.terminfo -
-```
+Two alternatives fall short:
 
-Ghostty can also install terminfo on a remote host itself, through the
-`ssh-terminfo` shell-integration feature that ships disabled. That route hooks
-the `ssh` command from an interactive shell, so whether it reaches `claudify` —
-a script making its own `ssh` call — is worth testing before relying on it.
+- **A compiled copy in `~/.terminfo`**, made with `infocmp` and `tic`, goes
+  stale whenever Ghostty updates its entry, and each account needs its own.
+- **Ghostty's `ssh-terminfo` feature** installs the entry on the remote host
+  automatically, but it works by replacing `ssh` with a shell function, and a
+  shell function is not inherited by child processes. `claudify` is a script
+  that runs its own `ssh`, so the feature never sees it.
 
 ### Copying text out of a session {#clipboard}
 

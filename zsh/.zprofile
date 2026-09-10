@@ -35,6 +35,18 @@ export PLAYWRIGHT_BROWSERS_PATH=/Users/Shared/playwright
 export OLLAMA_MODELS=/Users/Shared/models/gguf
 export HF_HUB_CACHE=/Users/Shared/models/mlx
 
+# Ghostty sets TERM=xterm-ghostty but ships that terminfo entry only inside its
+# app bundle, so a shell reached over ssh — claudify's included — cannot resolve
+# it, and renders its prompt without color. Search the bundle directly;
+# claude/docs/account-setup.md #terminfo covers the alternatives.
+#
+# `${TERMINFO_DIRS:-}` keeps any existing value. When there is none, the result
+# begins with an empty entry, which stands for the system's own terminfo
+# directories, so those are still searched first.
+_ghostty_terminfo=/Applications/Ghostty.app/Contents/Resources/terminfo
+export TERMINFO_DIRS="${TERMINFO_DIRS:-}:$_ghostty_terminfo"
+unset _ghostty_terminfo
+
 # Private environment variables (not tracked in the public repo).
 #
 # Status: deprecated; currently no private environment variables to import.
