@@ -561,6 +561,18 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: refusing `HOME=` and `XDG_CONFIG_HOME=` prefixes, and `zsh -c` with
     arbitrary text, guards against real git redirection and is out of scope.
 
+- [ ] **Keep background subagents working when their session enters a worktree**
+      {#guard-strands-subagents} — a research agent launched from the main
+      checkout lost Bash partway through once its parent session called
+      `EnterWorktree`: the worktree guard refused its commands because its shell
+      still started in the shared checkout, though its work only read files
+      outside the repo. Its own `EnterWorktree` from the launch directory was
+      refused too, so it stopped with the research half done.
+  - Rationale: found 2026-09-10 while researching osc52pty.
+  - Open question: fix the guard (exempt commands that touch no repo, or carry
+    running subagents into the parent's worktree), or add a rule to enter a
+    worktree only while no background agents are running.
+
 - [ ] **Let `git land` land part of a branch** — landing is all-or-nothing: the
       script fast-forwards `main` to the branch tip, so reviewing commit by
       commit and landing only what is approved means hand-rolling the
