@@ -17,11 +17,10 @@ font-family = Monaco
 font-size = 18
 
 # Terminal.app's Pro profile sets `FontAntialias = False`, so it draws Monaco
-# in solid, full-intensity pixels. Ghostty always antialiases, which blends
-# every glyph edge toward the background and reads as dimmer at this size.
-# Thickening puts more full-intensity pixels back into each glyph. Strength
-# defaults to its 255 maximum, so dial `font-thicken-strength` down rather than
-# turning this off if it overshoots.
+# with hard, full-weight strokes. Ghostty always antialiases, which thins every
+# glyph; thickening restores most of Terminal's weight. Strength defaults to its
+# 255 maximum, so dial `font-thicken-strength` down rather than turning this off
+# if it overshoots.
 font-thicken = true
 
 # Window colors, matching Terminal.app's Pro profile exactly.
