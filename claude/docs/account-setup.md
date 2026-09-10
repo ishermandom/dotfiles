@@ -121,11 +121,12 @@ Three alternatives fall short:
 ### Copying text out of a session {#clipboard}
 
 Claude Code detects the ssh connection and writes the clipboard as an OSC 52
-escape sequence instead of calling `pbcopy`. That suits the account split: the
-sandbox has no pasteboard server of its own, and a `pbcopy` there would address
-a pasteboard nothing ever reads. The sequence rides the existing connection and
-is handled by the terminal on the primary account, so copied text reaches
-`ishermandom`'s pasteboard without any bridge between the two accounts.
+escape sequence instead of calling `pbcopy`. That suits the account split: a
+`pbcopy` in the sandbox could reach at most the sandbox account's own
+pasteboard, which nothing on the primary account reads. The sequence rides the
+existing connection and is handled by the terminal on the primary account, so
+copied text reaches `ishermandom`'s pasteboard without any bridge between the
+two accounts.
 
 The terminal emulator is therefore load-bearing, and has to implement OSC 52.
 Terminal.app does not — it discards the sequence silently, so a copy from inside
@@ -157,3 +158,11 @@ tmux falls short in either position:
   so the terminal still has to implement OSC 52. Beyond that, tmux offers no
   clear benefit here: Claude Code's background sessions already outlive a closed
   window, and Ghostty has native splits.
+
+### Opening links from a session {#links}
+
+Shift+Cmd+click opens a link in the primary account's browser. A plain click or
+a Cmd+click does not: Claude Code's fullscreen mode tracks the mouse, so Ghostty
+passes those clicks to Claude Code, which opens links from its own process in
+the sandbox. Holding Shift makes Ghostty handle the click itself, on the primary
+account.
