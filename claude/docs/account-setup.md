@@ -99,13 +99,20 @@ Ghostty sets `TERM=xterm-ghostty` and ships that terminfo entry only inside its
 own app bundle. It points its own shells at the bundle through the `TERMINFO`
 variable, but ssh does not carry that variable across, so a shell reached
 through `claudify` cannot resolve the entry and renders its prompt without
-color. `zsh/.zprofile` adds the bundle's terminfo directory to `TERMINFO_DIRS`,
-so each account reads the entry straight from the installed Ghostty.
+color. `install.sh` links the bundle's entries into `~/.terminfo`, which
+terminfo lookups search by default, so each account reads them straight from the
+installed Ghostty.
 
-Two alternatives fall short:
+Three alternatives fall short:
 
-- **A compiled copy in `~/.terminfo`**, made with `infocmp` and `tic`, goes
-  stale whenever Ghostty updates its entry, and each account needs its own.
+- **Setting `TERMINFO_DIRS` in a startup file** reaches the programs the shell
+  starts, but never the shell's own prompt. macOS's ncurses settles its search
+  path at a process's first terminfo lookup, and zsh makes that lookup at
+  startup, before it reads `.zshenv` or `.zprofile`. Assigning the variable
+  there makes zsh look again with the settled path, which fails with
+  `can't find terminal definition`.
+- **A compiled copy in `~/.terminfo`**, made with `infocmp` and `tic`, is found
+  at startup but goes stale whenever Ghostty updates its entry.
 - **Ghostty's `ssh-terminfo` feature** installs the entry on the remote host
   automatically, but it works by replacing `ssh` with a shell function, and a
   shell function is not inherited by child processes. `claudify` is a script

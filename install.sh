@@ -147,6 +147,32 @@ for entry in $packages; do
   fi
 done
 
+# Link Ghostty's terminfo entries into ~/.terminfo. Ghostty ships them only
+# inside its app bundle, and a shell reached over ssh looks up its terminal
+# before it reads any startup file, so ~/.terminfo is the one place it will find
+# them — see claude/docs/account-setup.md #terminfo. Links rather than copies
+# stay current with the installed Ghostty. An account without Ghostty skips
+# this.
+ghostty_terminfo="/Applications/Ghostty.app/Contents/Resources/terminfo"
+if [ -d "$ghostty_terminfo" ]; then
+  # Entries sit in subdirectories named for their first character, such as
+  # 78/xterm-ghostty.
+  for source in "$ghostty_terminfo"/*/*; do
+    # An unmatched glob stays literal; skip it rather than link to nothing.
+    [ -e "$source" ] || continue
+    entry="${source#"$ghostty_terminfo"/}" # path below the bundle's directory
+    link="$HOME/.terminfo/$entry"
+    if [ -n "$is_dry_run" ]; then
+      echo "LINK: $link => $source"
+    else
+      # -f replaces whatever is there, a stale compiled copy included; -n
+      # replaces an existing link instead of following it.
+      mkdir -p "$(dirname "$link")" && ln -sfn "$source" "$link" \
+        || failed_packages="$failed_packages terminfo ($entry)"
+    fi
+  done
+fi
+
 if [ -n "$failed_packages" ]; then
   echo "$SCRIPT_NAME: not linked (see errors above):$failed_packages" >&2
   exit 1
