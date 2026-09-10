@@ -590,6 +590,19 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     source. Confirm before fixing.
   - Worktree: install-chmod-noise
 
+- [ ] **Make `install.sh -n` change nothing** {#install-dry-run} — the dry run
+      promises to print planned changes without modifying anything, but
+      `stow_package` runs `mkdir -p "$target"` before calling `stow`, so `-n`
+      still creates every missing target directory.
+  - Rationale: found 2026-09-10, when a dry run had left an empty
+    `~/.config/ghostty` on the sandbox account.
+  - Note: skipping the `mkdir` under `-n` is not enough on its own. `stow`
+    rejects a target that does not exist, even when simulating
+    (`--target value … is not a valid directory`, exit 1), so a package whose
+    target is new would turn from a side effect into a failure. The dry run
+    needs to report the directory it would create in place of simulating that
+    package's links.
+
 - [ ] **Track `claudify` in this repo** {#track-claudify} — the command that
       enters the sandbox account exists only as a root-owned file at
       `/usr/local/bin/claudify`, checked in nowhere, with no history and no
