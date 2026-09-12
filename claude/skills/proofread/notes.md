@@ -27,6 +27,27 @@ Mechanical errors — typos, broken markdown, a reference that no longer resolve
 enumerating them invites exactly the checklist mindset the check steers the
 agent away from. The same reasoning covers anything else absent from the list.
 
+### Why the pass has no persona {#no-persona}
+
+Naming a professional perspective for the agent — a senior technical writer
+running a structural, line, and copy edit — was measured against the bare check,
+three runs per arm (2026-09-08, Opus). `experiments.md` #persona holds the
+method, the exact persona wording, and the numbers.
+
+It changed nothing that matters. Both arms converged on the same passages, and
+the few only the persona found are no more than one bare-check run's own
+divergence from the other two, so the difference sits inside run-to-run noise.
+Blind comparison mildly preferred the persona's proposed rewrites, four pairs of
+six. That edge weighs less than coverage does: the session that launched the
+pass can refine a weaker draft before applying it (`docs/review-passes.md`
+#weigh), but has no fallback for a passage the pass never surfaced.
+
+The run also showed the check's existing clauses earning their keep. Several
+correct a harness default: read-only against the pull toward acting, prose-first
+against the software-engineering framing, and the explicit absence of a finding
+cap against the pull toward brevity. A persona compresses those same corrections
+into an identity, and stating them outright works at least as well.
+
 ### Why no follow-through step on the fixes {#no-follow-through}
 
 `deep-review` closes each of its correctness rounds by reading that round's

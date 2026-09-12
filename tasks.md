@@ -340,13 +340,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       better.
   - Worktree: local-review-tool
 
-- [ ] **Explore giving `/proofread` a persona** {#proofread-persona} — a named
-      perspective for the pass — a copy editor, a hostile reviewer — may change
-      what it notices, or may only change how it narrates.
-  - Open question: whether the persona shifts the findings themselves. Judge it
-    against the pass's real output rather than in the abstract.
-  - Worktree: proofread-persona
-
 - [ ] **Run `/deep-review` end to end at least once** {#deep-review-first-run} —
       the skill has never run as written. `/proofread` has, over the commit that
       split it out, so the pass and its check are exercised. Still unvalidated:
