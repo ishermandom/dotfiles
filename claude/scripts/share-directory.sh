@@ -4,7 +4,7 @@
 
 # Grant both machine accounts (ishermandom + claude-sandbox) full access to a
 # directory tree, using inheritable macOS ACLs — the sharing mechanism behind
-# /Users/Shared/code, /Users/Shared/models and /Users/Shared/cache.
+# the trees both accounts share under /Users/Shared, such as code/ and cache/.
 #
 # Why ACLs instead of POSIX bits: inherited ACL entries apply to everything
 # later created inside the tree regardless of the creating process's umask or
