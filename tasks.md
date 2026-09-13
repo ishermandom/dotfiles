@@ -649,6 +649,37 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     from an ssh shell, not on `claudify` alone — see
     `claude/docs/account-setup.md` #session-backgrounding.
 
+- [ ] **Get cargo to stop re-copying unchanged binaries on macOS**
+      {#cargo-macos-recopy} — on macOS, every `cargo build` replaces each binary
+      in `target/<profile>/` with a fresh copy, even when nothing was rebuilt,
+      and macOS scans each new executable file on its first run. So the first
+      launch after any build, and every `cargo run`, pays about 115ms. Filed as
+      [cargo#17467](https://github.com/rust-lang/cargo/issues/17467). Once cargo
+      leaves an unchanged binary's file alone, `run-rust-tool.sh` can launch the
+      built binary directly instead of keeping a copy (`claude/docs/design.md`
+      #rust-tools).
+  - Note: the user writes anything posted to rust-lang/cargo, in their own
+    words. Cargo follows rust-lang/rust's
+    [LLM usage policy](https://forge.rust-lang.org/policies/llm-usage.html),
+    which bans issue bodies and comments originally created by an LLM and posted
+    from a personal account, however edited. The same policy requires disclosure
+    when an LLM helped find a bug that the poster then verified.
+  - Note: a pull request waits until cargo#17467 is marked `S-accepted`, and
+    under the same policy an LLM-written patch also needs a reviewer's agreement
+    in advance.
+  - Note: a fix could sit beside the same-file check in `_link_or_copy`
+    (`crates/cargo-util/src/paths.rs`), or in `link_targets`
+    (`src/compiler/mod.rs`), which already knows whether the unit was rebuilt.
+    One candidate check treats a destination with the source's size and
+    modification time as already copied, since cargo's copy keeps the source's
+    modification time — measured to the nanosecond on APFS. Where timestamps are
+    coarse, a rebuilt binary of unchanged size could pass for unchanged, so the
+    check may need cargo's up-to-date verdict on the unit too.
+  - Note: leaving an unchanged binary in place would also narrow the race
+    #rust-switchover describes to builds that actually rebuild. Today every
+    launch's build, even one with nothing to rebuild, recreates the file another
+    launch may be copying.
+
 ---
 
 ## Recurring maintenance
