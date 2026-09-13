@@ -115,9 +115,10 @@ packages="
 # unwritable by the other account — a failure that surfaces only when that
 # account tries to change a dependency.
 #
-# The ACLs go on the parent so a cache added later for another tool inherits
-# them by being created inside. share-directory.sh is recursive and safe to
-# re-run on an existing tree.
+# The ACLs go on /Users/Shared/cache rather than its uv/ subdirectory, so a
+# cache added later for another tool inherits them by being created inside. Once
+# the cache is shared, this call returns without walking it, however large the
+# cache has grown — see share-directory.sh.
 shared_cache_dir="/Users/Shared/cache"
 if [ -z "$is_dry_run" ]; then
   mkdir -p "$shared_cache_dir/uv" \

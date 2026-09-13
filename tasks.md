@@ -618,14 +618,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: `.zshenv` is read by every zsh, scripts included, so only environment
     belongs there — nothing interactive, and nothing that prints.
 
-- [ ] **Stop `install.sh` printing `chmod` noise** {#install-chmod-noise} — a
-      run's output carries permission-setting chatter that buries what the
-      installer actually linked.
-  - Note: `install.sh` runs no `chmod` itself; it calls
-    `claude/scripts/share-directory.sh`, whose `chmod -R +a` is the likely
-    source. Confirm before fixing.
-  - Worktree: install-chmod-noise
-
 - [ ] **Make `install.sh -n` change nothing** {#install-dry-run} — the dry run
       promises to print planned changes without modifying anything, but
       `stow_package` runs `mkdir -p "$target"` before calling `stow`, so `-n`
