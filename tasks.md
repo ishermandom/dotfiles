@@ -591,6 +591,19 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       context.
   - Rationale: found 2026-09-10 in the ssh-clipboard lane.
 
+- [ ] **Catch escape text the file tools decode into raw characters**
+      {#file-tool-escapes} — six characters of escape text such as `\u0001`,
+      written through `Write` or `Edit`, can land in the file as the single
+      control character they spell. Nothing flags it: the file looks right in
+      every tool that renders control characters invisibly.
+  - Rationale: hit twice in the stop-hook-timing session, 2026-09. A JSON escape
+    quoted in `tasks.md` arrived as a raw ESC, and a Rust test's expected
+    `\u0001` arrived as a raw control character, caught only because the test
+    then failed.
+  - Note: a `PostToolUse` check flagging control characters in a file just
+    written would catch it wherever it happens; a CLAUDE.md gotcha helps only
+    when recalled. Which to build, or both, is open.
+
 - [ ] **Move the shell environment setup from `.zprofile` to `.zshenv`**
       {#zshenv-environment} — `zsh/.zprofile` sets Homebrew's `shellenv` and
       `PLAYWRIGHT_BROWSERS_PATH`, and only a login shell reads it. Anything
