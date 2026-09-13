@@ -357,6 +357,20 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     of rounds is the evidence the step works, and no improvement means the fix
     damage needs cold eyes after all.
 
+- [ ] **Let a review pass fold its fixes into the commit it reviewed** —
+      `claude/docs/review-passes.md` #report, which `/proofread` and
+      `/deep-review` follow, ends a pass before anything is committed. So when a
+      pass reviews a commit already on a branch, its fixes stay uncommitted
+      beside that commit. In a commit-by-commit review, they belong inside the
+      commit the pass reviewed, folded in as a fixup.
+  - Open question: whether `review-passes.md` #report should itself direct the
+    fold for a commit-by-commit review, or stay as it is and leave the fold to
+    the session that ran the pass.
+  - Note: the fold has one exception, which the user settled 2026-09-13: a fix
+    to a file the user has already reviewed goes into the next commit the user
+    has yet to review, not into a reviewed commit, so the change still reaches
+    the user.
+
 - [ ] **Record how path-matched rules actually load** {#rules-loading-note} —
       `claude/docs/claude-md-notes.md` should carry it: only `Read` triggers a
       `path_glob_match` load, while Bash `cat`, `Edit`, and `Write` do not
