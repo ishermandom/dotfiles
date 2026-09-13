@@ -93,6 +93,29 @@ over `medium` on the model this config targets.
 That table is internal and version-specific (read from the 2.1.259 binary).
 Re-check it if rounds start coming back thin for no visible reason.
 
+### Why the built-in pass runs inside an Opus agent
+
+The table above picks the review's prompt by model as well as by level, and the
+case for `xhigh` was made against Opus 5's row. Pinning the model keeps every
+round on that row, whatever model the session runs.
+
+The built-in declares no model. Its fork runs on the `general-purpose` agent
+with only the effort overlaid, and an agent with no model of its own inherits
+its caller's — unless `CLAUDE_CODE_SUBAGENT_MODEL` is set, which then wins and
+silently undoes the pin. Neither the Skill tool nor the built-in's arguments
+take a model, so the caller is the one handle: an agent launched with
+`model: "opus"` makes Opus the caller. `SKILL.md` names `general-purpose` for
+that agent because a `fork` agent ignores a model override. Effort needs no such
+handle, since the level argument also sets the fork's reasoning effort. (Read
+from the 2.1.270 binary. The inheritance was also confirmed live on that
+version: a fork launched from a Sonnet agent ran on Sonnet inside an Opus
+session.)
+
+Skill frontmatter (`model`, `effort`) was the alternative, rejected on two
+counts. It pins the whole run rather than just the pass. And it never reaches
+`ownership-walkthrough`'s route, which reads this file instead of invoking the
+skill.
+
 ### Why the built-in pass withholds `--fix`
 
 Finding and fixing stay separate roles: the cold pass reports, and every fix

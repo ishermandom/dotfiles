@@ -37,7 +37,11 @@ the prose.
 
 For each round, run a cold pass and then an inline follow-through.
 
-The cold pass is `/code-review xhigh` over the scope. Never pass `--fix`:
+The cold pass is `/code-review xhigh` over the scope, always on Opus.
+`/code-review` runs on its caller's model, so never invoke it from this session:
+launch an agent through the Agent tool with `subagent_type: "general-purpose"`
+and `model: "opus"`, and have that agent run `/code-review xhigh` over the scope
+and return the review's report verbatim, editing nothing. Never pass `--fix`:
 finding and fixing stay separate roles, so every fix lands through this
 session's judgment rather than a cold agent's.
 
