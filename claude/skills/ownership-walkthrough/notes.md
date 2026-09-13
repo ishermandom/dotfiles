@@ -20,8 +20,9 @@ expensive part of both skills.
 
 `deep-review` is user-invocable only, so step 1 reads its `SKILL.md` and follows
 it — the same move `deep-review` makes when it follows `proofread`. Reading the
-file sidesteps that restriction; `deep-review/notes.md` #user-invoked-only says
-what that costs.
+file sidesteps that restriction. This skill is user-invoked as well, so the
+loops still start only on the user's command — see `deep-review/notes.md`
+#user-invoked-only.
 
 ## TODOs and follow-ups
 

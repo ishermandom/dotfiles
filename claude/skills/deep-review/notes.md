@@ -122,7 +122,7 @@ reaches a forked review: a forked review always reports its findings as text,
 and a step telling this skill to re-report outcomes would be dead in every real
 run.
 
-### The user-only restriction: why, and where it stops {#user-invoked-only}
+### Why only the user can start the loops {#user-invoked-only}
 
 Every round costs a cold agent — an `xhigh` review or a proofreading subagent —
 and every correctness round adds the session's own follow-through. Both loops
@@ -130,10 +130,7 @@ run until they go quiet. That is too expensive to fire on the model's own
 initiative; `config-review`, the closest analogue in cost and shape, is
 user-invoked for the same reason.
 
-The user-only restriction stops only a direct call. Step 1 of
-`ownership-walkthrough` reads this skill's `SKILL.md` and follows it, and
-`ownership-walkthrough` is model-invocable — so Claude starts both loops on its
-own initiative whenever the ownership review runs. That route is a deliberate
-choice rather than an oversight: the harness refuses a direct call and asks
-Claude not to reach the workflow by other means either, but the user chose to
-overrule this default.
+The user-only restriction holds on the one indirect route too. Step 1 of
+`ownership-walkthrough` reads this skill's `SKILL.md` and follows it, and that
+skill is user-invoked as well — so both loops start only when the user runs one
+of the two skills.

@@ -3,6 +3,7 @@ description:
   Drive a post-hoc ownership review of completed work — self-review and fix,
   then present a risk-labeled map of the work for the user to review before
   committing. Run when a durable chunk of work is complete.
+disable-model-invocation: true
 ---
 
 Work through each step in order, toward the ownership bar in

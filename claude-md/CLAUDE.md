@@ -306,8 +306,9 @@ doc or config.
 or skill, anything meant to last — work it end-to-end, then review rather than
 gating each increment mid-construction. The aim is the user's ownership of what
 lands — maintainable by the user solo by default, key decisions ratified at
-minimum. Drive the review with the `/ownership-walkthrough` skill. For the
-ordering relative to committing, see #review-ordering.
+minimum. Offer the user `/ownership-walkthrough` for the review — the skill is
+user-invoked only. For the ordering relative to committing, see
+#review-ordering.
 
 **Never let production code reach `git land` or a push unreviewed**
 {#review-gate}: `scratch/` code needs no review — the path already signals the
