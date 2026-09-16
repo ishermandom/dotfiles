@@ -50,6 +50,10 @@ package = false
 # Which directories hold tests is run_tests.sh's to say.
 
 [tool.mypy]
+# mypy doesn't read .gitignore, so it needs its own exclusion for Claude's
+# automatically synced skills. Those skills are not part of this repo's code.
+exclude = ["^claude/skills/synced/"]
+
 # bashlex ships no type stubs (no py.typed marker). Treat its imports as
 # untyped rather than failing the strict check on a third-party gap we don't
 # control; the gate_git code contains the resulting Any behind a Protocol.

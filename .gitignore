@@ -9,6 +9,10 @@ __pycache__/
 # The config-review run ledger: run-scoped scratch, deleted at close.
 claude/skills/config-review/ledger.md
 
+# Skills Claude Code syncs automatically. The claude package links
+# ~/.claude/skills as a directory, so the sync writes into this repo.
+claude/skills/synced/
+
 # Zed's prompt library, an LMDB database. The zed package links ~/.config/zed
 # as a directory, so everything Zed writes there lands in this repo.
 zed/zed/prompts/
