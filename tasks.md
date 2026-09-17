@@ -399,6 +399,12 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: shellcheck reports 15 findings today (12 × SC2155 in
     `gh-protect-test.sh`, plus SC2164, SC2086, SC2001), so a gating check needs
     those cleared or consciously accepted first.
+  - Note: the zsh files are linted by nothing at all — shellcheck rejects the
+    dialect, so `quiet-shell.sh` formats `.zsh`, `.zshrc` and `.zprofile` while
+    linting none of them. `zsh -n` parses a file without running it and is the
+    only validator that reads zsh, so it is what a check step here could use. It
+    catches syntax errors alone, nothing like shellcheck's quoting or
+    unused-variable analysis.
   - Worktree: shell-stop-check
 
 - [ ] **Have Zed run the repo's formatters on save** — the formatting hooks fire
