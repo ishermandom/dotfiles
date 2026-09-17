@@ -10,7 +10,7 @@ This repo manages system configuration via symlinks, managed using GNU Stow.
 - `claude-md/` — CLAUDE.md, packaged on its own (`install.sh` says why)
 - `git/` — gitconfig
 - `zed/` — Zed editor settings, keymap, custom themes
-- `zsh/` — zshrc, aliases
+- `zsh/` — zshrc, aliases, shell commands
 - etc.
 
 - Symlinks are managed via `install.sh` from repo root
