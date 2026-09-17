@@ -65,6 +65,10 @@
   },
   "theme_overrides": {
     "Soda Dark 3 (Sunburst)": {
+      "editor.diff_hunk.deleted.background": "#ff5c5c66",
+      "editor.diff_hunk.deleted.hollow_background": "#ff5c5c66",
+      "editor.diff_hunk.added.background": "#3ddc8445",
+      "editor.diff_hunk.added.hollow_background": "#3ddc8445",
       "warning": "#feb454ff",
       "warning.background": "#572815ff",
       "warning.border": "#754221ff",
