@@ -43,5 +43,10 @@
       "cmd-8": ["pane::ActivateItem", 7],
       "cmd-9": ["pane::ActivateItem", 8]
     }
+  },
+  {
+    "bindings": {
+      "ctrl-o": "git::OpenFileAtHead"
+    }
   }
 ]
