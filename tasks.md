@@ -691,6 +691,32 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     launch's build, even one with nothing to rebuild, recreates the file another
     launch may be copying.
 
+- [ ] **Give CSS its own rules file** {#css-rules} — `claude/rules/` covers
+      Python, shell, Markdown, TypeScript, and testing, but not CSS, so nothing
+      carries the layout the user wants: one declaration per line, with a
+      single-declaration rule written across three lines like any other, never
+      flattened onto one. Add `claude/rules/css.md` saying so.
+  - Rationale: queued 2026-09-20, after a review of the bridge repo's
+    `system_notes/notes.css` found about 40 rules each flattened onto one line
+    (`li { margin: 0.12em 0; }`). The preference had no home, so the next
+    session writing CSS would flatten them again.
+  - Open question: enforce the layout with a formatter instead, by having the
+    Markdown formatting hook run prettier over CSS too. Prettier writes one
+    declaration per line on its own, but it also splits a selector list such as
+    `h1, h2, h3, .title` across four lines, which that stylesheet keeps on one.
+
+- [ ] **Ask for the concept behind a hardcoded value** {#magic-number-comments}
+      — CLAUDE.md's Style section asks for named constants over repeated
+      expressions, and for comments at the line doing the work, but nothing asks
+      what a bare literal stands for. Add a style rule: where a hardcoded value
+      encodes a concept, say what the concept is where the value sits.
+  - Rationale: queued 2026-09-20, from the same review. The bridge stylesheet's
+    print geometry — two 3.5in columns and a 0.3in gutter filling the 7.3in
+    between the side margins — read as unexplained numbers, as did its screen
+    line length and phone breakpoint.
+  - Note: the rule applies in every language, so CLAUDE.md is its home rather
+    than a rules file; #css-rules covers only the CSS layout.
+
 ---
 
 ## Recurring maintenance
