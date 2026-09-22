@@ -140,7 +140,11 @@ Capture is bounded by the login session, unlike the permissions in #system-tcc.
 Enumerating on-screen windows from the sandbox account lists only windows owned
 by `claude-sandbox`, and a full-screen capture shows the sandbox account's
 desktop rather than the primary account's. Driving that desktop is a different
-matter: it needs Accessibility, which #system-tcc rules out.
+matter: synthetic clicks and keystrokes need Accessibility, which #system-tcc
+rules out. Automation might still drive a specific scriptable app without it,
+since it is granted per source-and-target app pair and lives in the per-user
+database — though whether Apple events stay inside a login session was never
+measured, and the same guess about Accessibility proved wrong.
 
 ### Terminal capabilities over ssh {#terminfo}
 
