@@ -761,6 +761,36 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     #writing-a-rule to each bullet on its own — without this bullet, would
     Claude have gone wrong? The answer likely differs per bullet.
 
+- [ ] **Decide whether to give the sandbox account a usable display**
+      {#sandbox-display-access} — GUI apps already run as `claude-sandbox`, but
+      Claude can neither see nor drive them, so confirming anything in a real
+      window falls back to the user. Decide whether that is worth fixing.
+  - Rationale: queued 2026-09-22, after a Zed session fixed a syntax
+    highlighting bug that could be proven at the parse layer but never seen in
+    the running editor; the before/after screenshots Zed asks for on a
+    user-visible change had to be handed back.
+  - Note: the session itself works. `launchctl print gui/505` reports an active
+    login domain, `Dock` and `Finder` run as `claude-sandbox`, and
+    `open -a Finder` succeeds, so launching an app is not the obstacle. What
+    fails is seeing and driving it: `screencapture` returns "could not create
+    image from display", `osascript` to System Events returns -1743, and
+    `launchctl asuser 505` needs root.
+  - Open question: which of two causes applies — the session may have no
+    framebuffer, since `ishermandom` owns `/dev/console`, or Screen Recording
+    may simply not be granted. The unified log would distinguish them, but
+    `log show` from the sandbox account returns "Could not open local log store:
+    Operation not permitted", so it could not be narrowed from inside.
+  - Note: one fix likely covers both causes — reach the sandbox session over
+    Screen Sharing, which gives a non-console user's session a virtual display,
+    then grant Screen Recording, Accessibility and Automation from inside it.
+    The load-bearing step is running Claude Code from a Terminal in that session
+    rather than over SSH: the process tree is
+    `zsh ← claude ← zsh ← sshd-session ← sshd`, and an SSH-spawned process is
+    attributed to `sshd`, which can never show a permission prompt.
+  - Note: a VM with its own desktop is the alternative and keeps
+    screen-recording rights off this machine entirely — weigh that against
+    granting a sandboxed account the ability to record the host's screen.
+
 ---
 
 ## Recurring maintenance
