@@ -744,6 +744,23 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the fixture shape is settled next door in `format-test.sh`, which
     fakes both the classifier and the `quiet-*` runners through a fake `$HOME`.
 
+- [ ] **Reevaluate whether `## Token and context efficiency` earns its place in
+      CLAUDE.md** — the section tells Claude how to spend tool calls and file
+      reads, and every line of it bills on every message. Decide per bullet what
+      survives; the suspicion is that much of it either describes what Claude
+      does anyway or restates what the harness already enforces.
+  - Rationale: queued 2026-09-22, after the `Explore` subagent clause failed to
+    fire across roughly fifteen exploration calls in a single session — which
+    raised the question of how much of the rest is equally inert.
+  - Note: read that clause as a symptom before judging the whole. It sits
+    mid-bullet under **Read files incrementally**, where every neighbouring
+    clause says to read _less_, so the one clause saying to delegate instead
+    never registers as a different action. A section whose directives all point
+    one way hides the one that doesn't.
+  - Note: apply the necessity check in `claude/rules/claude-configuration.md`
+    #writing-a-rule to each bullet on its own — without this bullet, would
+    Claude have gone wrong? The answer likely differs per bullet.
+
 ---
 
 ## Recurring maintenance
