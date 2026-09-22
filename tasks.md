@@ -735,6 +735,15 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     pattern has to be the resolved one — a pattern under `/var` never fires on
     macOS, where `/var` is a symlink to `/private/var` (verified 2026-09-22).
 
+- [ ] **Cover `format-markdown-on-edit.sh` with a test** — the hook has no suite
+      of its own, and it now carries a branch: it skips a file in a checkout
+      that is not the user's. A regression either silently stops formatting
+      Markdown everywhere, or starts rewriting another project's.
+  - Rationale: queued 2026-09-22, when the third-party skip landed in it. The
+    gap predates that change; the branch is what makes it worth closing.
+  - Note: the fixture shape is settled next door in `format-test.sh`, which
+    fakes both the classifier and the `quiet-*` runners through a fake `$HOME`.
+
 ---
 
 ## Recurring maintenance
