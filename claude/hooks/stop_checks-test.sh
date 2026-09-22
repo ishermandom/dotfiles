@@ -39,6 +39,12 @@ make_steps_dir() { # make_steps_dir  -> prints the directory
   for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh; do
     write_step "$steps_dir" "$step" "exit 0"
   done
+
+  # Not a step but a helper the script consults, so it gets a fake of its own.
+  # Exit 1 is its verdict for the user's own repo, which every case but one is
+  # about.
+  write_step "$steps_dir" "is-third-party-repo.sh" "exit 1"
+
   echo "$steps_dir"
 }
 
@@ -142,6 +148,24 @@ expect "the formatter's stderr becomes the reason" \
   test "$reason" = "prettier: command not found"
 expect "the checks are skipped once a formatter has broken" \
   test ! -e "$steps/mypy.log"
+
+# --- someone else's checkout keeps only the formatting ----------------------
+
+# The checks grade a repo against this machine's configuration, which another
+# project never agreed to. Formatting still runs, because it decides for itself
+# which directories to sweep — the dotfiles checkout among them.
+steps=$(make_steps_dir)
+write_step "$steps" "is-third-party-repo.sh" "exit 0"
+write_step "$steps" "format.sh" "echo ran >> $steps/format.log"
+write_step "$steps" "mypy-check.sh" 'echo "error: Need type annotation"
+exit 1'
+verdict=$("$steps/stop_checks.sh")
+verdict_status=$?
+
+expect "someone else's checkout still runs the formatting step" \
+  test -e "$steps/format.log"
+expect "someone else's checkout skips the checks" test -z "$verdict"
+expect "skipping the checks ends the turn cleanly" test "$verdict_status" -eq 0
 
 # --- a check that fails silently is still named -----------------------------
 

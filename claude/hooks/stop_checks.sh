@@ -48,6 +48,13 @@ format_status=$?
 [ $format_status -eq 0 ] \
   || halt_turn "${breakage:-format.sh exited $format_status without output}"
 
+# The checks below grade a repo against this machine's global ruff and mypy
+# configuration, which a checkout of someone else's project never agreed to. The
+# findings there are not the session's to fix, and they would halt every turn.
+# Formatting above reaches the same verdict for itself, skipping the session's
+# own repo while still sweeping the dotfiles checkout.
+"$hooks_dir/is-third-party-repo.sh" "$PWD" && exit 0
+
 # The first check to fail halts the turn and the rest are skipped — a type error
 # usually explains the test failures that would follow it. Lint runs last, where
 # a finding explains nothing above it and, left unfixed, masks neither a type

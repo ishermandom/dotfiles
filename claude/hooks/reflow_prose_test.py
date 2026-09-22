@@ -3,6 +3,7 @@
 #
 # Tests for the prose reflow hook.
 
+import subprocess
 import textwrap
 import tokenize
 from pathlib import Path
@@ -978,6 +979,42 @@ def test_a_file_of_neither_language_is_skipped(tmp_path: Path) -> None:
 
   # A markdown heading, not comment prose — prettier owns this file elsewhere.
   assert target.read_text() == '# alpha beta\n# gamma delta\n'
+
+
+# --- third-party checkouts ---
+
+
+def _make_checkout(directory: Path, origin_url: str) -> None:
+  """Make a directory a git checkout whose `origin` is the given URL."""
+  subprocess.run(['git', 'init', '--quiet', str(directory)], check=True)
+  subprocess.run(
+    ['git', '-C', str(directory), 'remote', 'add', 'origin', origin_url],
+    check=True,
+  )
+
+
+def test_a_file_in_someone_elses_checkout_is_left_untouched(
+  tmp_path: Path,
+) -> None:
+  """Another project's comment prose stays as its author wrapped it."""
+  _make_checkout(tmp_path, 'https://github.com/zed-industries/zed.git')
+  target = tmp_path / 'module.py'
+  target.write_text('# alpha beta\n# gamma delta\n')
+
+  main(['reflow_prose.py', str(target)])
+
+  assert target.read_text() == '# alpha beta\n# gamma delta\n'
+
+
+def test_a_file_in_an_owned_checkout_is_reflowed(tmp_path: Path) -> None:
+  """The mirror case: an owned remote leaves the hook doing its usual work."""
+  _make_checkout(tmp_path, 'git@github.com:ishermandom/dotfiles.git')
+  target = tmp_path / 'module.py'
+  target.write_text('# alpha beta\n# gamma delta\n')
+
+  main(['reflow_prose.py', str(target)])
+
+  assert target.read_text() == '# alpha beta gamma delta\n'
 
 
 # --- project line width ---

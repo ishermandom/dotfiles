@@ -35,6 +35,15 @@ write_runner() { # write_runner <runner name>   (body on stdin)
   chmod +x "$runner"
 }
 
+# Writes the fake `is-third-party-repo.sh` the step consults about the session's
+# repo. The exit status stands in for the verdict: 0 for someone else's
+# checkout, 1 for the user's own.
+write_classifier() { # write_classifier <exit status>
+  local classifier="$case_dir/repo/claude/hooks/is-third-party-repo.sh"
+  printf '#!/usr/bin/env bash\nexit %s\n' "$1" > "$classifier"
+  chmod +x "$classifier"
+}
+
 # Begins a case whose directory holds a fake dotfiles repo carrying the step,
 # plus a fake HOME holding a do-nothing fake for each runner the step drives. A
 # case overrides only the runner it is about.
@@ -42,6 +51,7 @@ begin_step_case() { # begin_step_case <name>
   begin_case "$1"
   mkdir -p "$case_dir/repo/claude/hooks" "$case_dir/home/.claude/scripts"
   cp "$script_dir/format.sh" "$case_dir/repo/claude/hooks/"
+  write_classifier 1
 
   # The step locates the dotfiles repo with git, so the fake one has to be a
   # checkout rather than a bare directory tree.
@@ -209,6 +219,23 @@ run_step "$worktree_dir"
 
 expect "a session in a worktree makes one pass" \
   test "$(invocation_count)" -eq 1
+
+# Someone else's checkout keeps its own formatting. The dotfiles pass has to
+# survive that skip, since a session working there can still edit dotfiles.
+begin_step_case skips-someone-elses-checkout
+write_classifier 0
+write_runner quiet-ruff.sh << 'BODY'
+echo "$PWD" >> "$HOME/invocations"
+exit 0
+BODY
+mkdir -p "$case_dir/project"
+git -C "$case_dir/project" init --quiet
+run_step "$case_dir/project"
+
+expect "a session in someone else's checkout makes one pass" \
+  test "$(invocation_count)" -eq 1
+expect_equal "the pass that survives is the dotfiles one" \
+  "$(head -1 "$case_dir/home/invocations")" "$(realpath "$case_dir/repo")"
 
 begin_step_case skips-the-second-pass-after-a-break
 write_runner quiet-prettier.sh << 'BODY'

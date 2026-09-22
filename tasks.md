@@ -717,6 +717,24 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the rule applies in every language, so CLAUDE.md is its home rather
     than a rules file; #css-rules covers only the CSS layout.
 
+- [ ] **[maybe] Add an override for the third-party repo verdict**
+      {#third-party-override} — `claude/hooks/is-third-party-repo.sh` infers
+      ownership from a repo's remotes and accepts no override. Define an
+      override mechanism if ever a concrete need arises.
+  - Rationale: queued 2026-09-22, alongside the classifier. Every checkout on
+    this machine classifies correctly on the remotes alone, so an override today
+    would be a second mechanism to keep in step with the first for no present
+    gain. See also claude/docs/design.md #third-party-checkouts.
+  - Note: the shape to reach for is a `claude.thirdParty` git config key the
+    classifier reads ahead of the remotes. Set per clone with `git config`, it
+    leaves no trace in the working tree — nothing to commit into someone else's
+    pull request by accident — but stays untracked. The tracked alternative is
+    an `includeIf "gitdir:<path>/"` section per clone in `git/.gitconfig`, which
+    install.sh links into `$HOME`.
+  - Note: `gitdir:` matches a repo's real `.git` location, so the path in the
+    pattern has to be the resolved one — a pattern under `/var` never fires on
+    macOS, where `/var` is a symlink to `/private/var` (verified 2026-09-22).
+
 ---
 
 ## Recurring maintenance

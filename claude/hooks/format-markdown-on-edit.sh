@@ -23,6 +23,15 @@ case "$file_path" in
 esac
 [ -f "$file_path" ] || exit 0
 
+# A checkout of someone else's project keeps its own formatting. The verdict
+# reads the edited file's repo rather than the session's, so a dotfiles edit
+# made from a session working in such a repo is still formatted.
+#
+# -f resolves the ~/.claude symlink, so the sibling script is the dotfiles
+# repo's copy.
+hooks_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+"$hooks_dir/is-third-party-repo.sh" "$file_path" && exit 0
+
 output=$("$HOME/.claude/scripts/quiet-prettier.sh" "$file_path" 2>&1)
 status=$?
 

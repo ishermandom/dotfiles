@@ -4,7 +4,8 @@
 #
 # A `stop_checks.sh` step: format the repo the session is working in — or the
 # current directory, outside a repo — plus the dotfiles repo when the session
-# works elsewhere.
+# works elsewhere. A checkout of someone else's project keeps its own
+# formatting; `is-third-party-repo.sh` holds that judgment.
 #
 # Runs on Stop (end of turn) rather than on each Edit so that all edits from the
 # turn have landed before formatting runs. The Stop hook receives no information
@@ -70,14 +71,23 @@ format_dir() { # format_dir <directory>
 # is the scope.
 session_root=$(git rev-parse --show-toplevel 2> /dev/null || pwd)
 
+# -f resolves the ~/.claude symlink, so the sibling script reached for below is
+# the dotfiles repo's copy.
+hooks_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+
+# Someone else's checkout is skipped here rather than in `stop_checks.sh`, so
+# that the dotfiles pass below still runs: a session working in such a repo can
+# edit dotfiles too, and those edits want formatting like any other.
+#
 # A broken tool would tend to fail the same way on the next directory, so short
 # circuit on failure.
-format_dir "$session_root" || exit $?
+if ! "$hooks_dir/is-third-party-repo.sh" "$session_root"; then
+  format_dir "$session_root" || exit $?
+fi
 
 # The repo holding this file is the dotfiles repo, so ask git where it starts.
-# -f resolves the ~/.claude symlink. git runs in this file's own directory,
-# since the current directory may belong to an entirely different repo.
-hooks_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+# git runs in this file's own directory, since the current directory may belong
+# to an entirely different repo.
 dotfiles_root=$(cd "$hooks_dir" && git rev-parse --show-toplevel 2> /dev/null)
 
 # Outside a checkout there is no dotfiles repo to make a second pass over.

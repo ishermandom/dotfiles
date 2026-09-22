@@ -295,9 +295,9 @@ class _CommentLine:
 def _tool_environment() -> Mapping[str, str]:
   """The process environment with both Homebrew bin directories on PATH.
 
-  Hooks can run with a minimal environment, and the three subprocesses this hook
-  shells out to — prettier, ruff, and shfmt — usually live in one of those
-  directories.
+  Hooks can run with a minimal environment, and the subprocesses this hook
+  shells out to — prettier, ruff, and shfmt among them — usually live in one of
+  those directories.
   """
   environment = dict(os.environ)
   environment['PATH'] = '/opt/homebrew/bin:/usr/local/bin:' + environment.get(
@@ -1213,6 +1213,32 @@ def _language_of(path: Path) -> Language | None:
   return None
 
 
+def _is_third_party_repo(path: Path) -> bool:
+  """Whether a path sits in a checkout of someone else's project.
+
+  Another project's comment prose is theirs to wrap, so a file there is left as
+  its author wrote it. The judgment itself lives in `is-third-party-repo.sh`
+  beside this file — shared with the formatting hooks, which ask the same
+  question — and `resolve()` reaches it through the `~/.claude` symlink.
+  """
+  classifier = Path(__file__).resolve().parent / 'is-third-party-repo.sh'
+  try:
+    result = subprocess.run(
+      [str(classifier), str(path)],
+      capture_output=True,
+      env=_tool_environment(),
+      # A cap on a pathological hang: the classifier's work is a handful of git
+      # queries against local configuration.
+      timeout=5,
+    )
+  except (OSError, subprocess.TimeoutExpired):
+    # A classifier that cannot run at all leaves the file to be reflowed as
+    # before, matching what the shell hooks do with the same failure — the
+    # alternative silently stops reflow in every repo on the machine.
+    return False
+  return result.returncode == 0
+
+
 def main(argv: Sequence[str]) -> int:
   """Reflow the given paths, or the hook payload's path when none are given."""
   paths = [Path(argument) for argument in argv[1:]]
@@ -1225,6 +1251,10 @@ def main(argv: Sequence[str]) -> int:
   for path in paths:
     language = _language_of(path)
     if language is None or not path.is_file():
+      continue
+    # Checked per path rather than once, since the paths given need not share a
+    # repo — the dotfiles checkout and the session's are routinely both in play.
+    if _is_third_party_repo(path):
       continue
     reflow_file(path, run_prettier, language)
   return 0

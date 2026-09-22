@@ -149,6 +149,21 @@ only the durable design choices behind it:
   split, not cost: ruff caches across runs, so the second pass is 60ms against a
   26-second chain (measured 2026-08-11; both numbers track the repo and the
   machine, so the ratio is the durable part).
+- **Someone else's checkout is left alone** {#third-party-checkouts}: formatting
+  applies this machine's conventions, and the checks grade against its global
+  ruff and mypy configuration — neither of which a clone of another project
+  agreed to. Unguarded, a turn there rewrites files to a style the maintainers
+  never chose, then halts on findings the session cannot fix. Ownership is
+  inferred from the repo's remotes rather than declared per clone, because a
+  declared entry only ever gets written after a first turn has already done the
+  damage. The dotfiles formatting pass survives the skip: a session working in
+  such a repo can still edit dotfiles, and those edits want formatting like any
+  other. `is-third-party-repo.sh` holds the rule and the defaults that fall out
+  of it.
+- **No override on the third-party verdict, yet**: an override is a second
+  mechanism to keep in step with the first, and every checkout on this machine
+  classifies correctly on the remotes alone. tasks.md #third-party-override
+  records the shape to reach for if one is ever misclassified.
 - **A lint finding halts the turn rather than reporting quietly**: a Stop hook
   emits one JSON object, so a non-halting `systemMessage` would have to ride
   along with the halt verdict anyway, and Stop's support for the field is
