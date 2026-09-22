@@ -29,19 +29,45 @@ the other at the OS level.
 - Has push access to specific GitHub repos via fine-grained personal access
   tokens; branch protection rules on those repos prevent force pushes and branch
   deletions
+- Holds Screen Recording for `Terminal.app`, which is what lets Claude see this
+  account's desktop — see #display-access
+- Must never hold Accessibility, Input Monitoring or Full Disk Access — see
+  #system-tcc
+
+### The system permission database {#system-tcc}
+
+macOS keeps two permission databases, and only one of them respects the account
+boundary. The per-user database at
+`~/Library/Application Support/com.apple.TCC/TCC.db` holds camera, microphone,
+screen recording and Apple events, and binds each grant to the account that made
+it. The system database at `/Library/Application Support/com.apple.TCC/TCC.db`
+holds Accessibility, Input Monitoring and Full Disk Access, takes admin
+authentication to change, and attaches each grant to an application machine-wide
+rather than to the granting account.
+
+A system-database grant made here is therefore not contained by `claude-sandbox`
+at all. Measured on 2026-09-22 under macOS 26.6.2: with Accessibility granted to
+`Terminal.app` in this account, a probe was able to read the accessibility trees
+of `ishermandom`'s app windows running in their separate login session. The same
+danger is documented for Full Disk Access, where one admin granting it to
+Terminal hands it to every account on the machine.
+
+The account boundary holds for everything outside this class, and the class is
+short enough to name in full: Accessibility, Input Monitoring, Full Disk Access.
 
 ## Threat model and coverage
 
-| Threat                                | Coverage               | Notes                                                                                                                                                                             |
-| ------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Wipe or corrupt primary account files | ✅ Protected           | OS account separation; claude-sandbox cannot reach `~/ishermandom/`                                                                                                               |
-| Runaway Claude API spend              | ✅ Protected           | Subscription plan has automatic usage caps                                                                                                                                        |
-| Other API/cloud spend                 | ✅ Protected           | Other credentials live only in primary account                                                                                                                                    |
-| Force-push or delete GitHub branches  | ✅ Protected           | GitHub branch protection rules block these                                                                                                                                        |
-| Wipe `/Users/Shared/code`             | ⚠️ Partially mitigated | Git history + Claude Code destructive-command hooks help; raw `rm -rf` bypasses hooks. Remotes are the backstop for content; the local repo itself is not independently backed up |
-| Secret exfiltration via network       | ⚠️ Policy-based        | No secrets are intentionally stored in `/Users/Shared/code`, but this isn't technically enforced or audited                                                                       |
-| Persistence across reboots            | ⚠️ Known gap           | `claude-sandbox` can install launchd agents or cron jobs under its own user without admin; not currently monitored                                                                |
-| Malicious commits pushed to GitHub    | ⚠️ Partially mitigated | Fine-grained tokens limit scope; branch protection prevents the worst outcomes, but legitimate-looking commits could still be pushed                                              |
+| Threat                                 | Coverage               | Notes                                                                                                                                                                             |
+| -------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Wipe or corrupt primary account files  | ✅ Protected           | OS account separation; claude-sandbox cannot reach `~/ishermandom/`                                                                                                               |
+| Runaway Claude API spend               | ✅ Protected           | Subscription plan has automatic usage caps                                                                                                                                        |
+| Other API/cloud spend                  | ✅ Protected           | Other credentials live only in primary account                                                                                                                                    |
+| Force-push or delete GitHub branches   | ✅ Protected           | GitHub branch protection rules block these                                                                                                                                        |
+| Wipe `/Users/Shared/code`              | ⚠️ Partially mitigated | Git history + Claude Code destructive-command hooks help; raw `rm -rf` bypasses hooks. Remotes are the backstop for content; the local repo itself is not independently backed up |
+| Secret exfiltration via network        | ⚠️ Policy-based        | No secrets are intentionally stored in `/Users/Shared/code`, but this isn't technically enforced or audited                                                                       |
+| Persistence across reboots             | ⚠️ Known gap           | `claude-sandbox` can install launchd agents or cron jobs under its own user without admin; not currently monitored                                                                |
+| Malicious commits pushed to GitHub     | ⚠️ Partially mitigated | Fine-grained tokens limit scope; branch protection prevents the worst outcomes, but legitimate-looking commits could still be pushed                                              |
+| Read or drive the primary account's UI | ⚠️ Policy-based        | Holds only while no system-database permission is granted here; see #system-tcc                                                                                                   |
 
 ## Claude configuration and dotfiles
 
@@ -92,6 +118,29 @@ it lives, outliving the entry point that created it.
 Nothing enforces the ssh ancestry, and a session that has drifted keeps working
 normally. Only `launchctl managername` says otherwise, so check it after
 backgrounding rather than before.
+
+### Seeing this account's display {#display-access}
+
+`claude-sandbox` has its own Aqua login session, kept alive by fast user
+switching, and that session has a framebuffer of its own:
+`CGGetActiveDisplayList` reports a display there even while `ishermandom` owns
+`/dev/console` and nobody is connected to it. What an ssh session lacks is
+placement in that session — it lands in the `Background` domain, which has no
+window server connection, so `screencapture` fails there with "could not create
+image from display" however the permissions are set.
+
+`open -a Terminal <script>` bridges the gap. The script runs with
+`launchctl managername` reporting `Aqua`, and macOS holds `Terminal.app`
+responsible for what it does, which is what makes the Screen Recording grant
+apply to it. Terminal is the right identity to hold that grant because it moves
+only with macOS, where a third-party terminal's update could change its
+signature and void the grant.
+
+Capture is bounded by the login session, unlike the permissions in #system-tcc.
+Enumerating on-screen windows from the sandbox account lists only windows owned
+by `claude-sandbox`, and a full-screen capture shows the sandbox account's
+desktop rather than the primary account's. Driving that desktop is a different
+matter: it needs Accessibility, which #system-tcc rules out.
 
 ### Terminal capabilities over ssh {#terminfo}
 
