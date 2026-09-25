@@ -338,3 +338,12 @@ finalizing; add new ones here as they are hit.
   below the repo root, or inside another repo entirely. A pass over `.`, written
   out or taken as a tool's default, then covers one subtree, skips the rest, and
   reports success. `format.sh` anchors on `git rev-parse --show-toplevel`.
+- **Testing a `settings.json` change from a worktree**: load only the changed
+  keys into a throwaway session, as `claude --bg --settings '<json>'`, and read
+  the session's screen with `claude logs`; loading the whole file lets unchanged
+  keys mask the change under test. Test with a value the CLI would not choose on
+  its own — a value matching the built-in default passes whether or not the key
+  took effect, and `settings.json` never shows what that default is. Then treat
+  a pass as provisional until a fresh session shows the same result after the
+  change lands: `--settings` is a different source from the user's settings
+  file, and the CLI resolves some keys differently by source.
