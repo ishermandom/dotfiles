@@ -23,6 +23,7 @@
     "baseRef": "head"
   },
   "permissions": {
+    "defaultMode": "auto",
     "allow": [
       "Bash(cat:*)",
       "Bash(echo:*)",
