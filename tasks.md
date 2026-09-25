@@ -580,6 +580,10 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Rationale: found 2026-09-10 in the ssh-clipboard lane.
   - Note: refusing `HOME=` and `XDG_CONFIG_HOME=` prefixes, and `zsh -c` with
     arbitrary text, guards against real git redirection and is out of scope.
+  - Note: the guard also refuses commands that name no git at all. The
+    fanout-model-pin lane, 2026-09-24, saw it refuse a Python heredoc as too
+    complex to verify, and `python3 "$CLAUDE_JOB_DIR/<script>"` over its
+    computed argument.
 
 - [ ] **Keep background subagents working when their session enters a worktree**
       {#guard-strands-subagents} — a research agent launched from the main
