@@ -443,6 +443,25 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     a general preference for active voice may already be default behavior rather
     than something a rule has to shape.
 
+- [ ] **Ask for argument names at a call site whose values don't say what they
+      are** {#name-arguments-at-call-sites} — nothing binds this today, so
+      `pack([30, 30], FIRST, FULL)` broke no rule. The bridge repo's
+      system-notes review flagged a bare positional call to `pack` twice
+      (2026-09-22 and 2026-09-25), and Ilya approved queuing a rule
+      (2026-09-25). CLAUDE.md `## Style` is the likely home, since the rule
+      holds in any language that has keyword arguments.
+  - Open question: where the line falls. A lone argument, or one whose variable
+    name already says what it is, reads fine positionally; the rule should catch
+    bare literals and look-alike values of the same type, not force keywords
+    onto every call.
+
+- [ ] **Widen `python.md`'s frozen-dataclass rule beyond return values**
+      {#frozen-dataclass-records} — the rule's trigger is "multiple return
+      values", so a tuple used as a record inside a structure (a list of
+      `(index, height)` pairs, say) slips past it. The bridge repo's
+      system-notes review turned up exactly that case (2026-09-22), and Ilya
+      approved queuing the change (2026-09-25).
+
 - [ ] **Resolve a hook's downstream scripts against its own checkout**
       {#hook-downstream-scripts} — a hook that names a helper through
       `$HOME/.claude/scripts/` reaches the installed copy however the hook
