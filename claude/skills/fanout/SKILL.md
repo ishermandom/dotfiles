@@ -43,13 +43,13 @@ working in its own git worktree. Work the steps in order.
 4. **Launch one background session per task** from the main checkout:
 
    ```bash
-   claude --bg --model claude-opus-5 --effort xhigh --permission-mode auto \
+   claude --bg \
      --append-system-prompt-file ~/.claude/skills/fanout/agent-prompt.md \
      "In worktree <slug>, work the tasks.md task annotated Worktree: <slug>."
    ```
 
-   Add no other flags by default — CLAUDE.md governs the rest of an agent's
-   behavior.
+   Add no other flags by default — CLAUDE.md and `settings.json` govern the rest
+   of an agent's behavior.
 
    For a task changing hooks, `settings.json`, or anything else reached through
    `~/.claude`, say so in the prompt: those paths symlink to the main checkout,

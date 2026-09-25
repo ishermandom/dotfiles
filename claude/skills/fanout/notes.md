@@ -24,6 +24,14 @@ Maintainer rationale for the `fanout` skill.
   as a background job's respawn flags — so the override survives a respawn
   rather than evaporating mid-run (verified in CLI 2.1.220).
 
+  Model, effort, and permission mode follow the same rule: a lane inherits all
+  three from `settings.json`, as a hand-started session does, so the launch
+  names none of them. Naming one would only duplicate the setting, and a
+  duplicate drifts — a launch pinned to `claude-opus-5` kept a lane on Opus 5
+  after the default had moved to Opus 5.5. A background launch naming none of
+  them ran with the values configured in `settings.json` (verified 2026-09-24 on
+  CLI 2.1.282).
+
 - **The reassessment directive covers the task's premise, not only its
   approach**: the wording that reached the 2026-08-01 lanes asked just for
   comparing options where the approach was unclear, yet the two lanes that
@@ -86,16 +94,16 @@ Maintainer rationale for the `fanout` skill.
   Entry goes through `name` rather than `path` because `EnterWorktree` approves
   the `name` form outright, while a `path` that does not resolve to an existing
   worktree under `.claude/worktrees/` asks the user and refuses classifier
-  approval — so under `--permission-mode auto` a lane stalls on a prompt that,
-  once answered, fails with `ENOENT` anyway, step 3 having recorded the slug
-  without creating anything. `agent-prompt.md` supplies only the fact the tool
-  cannot know — that the worktree does not exist yet — since `EnterWorktree`'s
-  own description already keys `path` on a worktree that already exists. Most
-  lanes reach for `name` unprompted, so the note corrects a minority case rather
-  than establishing the norm — which is also why pre-creating the worktrees in
-  step 3 is not worth its machinery, though it would silence the `path` form
-  too. A relaunched lane is the genuine exception, its worktree left in place by
-  an earlier session, and `name` reuses that one (verified in CLI 2.1.220).
+  approval — so in auto mode a lane stalls on a prompt that, once answered,
+  fails with `ENOENT` anyway, step 3 having recorded the slug without creating
+  anything. `agent-prompt.md` supplies only the fact the tool cannot know — that
+  the worktree does not exist yet — since `EnterWorktree`'s own description
+  already keys `path` on a worktree that already exists. Most lanes reach for
+  `name` unprompted, so the note corrects a minority case rather than
+  establishing the norm — which is also why pre-creating the worktrees in step 3
+  is not worth its machinery, though it would silence the `path` form too. A
+  relaunched lane is the genuine exception, its worktree left in place by an
+  earlier session, and `name` reuses that one (verified in CLI 2.1.220).
 
 - **The tracker line doubles as the task's address**: writing `Worktree: <slug>`
   before launching lets the prompt name the task by that line instead of
