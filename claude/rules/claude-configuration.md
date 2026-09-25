@@ -269,6 +269,13 @@ home, no drift.
   in ASCII sort order.
   <!-- The rule lives here rather than in settings.json itself because JSON
   can't hold a comment. -->
+- **Order `settings.json` keys brief-first**: within each block, place brief
+  settings — scalars and small objects such as `statusLine` — before the long
+  blocks a reader skims, such as `permissions`, `hooks`, and the lists inside
+  `permissions`. Sort the brief top-level settings alphabetically, and leave the
+  long blocks in their existing order. A reader scanning the file then meets
+  every short setting first, rather than hunting for one between or behind long
+  blocks.
 - **Same-event hooks run in parallel**: array position never affects execution
   order. When one hook must run after another, sequence them inside a wrapper
   script registered as a single hook.

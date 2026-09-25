@@ -1,4 +1,23 @@
 {
+  "agentPushNotifEnabled": true,
+  "effortLevel": "xhigh",
+  "enabledPlugins": {
+    "swift-lsp@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true
+  },
+  "model": "opus",
+  "remoteControlAtStartup": true,
+  "showThinkingSummaries": true,
+  "statusLine": {
+    "type": "command",
+    "command": "~/.claude/scripts/statusline.sh",
+    "refreshInterval": 5
+  },
+  "theme": "dark",
+  "tui": "fullscreen",
+  "worktree": {
+    "baseRef": "head"
+  },
   "permissions": {
     "allow": [
       "Bash(cat:*)",
@@ -145,24 +164,5 @@
         ]
       }
     ]
-  },
-  "statusLine": {
-    "type": "command",
-    "command": "~/.claude/scripts/statusline.sh",
-    "refreshInterval": 5
-  },
-  "enabledPlugins": {
-    "swift-lsp@claude-plugins-official": true,
-    "frontend-design@claude-plugins-official": true
-  },
-  "agentPushNotifEnabled": true,
-  "effortLevel": "xhigh",
-  "model": "opus",
-  "remoteControlAtStartup": true,
-  "showThinkingSummaries": true,
-  "theme": "dark",
-  "tui": "fullscreen",
-  "worktree": {
-    "baseRef": "head"
   }
 }
