@@ -618,6 +618,21 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     #land-go-ahead work — the user approved commit 1 and held commit 2 for
     review, which `git land` has no way to express.
 
+- [ ] **Have `git land` refuse a branch that restores old copies of files**
+      {#land-stale-reverts} — before rebasing, check each file the branch
+      changes: when the branch's version matches, byte for byte, a version from
+      `main`'s history before the branch point, the branch is putting back an
+      old copy and would undo `main`'s later changes to that file. Stop and name
+      each such file with the `main` commit it matches; an `--allow-reverts`
+      flag lets an intended revert through. Cover the check with a test.
+  - Rationale: queued 2026-09-25. A bridge branch rebuilt from a snapshot of the
+    whole tree carried 26 files from other projects as `main` had them eleven
+    days earlier, through a full commit-by-commit review; only the pre-landing
+    history look caught it. Git sees a revert as an ordinary change, and a list
+    of touched folders would be noisy, since the same branch legitimately
+    changed root files. An ordinary edit essentially never recreates an old file
+    exactly, so a content match is a precise signal.
+
 - [ ] **Measure how long the Stop hook takes, and speed up what is slow** —
       `hooks/stop_checks.sh` is the only hook wired to `Stop`, and it runs at
       the end of every turn, so whatever it costs is paid per turn. Time it end
