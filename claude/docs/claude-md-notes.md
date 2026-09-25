@@ -164,10 +164,9 @@ cache-read rates, equal for both, so the comparison reduces to output generated
 touched text approaches the whole file (deleting most of a large file, or the
 edits' old_strings summing to more than Write's smaller result). The
 per-operation gap is small (a ~500-line file is a few thousand output tokens vs.
-~100 for a small edit — at most
-~$0.30 even on Fable, the priciest
-model at $50/MTok output, as of June 2026) — a
-soft default, not worth a confirmation round-trip.
+~100 for a small edit — at most ~$0.30 even on Fable, the priciest model at
+$50/MTok output, as of June 2026) — a soft default, not worth a confirmation
+round-trip.
 
 ## No rule for choosing a search tool
 
