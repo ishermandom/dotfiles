@@ -539,13 +539,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     file only ever read as context has nothing to fire and so no
     installed-versus-worktree hazard.
 
-- [ ] **Stop the fanout skill pinning its lanes to one model release** —
-      `fanout/SKILL.md` step 4 launches every lane with `--model claude-opus-5`,
-      so lanes stay on that release after a newer Opus ships.
-  - Worktree: fanout-model-pin
-  - Rationale: queued 2026-09-24, when a fanout from a session already on Opus
-    5.5 still launched its lane on Opus 5.
-
 - [ ] **Stop the worktree cleanup tripping on already-landed diffs** —
       `fanout-teardown` step 7 removes the lane's worktree, and on every
       teardown the removal errors out over uncommitted diffs. The work is
