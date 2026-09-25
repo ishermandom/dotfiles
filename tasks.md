@@ -505,6 +505,20 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     binary framing sent the first instinct to the probe and the user flagged it.
     The direct run then validated the whole chain, `format.sh` included.
 
+- [ ] **Bring the fanout skill in line with worktrees branching from local
+      HEAD** — `settings.json` sets `worktree.baseRef` to `head`, but the skill
+      still describes the `origin/main` default: step 2 opens "with
+      `worktree.baseRef` unset, a new worktree starts from `origin/main`", and
+      `fanout/notes.md`, in its bullet on the agent creating its own worktree,
+      says the setting "stays unset deliberately". Under `head`, unpushed
+      commits reach a lane and only uncommitted changes stay out, so step 2's
+      check narrows to those.
+  - Rationale: queued 2026-09-24 from the fanout-model-pin lane. The setting
+    changed in `03358e5` without the skill following.
+  - Open question: step 3's push is what put the tracker claim in front of a
+    lane branched from `origin/main`. Under `head` a lane sees the commit
+    unpushed, so decide whether the push still earns its place.
+
 - [ ] **Stop restating the `~/.claude` warning in fanout launch prompts** —
       `fanout/SKILL.md` step 4 has the coordinating session tell a lane, in its
       launch prompt, that `~/.claude` paths resolve to the main checkout. The
