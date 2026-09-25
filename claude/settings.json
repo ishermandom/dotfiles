@@ -1,11 +1,15 @@
 {
   "agentPushNotifEnabled": true,
-  "effortLevel": "xhigh",
   "enabledPlugins": {
     "swift-lsp@claude-plugins-official": true,
     "frontend-design@claude-plugins-official": true
   },
   "model": "opus",
+  "modelSettings": {
+    "opus": {
+      "effortLevel": "xhigh"
+    }
+  },
   "remoteControlAtStartup": true,
   "showThinkingSummaries": true,
   "statusLine": {
