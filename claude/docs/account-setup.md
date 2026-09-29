@@ -24,6 +24,9 @@ the other at the OS level.
 
 - Cannot install system software or modify system directories
 - Cannot access `~/ishermandom/` (home dir, keychain, browser state, etc.)
+- Can read the full command-line arguments of `ishermandom`'s processes, though
+  not their environment variables, open files, memory, or windows. A secret
+  passed as a command argument is visible here while that command runs.
 - Can install launchd agents and cron jobs scoped to its own user
 - Has unrestricted outbound network access (no firewall configured)
 - Has push access to specific GitHub repos via fine-grained personal access
