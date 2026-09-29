@@ -111,4 +111,13 @@
     },
     "show_stage_restore_buttons": false,
   },
+  // TODO: This is a work-around for
+  // https://github.com/zed-extensions/lua/issues/56
+  "lsp": {
+    "lua-language-server": {
+      "settings": {
+        "Lua": { "typeFormat": { "config": { "format_line": "false" } } },
+      },
+    },
+  },
 }
