@@ -641,13 +641,24 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     check a tax on the whole session rather than a one-off.
   - Worktree: stop-hook-timing
 
-- [ ] **Trim the Stop hook's report to the failing checks**
-      {#stop-report-failures} — when one test suite fails, the Stop hook's
-      reason carries the full output of every suite `run_tests.sh` ran, each
-      passing `ok:` line included. A statusline change that broke 12 assertions
-      put a couple hundred lines of mostly passing output into the session's
-      context.
+- [ ] **State a failing Stop check's exit status, and trim the report to what
+      failed** {#stop-report-failures} — when one test suite fails, the Stop
+      hook's reason carries the full output of every suite `run_tests.sh` ran,
+      each passing `ok:` line included, and never says how the failing step
+      ended. A statusline change that broke 12 assertions put a couple hundred
+      lines of mostly passing output into the session's context.
   - Rationale: found 2026-09-10 in the ssh-clipboard lane.
+  - Rationale: the user asked for the exit status 2026-10-07, after a Stop halt
+    in the bridge repo whose test step failed while all 1241 of its tests
+    passed. The pytest output ended at `[100%]` with no summary line, and six
+    reruns passed. A crash at shutdown is the likeliest cause, and its exit
+    status — 139 for a segfault, say — is the one clue such a failure leaves.
+  - Note: trim only by a rule that provably keeps every failure; the user wants
+    no risk of eliding one. A failure can print no marker at all — the crash
+    above left only a missing summary line — so wherever no such rule holds for
+    a suite's output, keep that output whole.
+  - Note: keep the color codes in the report; the user prefers them, despite the
+    `claude-configuration.md` gotcha about escapes in a hook's JSON field.
 
 - [ ] **Catch escape text the file tools decode into raw characters**
       {#file-tool-escapes} — six characters of escape text such as `\u0001`,
