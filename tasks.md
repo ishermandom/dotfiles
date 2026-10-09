@@ -824,6 +824,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     #writing-a-rule to each bullet on its own — without this bullet, would
     Claude have gone wrong? The answer likely differs per bullet.
 
+- [ ] **Formulate a rule against legal speculation in artifacts**
+      {#no-legal-speculation} — keep discussion of intellectual property,
+      copyright, and similar legal questions in chat, out of specs, docs,
+      comments, and other persistent, published artifacts. The one exception is
+      a claim that can be made with complete certainty. Draft a precise rule and
+      place it.
+
 ---
 
 ## Recurring maintenance
