@@ -846,6 +846,14 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       Decide whether the field belongs in any token figure.
   - Rationale: queued 2026-10-15, seen during wrap-session.
 
+- [ ] **Make `session_tokens.py --print` find a session whose folder moved** —
+      in a session that started in one folder and later moved into a subfolder,
+      the script looked for transcripts only under the subfolder's project
+      directory and reported none. The transcript stays under the starting
+      folder's project directory.
+  - Rationale: queued 2026-10-15, hit during wrap-session in a Chromium session
+    that moved from the checkout root into `src/`.
+
 ---
 
 ## Recurring maintenance
