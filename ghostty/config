@@ -80,3 +80,9 @@ window-save-state = always
 mouse-scroll-multiplier = precision:2
 
 mouse-hide-while-typing = true
+
+# Install new releases automatically, in the background. Ghostty's docs say
+# this value only downloads them, but it turns on the updater's silent
+# automatic install. Without this line, the updater follows a preference it
+# asks for once and stores outside this file.
+auto-update = download
