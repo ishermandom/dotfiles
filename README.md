@@ -5,6 +5,9 @@ This repo manages system configuration via symlinks, managed using GNU Stow.
 ## Structure
 
 - `accounts/` — per-account overlays, layered over the packages below
+- `chromium/` — the Chromium checkout's task list, linked into the checkout as
+  `src/tasks.md`; the checkout's `.git/info/exclude` lists `/tasks.md`, so git
+  ignores the link
 - `claude/` — Claude Code global config (settings, rules, skills, hooks,
   scripts, docs)
 - `claude-md/` — CLAUDE.md, packaged on its own (`install.sh` says why)

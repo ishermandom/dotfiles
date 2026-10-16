@@ -56,6 +56,18 @@ stow_package() {
   source_dir="$1"
   package="$2"
   target="$3"
+  # chromium links into a code checkout rather than a config directory. Making a
+  # missing checkout directory here would put a folder in the way of the
+  # `fetch chromium` that later creates it, so skip the package until the
+  # checkout exists.
+  case "$package" in
+    chromium)
+      if [ ! -d "$target" ]; then
+        echo "$SCRIPT_NAME: skipping $package: no checkout at $target"
+        return 0
+      fi
+      ;;
+  esac
   # Without a target directory stow has nothing to link into, so stop here
   # rather than compounding one failure with another.
   mkdir -p "$target" || return 1
@@ -98,6 +110,7 @@ stow_package() {
 # instead of linking its contents one file at a time — see the folding note
 # above for why Zed needs it that way.
 packages="
+  chromium:/Users/Shared/code/chromium/src
   claude:$HOME/.claude
   claude-md:$HOME/.claude
   ghostty:$HOME/.config/ghostty
