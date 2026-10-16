@@ -10,8 +10,9 @@
 # while nothing is being checked; calling someone else's repo the user's own
 # rewrites that project's files to this machine's conventions.
 #
-# The fixtures are real checkouts with real remotes, because remote ownership is
-# the whole of what the classifier reads — a fake would be a restatement of it.
+# The fixtures are real checkouts with real remotes and real `.gclient` files,
+# because those are the whole of what the classifier reads — a fake would be a
+# restatement of it.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 classifier="$script_dir/is-third-party-repo.sh"
@@ -76,6 +77,33 @@ begin_checkout_case a-remote-naming-no-account
 git -C "$checkout" remote add origin /srv/mirrors/bare.git
 
 expect_equal "a url with no account in it is third-party" \
+  "$(verdict_for "$checkout")" third-party
+
+# gclient marks the root of the tree it assembles with a `.gclient` file, and
+# the root is a plain directory rather than a repo — so no remote speaks for a
+# session started there.
+begin_case a-gclient-root
+touch "$case_dir/.gclient"
+
+expect_equal "a gclient root is third-party" \
+  "$(verdict_for "$case_dir")" third-party
+
+# gclient keeps directories of its own beside the repos, such as the `.cipd`
+# package cache, and those belong to the same checkout.
+begin_case a-directory-below-a-gclient-root
+touch "$case_dir/.gclient"
+mkdir "$case_dir/.cipd"
+
+expect_equal "a directory below a gclient root is third-party" \
+  "$(verdict_for "$case_dir/.cipd")" third-party
+
+# A repo in the tree whose remote was repointed at the user's own fork is still
+# part of someone else's project.
+begin_checkout_case an-owned-remote-inside-a-gclient-checkout
+touch "$case_dir/.gclient"
+git -C "$checkout" remote add origin git@github.com:ishermandom/chromium.git
+
+expect_equal "a gclient checkout outranks an owned remote" \
   "$(verdict_for "$checkout")" third-party
 
 # --- the user's own checkout ------------------------------------------------

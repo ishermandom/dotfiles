@@ -154,7 +154,7 @@ only the durable design choices behind it:
   ruff and mypy configuration — neither of which a clone of another project
   agreed to. Unguarded, a turn there rewrites files to a style the maintainers
   never chose, then halts on findings the session cannot fix. Ownership is
-  inferred from the repo's remotes rather than declared per clone, because a
+  inferred from the checkout itself rather than declared per clone, because a
   declared entry only ever gets written after a first turn has already done the
   damage. The dotfiles formatting pass survives the skip: a session working in
   such a repo can still edit dotfiles, and those edits want formatting like any
@@ -162,8 +162,8 @@ only the durable design choices behind it:
   of it.
 - **No override on the third-party verdict, yet**: an override is a second
   mechanism to keep in step with the first, and every checkout on this machine
-  classifies correctly on the remotes alone. tasks.md #third-party-override
-  records the shape to reach for if one is ever misclassified.
+  classifies correctly without one. tasks.md #third-party-override records the
+  shape to reach for if one is ever misclassified.
 - **A lint finding halts the turn rather than reporting quietly**: a Stop hook
   emits one JSON object, so a non-halting `systemMessage` would have to ride
   along with the halt verdict anyway, and Stop's support for the field is

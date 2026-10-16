@@ -782,12 +782,12 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 
 - [ ] **[maybe] Add an override for the third-party repo verdict**
       {#third-party-override} — `claude/hooks/is-third-party-repo.sh` infers
-      ownership from a repo's remotes and accepts no override. Define an
+      ownership from the checkout itself and accepts no override. Define an
       override mechanism if ever a concrete need arises.
   - Rationale: queued 2026-09-22, alongside the classifier. Every checkout on
-    this machine classifies correctly on the remotes alone, so an override today
-    would be a second mechanism to keep in step with the first for no present
-    gain. See also claude/docs/design.md #third-party-checkouts.
+    this machine classifies correctly without one, so an override today would be
+    a second mechanism to keep in step with the first for no present gain. See
+    also claude/docs/design.md #third-party-checkouts.
   - Note: the shape to reach for is a `claude.thirdParty` git config key the
     classifier reads ahead of the remotes. Set per clone with `git config`, it
     leaves no trace in the working tree — nothing to commit into someone else's
@@ -797,6 +797,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: `gitdir:` matches a repo's real `.git` location, so the path in the
     pattern has to be the resolved one — a pattern under `/var` never fires on
     macOS, where `/var` is a symlink to `/private/var` (verified 2026-09-22).
+  - Note: a git config key reaches only a git repo, so it cannot cover a gclient
+    root, which is a plain directory — the classifier recognizes that layout by
+    its `.gclient` file instead.
 
 - [ ] **Cover `format-markdown-on-edit.sh` with a test** — the hook has no suite
       of its own, and it now carries a branch: it skips a file in a checkout

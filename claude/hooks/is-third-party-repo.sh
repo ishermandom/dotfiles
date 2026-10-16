@@ -7,13 +7,20 @@
 # Exits 0 for a third-party checkout, 1 for the user's own, and 2 when called
 # wrong — printing nothing on a verdict, so a hook can test it in an `if`.
 #
-# The signal is remote ownership: a repository is the user's own when every
+# The main signal is remote ownership: a repository is the user's own when every
 # account its remotes name is one of the accounts below. That reading covers
-# both shapes a third-party checkout takes — a plain clone, whose `origin`
+# both shapes a third-party git checkout takes — a plain clone, whose `origin`
 # belongs to the project, and a fork, whose `origin` is the user's while an
 # `upstream` remote still names the project it came from.
 #
-# Two defaults fall out of the same rule, and both are deliberate:
+# A gclient checkout — the tree of git repos that depot_tools assembles for
+# Chromium and related projects — needs a signal of its own. Its root is a plain
+# directory holding a `.gclient` file rather than a repo, so a session started
+# there has no remotes to read. Instead, anything at or below a `.gclient` file
+# counts as someone else's, found by the same walk up the tree that gclient
+# itself uses to locate its root.
+#
+# Two defaults fall out of remote ownership, and both are deliberate:
 #
 # - a repository with no remotes at all is the user's own, so a project not yet
 #   pushed anywhere keeps its checks
@@ -61,6 +68,26 @@ is_owned_account() { # is_owned_account <account name>
   done
   return 1
 }
+
+# Whether a directory sits at or below the root of a gclient checkout, which
+# gclient marks with a `.gclient` file.
+is_inside_gclient_checkout() { # is_inside_gclient_checkout <directory>
+  # The walk up needs an absolute path to end at `/`. A directory that does not
+  # exist resolves to nothing, and lies in no checkout. `local` takes a line of
+  # its own so that `||` sees realpath's exit status rather than local's.
+  local directory
+  directory=$(realpath "$1" 2> /dev/null) || return 1
+
+  while [ "$directory" != / ]; do
+    [ -f "$directory/.gclient" ] && return 0
+    directory=$(dirname "$directory")
+  done
+  return 1
+}
+
+# The gclient marker is read ahead of the remotes, so a repo inside such a tree
+# stays someone else's even when its remote was repointed at the user's fork.
+is_inside_gclient_checkout "$target" && exit 0
 
 repository_root=$(git -C "$target" rev-parse --show-toplevel 2> /dev/null)
 
