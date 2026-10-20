@@ -37,6 +37,14 @@ snapshot.
   standard logging advice to use `%`-style for deferred string construction only
   matters when arguments are expensive to compute; inline the value when it is
   already available.
+- **Before writing a `\uXXXX` escape**: spell the character by name instead, as
+  in `'\N{NO-BREAK SPACE}'`. Edit and Write turn a `\uXXXX` escape into the
+  literal character, so a no-break space lands in the file looking like a plain
+  space.
+  <!-- Decoding observed 2026-10-19. `\N{...}` and non-hex text such as `\uXXXX`
+  pass through untouched, so an edit to this rule must not write a real hex
+  escape. Other languages' `\u` escapes are exposed too; only Python's fix is
+  tested. -->
 - **Always use abstract collection types in signatures**: `Sequence` over `list`
   or `tuple`, `Mapping` over `dict`, `Iterable` where only iteration is needed.
   Implementations may use concrete types freely.
