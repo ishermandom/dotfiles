@@ -10,24 +10,6 @@ Reference notes for this checkout sit beside this file's real location, in
 
 ---
 
-- [ ] **Move the repro script into `dotfiles/chromium/` and generalize it** —
-      the script named in `reproducing.md` sits in `/Users/Shared/transfer/`, a
-      folder for files in transit, and its name, header, and steps are specific
-      to one bug.
-  - Note: plan, agreed 2026-10-19. Move it beside this tracker and rename it for
-    general use, such as `chromium-repro.sh`. Take the variations file as an
-    argument, and keep writing logs to `/Users/Shared/transfer/repro-logs/`.
-    Turn the Cmd+N steps and the focus-related `--vmodule` patterns into
-    options, or drop them. Update the script's entry in `reproducing.md`, and
-    let the script's header take over describing what it does. The rewrite goes
-    through the user's review before pushing.
-  - Rationale: the dotfiles repo is public, and neither the user's experiment
-    assignments nor browser logs belong in it.
-  - Note: don't start until the user asks. Remind the user to ask once the other
-    pending items are settled: whether to commit this folder's changes, and
-    whether the tracker's link should move from `src/` to the checkout's top
-    folder.
-
 - [ ] **Speed up `git status` in `src/`** — Chromium's Mac docs recommend two
       per-repo settings: `core.untrackedCache` (once
       `git update-index --test-untracked-cache` reports `OK`) and

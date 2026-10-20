@@ -23,11 +23,11 @@ owner of this machine. Source paths are relative to the checkout at
   reload button, also carried `InitialWebUI`, `WebUILocationBar`, and
   `DeferLayoutDuringBrowserStartup`, which together caused an omnibox focus bug
   in new windows (https://issues.chromium.org/issues/571984154).
-- **Reproduction script**: `/Users/Shared/transfer/repro-omnibox-focus.sh`
-  launches the build with an empty profile, from either no experiments or the
-  reporter's command line saved as `variations.txt` beside the script, and takes
-  per-feature overrides. Its steps and logging target the omnibox focus bug; its
-  header documents usage.
+- **Reproduction script**: `reproduce_bug.py`, beside this file, launches the
+  build with an empty profile, from either no experiments or the reporter's
+  command line saved to a file, and takes per-feature overrides;
+  `reproduce_bug.py --help` documents usage. Save the reporter's command line
+  outside this public repo, such as in `/Users/Shared/transfer/`.
 - **Who presses the keys**: the user, from their own account. The
   `claude-sandbox` account, where Claude runs, can't drive the browser
   interface: it lacks Accessibility, event-posting, and screen-recording

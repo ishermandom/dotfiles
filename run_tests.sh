@@ -2,14 +2,14 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Test suite for the dotfiles repo — the Python unit tests under claude/hooks
-# and claude/scripts, plus the standalone shell tests, which sit beside the code
-# they cover or under tests/. Run directly, or via
+# Test suite for the dotfiles repo — the Python unit tests under claude/hooks,
+# claude/scripts, and chromium, plus the standalone shell tests, which sit
+# beside the code they cover or under tests/. Run directly, or via
 # ~/.claude/scripts/quiet-tests.sh (which the Stop test hook invokes). Honors
-# PYTEST_ADDOPTS, which the quiet runner sets to --tb=short. The import paths
-# the test modules need live in the root pyproject.toml. Arguments are forwarded
-# to pytest; naming a path narrows the run to that path, and to pytest alone —
-# the shell tests take no arguments.
+# PYTEST_ADDOPTS, which the quiet runner sets to --tb=short. Test modules import
+# the code they cover by bare name, as the root pyproject.toml explains.
+# Arguments are forwarded to pytest; naming a path narrows the run to that path,
+# and to pytest alone — the shell tests take no arguments.
 
 # Resolve the test directories against the script's own location so the suite
 # runs identically regardless of the caller's working directory; per the testing
@@ -48,7 +48,7 @@ if [ "$names_test_path" = false ]; then
   done
 
   # `set --` puts the suite's directories ahead of the caller's options.
-  set -- "$root/claude/hooks" "$root/claude/scripts" "$@"
+  set -- "$root/claude/hooks" "$root/claude/scripts" "$root/chromium" "$@"
 fi
 
 # `uv run --project` uses this checkout's own `.venv`, building it from uv.lock
