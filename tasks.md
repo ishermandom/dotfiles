@@ -854,6 +854,16 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Rationale: queued 2026-10-15, hit during wrap-session in a Chromium session
     that moved from the checkout root into `src/`.
 
+- [ ] **Warn about zsh traps in Bash-tool commands** — Claude's Bash tool runs
+      commands in zsh on macOS, and one Chromium session hit four traps: `path`
+      as a variable name (zsh ties it to `PATH`, so assigning it broke every
+      command lookup), `status` (read-only in zsh), bash's `$PIPESTATUS` (zsh
+      spells it `$pipestatus`), and `timeout` (not installed on macOS). Add a
+      line to CLAUDE.md naming them; `rules/shell.md` loads only for shell
+      files, so it never fires for inline commands.
+  - Rationale: queued 2026-10-19 during wrap-session; the `status` slip produced
+    a false "build failed" alarm.
+
 ---
 
 ## Recurring maintenance
