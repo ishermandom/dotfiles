@@ -864,6 +864,15 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Rationale: queued 2026-10-19 during wrap-session; the `status` slip produced
     a false "build failed" alarm.
 
+- [ ] **Narrow which dotfiles Markdown files load the configuration guide** —
+      the CLAUDE.md rule listing which rules file to read before editing a
+      dotfiles file sends every `*.md` to both `rules/markdown.md` and
+      `rules/claude-configuration.md`. The second guide covers only Claude's own
+      configuration, so editing a project tracker such as `chromium/tasks.md`
+      loads it without using any of it. Limit that mapping to the files the
+      guide's own `paths:` frontmatter lists.
+  - Rationale: queued 2026-10-19 during wrap-session in a Chromium session.
+
 ---
 
 ## Recurring maintenance
