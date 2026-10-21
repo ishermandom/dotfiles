@@ -873,6 +873,17 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       guide's own `paths:` frontmatter lists.
   - Rationale: queued 2026-10-19 during wrap-session in a Chromium session.
 
+- [ ] **[maybe] Watch unattended background runs** {#watch-background-runs} —
+      consider a CLAUDE.md rule for a run expected to last more than about half
+      an hour: arm a watcher that checks its progress periodically, post a
+      progress line at each check-in, and treat a run that stops advancing as
+      stalled. Write the rule only if stalled runs recur.
+  - Rationale: queued 2026-10-21. In the bridge repo, an overnight batch driving
+    SuitPlay stalled after 142 of 1,491 holdings, on an AutoHotkey error dialog
+    that waited for a click, and no check caught the stall for 19 hours. The
+    user asked for periodic updates on future batches, and chose to hold off on
+    a global rule unless the issue recurs.
+
 ---
 
 ## Recurring maintenance
