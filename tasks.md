@@ -884,6 +884,20 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     user asked for periodic updates on future batches, and chose to hold off on
     a global rule unless the issue recurs.
 
+- [ ] **Document `/Users/Shared/transfer` for handing files to the user**
+      {#transfer-folder} — Claude runs as the `claude-sandbox` account, and the
+      user's account cannot read sandbox-only paths such as the session
+      scratchpad under `/private/tmp`, so a file named there is out of the
+      user's reach. Add a CLAUDE.md rule: before pointing the user at such a
+      file, copy it into `/Users/Shared/transfer` and give that path. The
+      folder's own `README.md` covers its access.
+  - Rationale: queued 2026-10-21 in a bridge-private session, where a rendered
+    PDF preview in the scratchpad stayed unreadable until copied into the
+    transfer folder.
+  - Note: the session's system prompt tells Claude to name a scratchpad file by
+    its full absolute path, which hands the user a path they cannot open; the
+    rule has to state that it takes priority.
+
 ---
 
 ## Recurring maintenance
