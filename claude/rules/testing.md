@@ -96,10 +96,18 @@ paths:
 - **Non-module source files** (e.g. Google Apps Script): add
   `if (typeof module !== 'undefined') module.exports = { fn };` at the end to
   enable `require()` in tests
-- **`run_tests.sh`**:
-  `exec node --test-reporter=dot "$(dirname "$0")/your_module.test.js"` (a
-  vitest project runs `exec npm --prefix "$(dirname "$0")/<pkg-dir>" test`
-  instead)
+- **`run_tests.sh`**: call each JavaScript tool directly, never through an npm
+  script (`npm test`, `npm run …`) — npm's own startup adds latency to every
+  run.
+  - `node:test`:
+    `exec node --test-reporter=dot "$(dirname "$0")/your_module.test.js"`
+  - vitest and `tsc`: from the package's `node_modules/.bin`. Give vitest an
+    absolute `--root`, as in
+    `"$package/node_modules/.bin/vitest" run --root "$(realpath "$package")"`.
+  <!-- npm's startup costs a few tenths of a second per command, and
+  run_tests.sh runs on every Stop. vitest 4.1, given a relative `--root` — what
+  `$(dirname "$0")` yields when the Stop hook calls `./run_tests.sh` — fails to
+  load its jsdom test files ("Cannot find module '/<file>'"). -->
 
 ## Shell
 
