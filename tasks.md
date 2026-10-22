@@ -639,6 +639,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       to end and per check inside it, then optimize whatever dominates.
   - Rationale: queued 2026-08-26 — the cost lands on every turn, making a slow
     check a tax on the whole session rather than a one-off.
+  - Note: run from a repo's main checkout, the prettier pass also reaches every
+    worktree under `.claude/worktrees/`, ~0.5s a turn in bridge (2026-10-20),
+    since `quiet-prettier.sh` does not read `.git/info/exclude`.
   - Worktree: stop-hook-timing
 
 - [ ] **State a failing Stop check's exit status, and trim the report to what
