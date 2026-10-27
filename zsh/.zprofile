@@ -15,6 +15,12 @@ path+=("$HOME/.local/bin")
 # for the one-time keychain setup it requires on a new machine.
 source "$HOME/.claude-keychain.zsh"
 
+# Compile each Homebrew Python's standard library once, in the background, so
+# accounts that cannot write Homebrew's folders still find its bytecode cached.
+# Only the account that owns Homebrew does any work; see the sourced file.
+source "$HOME/.python-stdlib-bytecode.zsh"
+compile_python_stdlibs
+
 # Warn if the home directory allows world access. macOS sets 755 by default,
 # which lets any local user list and traverse into ~.
 _home_perms=$(stat -f '%A' "$HOME")
