@@ -5,6 +5,11 @@ others can't. Below, "the reporter" is that Chrome user, and "the user" is the
 owner of this machine. Source paths are relative to the checkout at
 `/Users/Shared/code/chromium`.
 
+- **Check the newest Chrome first**: before bisecting or reproducing anything,
+  have the reporter update Chrome from `chrome://settings/help` and retry, since
+  the regression may already be fixed.
+  `https://chromiumdash.appspot.com/releases?platform=Mac` lists each channel's
+  current version.
 - **Experiment-dependent bugs**: a Chromium build fetches no server-side
   experiments (`IsFetchingEnabled` in
   `src/components/variations/service/variations_service.cc`). To match the
@@ -14,6 +19,11 @@ owner of this machine. Source paths are relative to the checkout at
   `--disable-field-trial-config`, which keeps a Chromium build from layering its
   own testing experiments on top (`ShouldUseFieldTrialTestingConfig` in
   `src/components/variations/service/variations_field_trial_creator.cc`).
+- **Bisecting can't see experiments**: `src/tools/bisect-builds.py` bisects
+  prebuilt Chromium snapshots, which fetch no experiments either. Pass
+  `--verify-range` so it tests both ends of the range first. If the snapshot at
+  the reporter's version works while their Chrome fails, the bug likely depends
+  on an experiment, so narrow by feature instead.
 - **Narrowing to a feature**: on a fresh profile, launch once with no
   experiments and once with the reporter's full set, to confirm the bug depends
   on them. Then force single features on or off, as the reproduction script
