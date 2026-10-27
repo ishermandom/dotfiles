@@ -443,6 +443,20 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     a general preference for active voice may already be default behavior rather
     than something a rule has to shape.
 
+- [ ] **Consider a `docs/prose.md` principle against noun stacks** — a compound
+      such as "pass dot" hides how its nouns relate (a dot representing a pass,
+      or a dot that passes?), so the reader has to guess the relation. CLAUDE.md
+      #plain-language already rules out invented terms in file prose, and the
+      one case so far was an invented term, so a principle would reach further
+      only for stacks built from established words.
+  - Note: the case came from a bridge session on 2026-10-26. Claude coined "pass
+    dot" while reasoning and carried it into parser comments, test names, and a
+    spec doc, and the user called it confusing. The miss lay in applying
+    #plain-language, not in a gap in the rules.
+  - Open question: whether stacks of established words cause enough trouble to
+    earn a principle, or whether #plain-language should instead name a noun
+    stack as one shape an invented term takes.
+
 - [ ] **Ask for argument names at a call site whose values don't say what they
       are** {#name-arguments-at-call-sites} — nothing binds this today, so
       `pack([30, 30], FIRST, FULL)` broke no rule. The bridge repo's
