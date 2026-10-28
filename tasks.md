@@ -851,12 +851,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       a claim that can be made with complete certainty. Draft a precise rule and
       place it.
 
-- [ ] **Return Ghostty to the `tabs` titlebar once 1.4 installs** — the `TODO`
-      in `ghostty/config` marks the line and says why it waits.
-  - Note: `auto-update = download` installs 1.4 silently, so no prompt announces
-    its arrival; check Ghostty → About Ghostty. The project's creator expected
-    1.4 in October 2026.
-
 - [ ] **Teach `session_tokens.py` the `fallback_credit` usage field** — the
       script prints `unexpected usage field: fallback_credit` for at least one
       transcript, so transcripts now carry a usage field it doesn't recognize.
