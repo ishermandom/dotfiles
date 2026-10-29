@@ -34,8 +34,8 @@ continuation, which Prettier then renders inline. Verified empirically. -->
 `spec.md` is for someone building or changing the project: requirements,
 architecture decisions and their rationale, data models, edge cases, testing
 strategy. `README.md` serves the complementary audience — someone using the
-project — and stays fully self-contained; the spec may reference the README,
-never the reverse.
+project — and stays self-contained: a reader can understand all of it without
+opening another file.
 
 - **No status**: never add progress markers or checkboxes to a spec; status
   lives in `tasks.md`.
