@@ -46,6 +46,12 @@ paths:
   The Stop hook runs it automatically at the end of each turn; for a deliberate
   mid-turn check, use `~/.claude/scripts/quiet-tests.sh` instead of invoking it
   directly.
+  - **When `run_tests.sh` installs dependencies** {#locked-installs}: hold a
+    lock across the up-to-date check and the install, with `flock` on Linux or
+    `lockf` on macOS, unless the installer locks itself as uv and Cargo do.
+    Entering a worktree starts a background run of the checks, so two runs of
+    the script can overlap, and two `npm ci` runs into one directory leave a
+    broken install that still looks finished.
 
 ## Python
 

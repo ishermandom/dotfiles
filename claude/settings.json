@@ -122,6 +122,16 @@
             "timeout": 30
           }
         ]
+      },
+      {
+        "matcher": "EnterWorktree",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "~/.claude/hooks/prewarm_checks.sh",
+            "async": true
+          }
+        ]
       }
     ],
     "PostToolUseFailure": [

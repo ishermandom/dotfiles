@@ -182,6 +182,16 @@ only the durable design choices behind it:
   auto mode), and a deny would block user-directed commits. The built-in mode
   semantics — prompt in regular mode, scoped autonomy in auto mode — are the
   commit gate, so no settings entry records it.
+- **The checks prewarm when a session enters a worktree** {#prewarm}:
+  `prewarm_checks.sh` runs the Stop hook's checks in the background on entry, so
+  a fresh worktree's first Stop finds their caches built. It runs from a
+  PostToolUse hook on EnterWorktree because no hook event follows a worktree's
+  creation: `WorktreeCreate` replaces Claude Code's own creation rather than
+  running after it, and `SessionStart` fires before the session enters any
+  worktree. A Stop that arrives mid-prewarm runs alongside it rather than
+  waiting, and finishes when the prewarm does — sooner than waiting and then
+  running warm would — with no coordination in the Stop hook. That holds only
+  while every install step locks itself (`rules/testing.md #locked-installs`).
 - **`dmypy` works and is still not worth taking** {#dmypy}: mypy's daemon halves
   the type-check step — 307ms to 163ms on the bridge repo, 290ms to 155ms here —
   and probing found nothing stale about the answers, which is the failure that

@@ -63,6 +63,8 @@ format_status=$?
 # Both streams are captured, so a step is free to report on either: stderr is
 # the natural stream for a diagnostic, and a check that used it would otherwise
 # halt the turn with nothing but its exit status.
+#
+# prewarm_checks.sh runs this same list; a check added here belongs there too.
 for check in mypy-check.sh run_tests.sh ruff-lint.sh; do
   failure=$("$hooks_dir/$check" 2>&1)
   check_status=$?
