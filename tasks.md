@@ -858,6 +858,16 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       folder's project directory.
   - Rationale: queued 2026-10-15, hit during wrap-session in a Chromium session
     that moved from the checkout root into `src/`.
+  - Note: with `--session-id`, the miss reports another session's marker rather
+    than none. A bridge session that moved into a worktree passed its own id on
+    2026-10-31. The id's transcript wasn't under the worktree's project
+    directory, so `--print` fell back to the newest transcript there, printing
+    that session's marker and counts with only a warning. wrap-session copies
+    the reported marker into its log entry, so the SessionEnd hook would then
+    write the other session's counts into it.
+  - Note: a session id names one transcript, so searching every project
+    directory for `<id>.jsonl` would find it; with an id given, failing loudly
+    beats guessing.
 
 - [ ] **Warn about zsh traps in Bash-tool commands** — Claude's Bash tool runs
       commands in zsh on macOS, and one Chromium session hit four traps: `path`
