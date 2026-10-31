@@ -851,12 +851,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
       a claim that can be made with complete certainty. Draft a precise rule and
       place it.
 
-- [ ] **Teach `session_tokens.py` the `fallback_credit` usage field** — the
-      script prints `unexpected usage field: fallback_credit` for at least one
-      transcript, so transcripts now carry a usage field it doesn't recognize.
-      Decide whether the field belongs in any token figure.
-  - Rationale: queued 2026-10-15, seen during wrap-session.
-
 - [ ] **Make `session_tokens.py --print` find a session whose folder moved** —
       in a session that started in one folder and later moved into a subfolder,
       the script looked for transcripts only under the subfolder's project
