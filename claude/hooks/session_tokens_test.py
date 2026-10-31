@@ -225,6 +225,40 @@ def test_a_malformed_line_is_skipped_and_reported() -> None:
   assert 'malformed' in summary.anomalies[0]
 
 
+def test_a_current_transcript_usage_record_raises_no_anomaly() -> None:
+  """Every field a live transcript's usage mapping carries is a known one."""
+  transcript = _make_transcript(
+    [
+      _make_usage_record(
+        {
+          'input_tokens': 2,
+          'cache_creation_input_tokens': 26147,
+          'cache_read_input_tokens': 28126,
+          'output_tokens': 301,
+          'output_tokens_details': {'thinking_tokens': 115},
+          'server_tool_use': {
+            'web_search_requests': 0,
+            'web_fetch_requests': 0,
+          },
+          'service_tier': 'standard',
+          'cache_creation': {
+            'ephemeral_1h_input_tokens': 26147,
+            'ephemeral_5m_input_tokens': 0,
+          },
+          'inference_geo': 'global',
+          'iterations': [],
+          'speed': 'standard',
+          'fallback_credit': None,
+        }
+      ),
+    ]
+  )
+
+  summary = usage_summary([transcript])
+
+  assert summary.anomalies == ()
+
+
 def test_an_unexpected_usage_field_is_reported_once_per_sweep() -> None:
   """A drifted usage schema yields one report, not one per record."""
   transcript = _make_transcript(

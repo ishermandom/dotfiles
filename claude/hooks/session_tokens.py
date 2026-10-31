@@ -54,6 +54,7 @@ EXPECTED_USAGE_FIELD_NAMES = frozenset(
     'cache_creation_input_tokens',
     'cache_read_input_tokens',
     'cache_creation',
+    'fallback_credit',
     'inference_geo',
     'iterations',
     'output_tokens_details',
