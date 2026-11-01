@@ -16,7 +16,9 @@
 #
 # One level is out of reach here: the script prepends Homebrew's bin to PATH, so
 # prettier cannot be taken away to produce the shell's 127. claude/hooks/
-# format-test.sh covers a runner that exits 127 with a fake.
+# format-test.sh covers a runner that exits 127 with a fake. Bun cannot be taken
+# away either, so on a machine with Bun these cases run prettier under it, and
+# the fallback to Node goes untested.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 quiet_prettier="$script_dir/quiet-prettier.sh"

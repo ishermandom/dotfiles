@@ -68,9 +68,29 @@ else
   }
 fi
 
-# Fall back to the global config when no project-level config exists.
+# Prettier runs under Bun where Bun is installed. Bun formats byte for byte as
+# Node does but starts far faster: Homebrew's Node spends about 70ms of every
+# launch loading the shared libraries it links, measured 2026-11-01, and this
+# script launches prettier twice. Bun runs the launcher Homebrew's `prettier`
+# links to, ignoring the Node its first line names. Without Bun, or without
+# prettier, the plain command runs, so a missing prettier still fails with the
+# shell's 127.
+#
+# Prettier's cache key includes the runtime's version, so runs sharing a cache
+# should share a runtime. The per-edit Markdown hook formats through this script
+# too, so the two always agree.
+prettier_command=(prettier)
+prettier_path=$(command -v prettier)
+if [ -n "$prettier_path" ] && command -v bun > /dev/null; then
+  prettier_command=(bun "$prettier_path")
+fi
+
+# Fall back to the global config when no project-level config exists, which is
+# when `--find-config-path` fails.
 config_args=()
-if ! prettier --find-config-path ./placeholder > /dev/null 2>&1; then
+"${prettier_command[@]}" --find-config-path ./placeholder > /dev/null 2>&1
+config_search_status=$?
+if [ "$config_search_status" -ne 0 ]; then
   config_args=(--config "$HOME/.prettierrc")
 fi
 
@@ -94,8 +114,8 @@ mkdir -p "$cache_dir"
 cache_args=(--cache --cache-strategy content
   --cache-location "$cache_dir/$(printf '%s' "$PWD" | md5 -q)")
 
-output=$(prettier "${config_args[@]}" "${cache_args[@]}" --log-level warn \
-  --write "${targets[@]}" 2>&1)
+output=$("${prettier_command[@]}" "${config_args[@]}" "${cache_args[@]}" \
+  --log-level warn --write "${targets[@]}" 2>&1)
 status=$?
 
 if [ $status -eq 0 ]; then
