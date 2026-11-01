@@ -5,7 +5,7 @@
 # Tests which files quiet-prettier.sh formats, which config it formats them
 # with, and the exit status it reports.
 #
-# Discovery and config selection both fail quietly: a file that is never globbed
+# Discovery and config selection both fail quietly: a file that is never listed
 # is simply not formatted, and the wrong config silently reformats every file it
 # does reach. So the cases below assert through an observable effect on a
 # fixture file rather than on the summary line.
@@ -72,25 +72,7 @@ run_runner
 expect_equal "a markdown file in a subdirectory is reformatted" \
   "$(head -1 "$case_dir/project/nested/doc.md")" "# Title"
 
-# Prettier errors on a glob that matches nothing, so a project carrying only
-# markdown must not be handed the JS and TS patterns.
-begin_project_case globs-only-the-extensions-present
-printf '#   Title\n' > "$case_dir/project/only.md"
-run_runner
-exit_code=$?
-
-expect "a project with no JS or TS still exits clean" test "$exit_code" -eq 0
-
-# The runner does not read gitignore rules when deciding which patterns to
-# offer, which is safe only because prettier tolerates a pattern whose matches
-# are all ignored files: the pattern did match on disk and so does not count as
-# unmatched, and the ignored files drop out afterwards.
-#
-# That is an assumption about prettier rather than about the runner, which is
-# why it is pinned here. Should prettier ever count such a pattern as unmatched,
-# the runner would start reporting breakage on healthy projects, and this case
-# is what would say so first.
-begin_project_case tolerates-a-fully-gitignored-extension
+begin_project_case leaves-a-gitignored-file-alone
 git -C "$case_dir/project" init -q
 printf 'vendor.js\n' > "$case_dir/project/.gitignore"
 printf 'const a   =   1;\n' > "$case_dir/project/vendor.js"
@@ -105,17 +87,50 @@ expect_equal "and its markdown is still formatted" \
 expect_equal "and the gitignored file is left alone" \
   "$(cat "$case_dir/project/vendor.js")" "const a   =   1;"
 
-# Prettier drops node_modules while expanding the glob, so an extension found
-# only there would produce a pattern matching nothing — the error the runner's
-# pattern check exists to head off.
-begin_project_case skips-an-extension-only-inside-node-modules
+# Of git's ignore files, prettier reads only the top-level `.gitignore`, so this
+# rule holds only because git does the listing. A repo's main checkout can
+# exclude the worktrees inside it this way, and a pass over that checkout would
+# otherwise format every one of them.
+begin_project_case leaves-a-locally-excluded-file-alone
+git -C "$case_dir/project" init -q
+printf 'scratch.md\n' >> "$case_dir/project/.git/info/exclude"
+printf '#   Scratch\n' > "$case_dir/project/scratch.md"
+printf '#   Title\n' > "$case_dir/project/doc.md"
+run_runner
+
+expect_equal "a file excluded through .git/info/exclude is left alone" \
+  "$(head -1 "$case_dir/project/scratch.md")" "#   Scratch"
+expect_equal "and the rest of the repo is still formatted" \
+  "$(head -1 "$case_dir/project/doc.md")" "# Title"
+
+# Git keeps listing a tracked file deleted from the working tree, as it would in
+# the middle of a turn that removes one, and lists a tracked symlink like any
+# file. Handed either by name, prettier fails the whole run.
+begin_project_case skips-a-deleted-file-and-a-symlink
+git -C "$case_dir/project" init -q
+printf '#   Title\n' > "$case_dir/project/doc.md"
+printf '# Gone\n' > "$case_dir/project/gone.md"
+ln -s doc.md "$case_dir/project/linked.md"
+git -C "$case_dir/project" add gone.md linked.md
+rm "$case_dir/project/gone.md"
+run_runner
+exit_code=$?
+
+expect "a repo holding a deleted file and a symlink exits clean" \
+  test "$exit_code" -eq 0
+expect_equal "and its other files are still formatted" \
+  "$(head -1 "$case_dir/project/doc.md")" "# Title"
+
+# Outside a git repo nothing marks node_modules as ignored, so the listing skips
+# it the way prettier's own expansion would.
+begin_project_case leaves-node-modules-alone
 mkdir -p "$case_dir/project/node_modules"
 printf 'const a   =   1;\n' > "$case_dir/project/node_modules/vendor.js"
 printf '#   Title\n' > "$case_dir/project/doc.md"
 run_runner
 exit_code=$?
 
-expect "a project whose only JS is vendored exits clean" test "$exit_code" -eq 0
+expect "a project holding vendored JS exits clean" test "$exit_code" -eq 0
 expect_equal "and the vendored file is left alone" \
   "$(cat "$case_dir/project/node_modules/vendor.js")" "const a   =   1;"
 
