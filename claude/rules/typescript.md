@@ -10,8 +10,9 @@ paths:
 
 # TypeScript and JavaScript style guide
 
-- `prettier` enforces formatting (2-space indentation, single quotes) —
-  configured globally in `~/.prettierrc` and runs automatically on Stop
+- `prettier` enforces formatting (2-space indentation; double quotes, its
+  default) — configured globally in `~/.prettierrc` and runs automatically on
+  Stop
 - Follow the Google TypeScript Style Guide unless these rules conflict — these
   rules take priority
 - **Types**: prefer explicit types at public interfaces, exported functions, and
