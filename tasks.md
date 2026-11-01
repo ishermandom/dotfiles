@@ -913,6 +913,20 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     its full absolute path, which hands the user a path they cannot open; the
     rule has to state that it takes priority.
 
+- [ ] **Consider a `markdown.md` rule for spec examples that quote a program's
+      output** — such an example goes stale as the program changes, and nothing
+      catches the drift. The candidate, for markdown.md's spec section: examples
+      quoting a program's exact output belong in tests; a spec keeps an example
+      only where a rule can't be followed without it.
+  - Rationale: queued 2026-10-31 in a bridge session. The suit-combination
+    analyzer's spec quoted its lines and remarks as examples. When the section
+    was cut back to design intent, one quoted line no longer matched the
+    analyzer's output, and the rest moved into tests. CLAUDE.md's "Don't write
+    predictably stale content" hadn't fired when the examples were written.
+  - Note: run claude-configuration.md #writing-a-rule's checks first; the
+    necessity check turns on whether markdown.md's "Record decisions, not
+    operative details" already covers the case.
+
 ---
 
 ## Recurring maintenance
