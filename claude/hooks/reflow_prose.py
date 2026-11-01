@@ -306,6 +306,13 @@ def _tool_environment() -> Mapping[str, str]:
   return environment
 
 
+# The script that starts prettier, from this file's own checkout, so a
+# worktree's hook runs that worktree's copy rather than the main checkout's.
+_RUN_PRETTIER = (
+  Path(__file__).resolve().parent.parent / 'scripts/run-prettier.sh'
+)
+
+
 def run_prettier(markdown: str, width: int) -> str:
   """Reflow a markdown document with prettier at the given print width."""
   # `--no-config` shields the reflow from project-level prettier settings: a
@@ -313,7 +320,7 @@ def run_prettier(markdown: str, width: int) -> str:
   # Changing flags here interacts with the fixed-point skip in _reflow_chunks:
   # chunks the plain filler wouldn't change never reach prettier at all.
   command = [
-    'prettier',
+    str(_RUN_PRETTIER),
     '--no-config',
     '--parser=markdown',
     '--prose-wrap=always',
