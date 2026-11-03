@@ -72,15 +72,20 @@ is_owned_account() { # is_owned_account <account name>
 # Whether a directory sits at or below the root of a gclient checkout, which
 # gclient marks with a `.gclient` file.
 is_inside_gclient_checkout() { # is_inside_gclient_checkout <directory>
-  # The walk up needs an absolute path to end at `/`. A directory that does not
-  # exist resolves to nothing, and lies in no checkout. `local` takes a line of
-  # its own so that `||` sees realpath's exit status rather than local's.
+  # The walk up ends at `/`, so it needs an absolute path; `pwd -P` prints one,
+  # with symlinks resolved. A directory that does not exist resolves to nothing
+  # and lies in no checkout. `local` takes a line of its own so that `||` sees
+  # the exit status of the resolution, not of `local`.
   local directory
-  directory=$(realpath "$1" 2> /dev/null) || return 1
+  directory=$(cd "$1" 2> /dev/null && pwd -P) || return 1
 
   while [ "$directory" != / ]; do
     [ -f "$directory/.gclient" ] && return 0
-    directory=$(dirname "$directory")
+    # `${directory%/*}` drops the last path segment, as dirname would, without
+    # starting a process. Dropping it from a top-level directory such as
+    # `/Users` leaves an empty string, which stands for `/`.
+    directory=${directory%/*}
+    [ -n "$directory" ] || directory=/
   done
   return 1
 }
@@ -89,25 +94,20 @@ is_inside_gclient_checkout() { # is_inside_gclient_checkout <directory>
 # stays someone else's even when its remote was repointed at the user's fork.
 is_inside_gclient_checkout "$target" && exit 0
 
-repository_root=$(git -C "$target" rev-parse --show-toplevel 2> /dev/null)
+# One git call reads every remote's URLs from the repository's config. Each line
+# it prints holds a `remote.<name>.url` key and one URL. A remote with several
+# URLs gets a line for each, as a fork tracking several upstreams would. URLs
+# are read as written, without the rewriting a `url.<base>.insteadOf` setting
+# would apply. git exits 1 in a repo with no remotes and 128 outside any repo;
+# neither leaves an ownership question to answer.
+remote_lines=$(git -C "$target" config --local --get-regexp \
+  '^remote\..*\.url$' 2> /dev/null) || exit 1
 
-# Outside a checkout there is no ownership question to answer.
-[ -n "$repository_root" ] || exit 1
-
-# `mapfile -t` reads the lines into an array without their trailing newlines.
-mapfile -t remote_names < <(git -C "$repository_root" remote)
-
-for remote_name in "${remote_names[@]}"; do
-  # `get-url --all` prints every URL one remote carries — a fork can track
-  # several upstreams under a single remote.
-  mapfile -t remote_urls < <(
-    git -C "$repository_root" remote get-url --all "$remote_name"
-  )
-
-  for remote_url in "${remote_urls[@]}"; do
-    account_name=$(remote_account_name "$remote_url")
-    is_owned_account "$account_name" || exit 0
-  done
-done
+# `read -r _ remote_url` splits each line at its first space, discarding the
+# key.
+while read -r _ remote_url; do
+  account_name=$(remote_account_name "$remote_url")
+  is_owned_account "$account_name" || exit 0
+done <<< "$remote_lines"
 
 exit 1
