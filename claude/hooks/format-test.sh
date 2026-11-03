@@ -81,6 +81,19 @@ invocation_count() {
   grep -c '' < "$case_dir/home/invocations"
 }
 
+# How many times a runner was handed exactly the given directory. The passes run
+# in parallel, so the log lists them in no fixed order, and the count ignores
+# position. Each logged line is compared whole, with symlinks resolved on both
+# sides, since a session outside any repo hands over its directory unresolved.
+invocations_of() { # invocations_of <directory>
+  local logged wanted count=0
+  wanted=$(realpath "$1")
+  while IFS= read -r logged; do
+    [ "$(realpath "$logged")" = "$wanted" ] && count=$((count + 1))
+  done < "$case_dir/home/invocations"
+  echo "$count"
+}
+
 # --- cases ------------------------------------------------------------------
 
 begin_step_case passes-on-findings
@@ -143,21 +156,27 @@ expect "a clean run passes the step" test "$exit_code" -eq 0
 expect "a clean run says nothing on the halting stream" \
   test ! -s "$case_dir/stderr"
 
-# prettier runs first, so a break there must leave ruff unrun rather than
-# pressing on with a formatter chain that is already failing.
-begin_step_case stops-the-runners-after-a-break
+# The runners run in parallel, so a break in one does not stop the other. Only
+# the first break, in the runners' order, reaches the user, which keeps the
+# report readable.
+begin_step_case reports-only-the-first-break
 write_runner quiet-prettier.sh << 'BODY'
 echo "prettier: command not found"
 exit 127
 BODY
 write_runner quiet-ruff.sh << 'BODY'
-echo "$PWD" >> "$HOME/invocations"
-exit 0
+echo "error: Failed to parse module.py"
+exit 2
 BODY
 run_step "$case_dir/repo"
+exit_code=$?
 
-expect "a broken tool stops the runners after it" \
-  test "$(invocation_count)" -eq 0
+expect "two broken tools fail the step with the first one's status" \
+  test "$exit_code" -eq 127
+expect "the first break is reported" \
+  contains "$(cat "$case_dir/stderr")" "command not found"
+expect "and the second is not" \
+  not_contains "$(cat "$case_dir/stderr")" "Failed to parse"
 
 begin_step_case formats-the-dotfiles-repo-from-outside
 write_runner quiet-ruff.sh << 'BODY'
@@ -169,11 +188,10 @@ run_step "$case_dir/project"
 
 expect "a session outside the repo makes two passes" \
   test "$(invocation_count)" -eq 2
-expect_equal "with no repo to anchor on, the first pass covers the directory" \
-  "$(realpath "$(head -1 "$case_dir/home/invocations")")" \
-  "$(realpath "$case_dir/project")"
-expect "the second pass targets the dotfiles repo" \
-  contains "$(cat "$case_dir/home/invocations")" "$(realpath "$case_dir/repo")"
+expect "with no repo to anchor on, one pass covers the directory" \
+  test "$(invocations_of "$case_dir/project")" -eq 1
+expect "the other pass targets the dotfiles repo" \
+  test "$(invocations_of "$case_dir/repo")" -eq 1
 
 begin_step_case formats-the-repo-root-once
 write_runner quiet-ruff.sh << 'BODY'
@@ -196,8 +214,8 @@ mkdir -p "$case_dir/project/nested"
 git -C "$case_dir/project" init --quiet
 run_step "$case_dir/project/nested"
 
-expect_equal "a session below its repo root formats from the root" \
-  "$(head -1 "$case_dir/home/invocations")" "$(realpath "$case_dir/project")"
+expect "a session below its repo root formats from the root" \
+  test "$(invocations_of "$case_dir/project")" -eq 1
 
 # A worktree is a checkout of its own, so the first pass already covers it; a
 # second pass would reach into the checkout it branched from. The fixture makes
@@ -237,17 +255,20 @@ expect "a session in someone else's checkout makes one pass" \
 expect_equal "the pass that survives is the dotfiles one" \
   "$(head -1 "$case_dir/home/invocations")" "$(realpath "$case_dir/repo")"
 
-begin_step_case skips-the-second-pass-after-a-break
+# The passes run in parallel, so a tool broken in both passes breaks twice; the
+# report names the break once.
+begin_step_case reports-a-break-in-both-passes-once
 write_runner quiet-prettier.sh << 'BODY'
-echo "$PWD" >> "$HOME/invocations"
-echo "prettier: command not found"
+echo "prettier: command not found in $PWD"
 exit 127
 BODY
 mkdir -p "$case_dir/project"
 run_step "$case_dir/project"
+exit_code=$?
 
-expect "a broken tool is not run over a second directory" \
-  test "$(invocation_count)" -eq 1
+expect "a tool broken in both passes fails the step" test "$exit_code" -ne 0
+expect "and is reported once" \
+  test "$(grep -c 'command not found' "$case_dir/stderr")" -eq 1
 
 # --- summary ----------------------------------------------------------------
 

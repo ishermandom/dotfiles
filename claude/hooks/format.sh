@@ -42,6 +42,12 @@ runners=(quiet-prettier.sh quiet-ruff.sh)
 #
 # Both tools skip whatever .gitignore excludes, so formatting a repo does not
 # reach the worktrees under `.claude/worktrees/`.
+#
+# The runners format different kinds of files — prettier for Markdown and
+# JavaScript, ruff for Python — so they run in parallel, each writing its report
+# to a file of its own. Once both finish, the reports are read in the order
+# above. Only the first breakage is reported, since whatever breaks one runner
+# tends to break the next one too.
 format_dir() { # format_dir <directory>
   # Each runner resolves its own config and file globs against the working
   # directory, so move there rather than passing the path. The subshell scopes
@@ -49,19 +55,33 @@ format_dir() { # format_dir <directory>
   (
     cd "$1" || exit 2
 
-    local runner output runner_status
+    # The trailing `&` runs a runner in the background, `$!` is its process ID,
+    # and `[-1]` is an array's last element.
+    local runner outputs=() pids=()
     for runner in "${runners[@]}"; do
-      output=$("$runners_dir/$runner" 2>&1)
+      outputs+=("$(mktemp)")
+      "$runners_dir/$runner" > "${outputs[-1]}" 2>&1 &
+      pids+=($!)
+    done
+
+    # `${!runners[@]}` lists the array's indices, which pair each runner's
+    # process ID with its report file.
+    local index runner_status verdict=0
+    for index in "${!runners[@]}"; do
+      wait "${pids[$index]}"
       runner_status=$?
+      [ "$verdict" -eq 0 ] || continue
 
       # A runner exit of 2 or more is breakage; 0 and 1 alike mean it ran.
       if [ "$runner_status" -gt 1 ]; then
-        printf '%s\n' "$output" >&2
-        exit "$runner_status"
+        cat "${outputs[$index]}" >&2
+        verdict=$runner_status
+      else
+        cat "${outputs[$index]}"
       fi
-
-      printf '%s\n' "$output"
     done
+    rm -f "${outputs[@]}"
+    exit "$verdict"
   )
 }
 
@@ -75,30 +95,54 @@ session_root=$(git rev-parse --show-toplevel 2> /dev/null || pwd)
 # the dotfiles repo's copy.
 hooks_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 
-# Someone else's checkout is skipped here rather than in `stop_checks.sh`, so
-# that the dotfiles pass below still runs: a session working in such a repo can
-# edit dotfiles too, and those edits want formatting like any other.
-#
-# A broken tool would tend to fail the same way on the next directory, so short
-# circuit on failure.
-if ! "$hooks_dir/is-third-party-repo.sh" "$session_root"; then
-  format_dir "$session_root" || exit $?
-fi
+# The passes cover different checkouts, so they run in parallel, each writing
+# its reports to files of its own. Once all finish, the reports are read in the
+# order the passes started. Only the first breakage is reported, since a broken
+# tool would fail the same way in both passes.
+pass_outputs=()
+pass_errors=()
+pass_pids=()
+start_pass() { # start_pass <directory>
+  pass_outputs+=("$(mktemp)")
+  pass_errors+=("$(mktemp)")
+  format_dir "$1" > "${pass_outputs[-1]}" 2> "${pass_errors[-1]}" &
+  pass_pids+=($!)
+}
 
 # The repo holding this file is the dotfiles repo, so ask git where it starts.
 # git runs in this file's own directory, since the current directory may belong
-# to an entirely different repo.
+# to an entirely different repo. Outside a checkout there is no dotfiles repo to
+# make a pass over.
 dotfiles_root=$(cd "$hooks_dir" && git rev-parse --show-toplevel 2> /dev/null)
 
-# Outside a checkout there is no dotfiles repo to make a second pass over.
-[ -n "$dotfiles_root" ] || exit 0
-
-# A session anchored at or below the root already covers the repo with the first
+# A session anchored at or below the root already covers the repo with its own
 # pass — including a session inside a worktree, which is a checkout of its own.
 # Matching the root with a trailing slash keeps a sibling such as
-# dotfiles-backup out.
-case "$(realpath "$session_root")" in
-  "$dotfiles_root" | "$dotfiles_root"/*) exit 0 ;;
-esac
+# dotfiles-backup out. The dotfiles pass needs no verdict from the check below,
+# so it starts first and runs while the check decides.
+if [ -n "$dotfiles_root" ]; then
+  case "$(realpath "$session_root")" in
+    "$dotfiles_root" | "$dotfiles_root"/*) ;;
+    *) start_pass "$dotfiles_root" ;;
+  esac
+fi
 
-format_dir "$dotfiles_root"
+# Someone else's checkout is skipped here rather than in `stop_checks.sh`, so
+# that the dotfiles pass above still runs: a session working in such a repo can
+# edit dotfiles too, and those edits want formatting like any other.
+if ! "$hooks_dir/is-third-party-repo.sh" "$session_root"; then
+  start_pass "$session_root"
+fi
+
+step_status=0
+for index in "${!pass_pids[@]}"; do
+  wait "${pass_pids[$index]}"
+  pass_status=$?
+  cat "${pass_outputs[$index]}"
+  if [ "$step_status" -eq 0 ] && [ "$pass_status" -ne 0 ]; then
+    cat "${pass_errors[$index]}" >&2
+    step_status=$pass_status
+  fi
+done
+rm -f "${pass_outputs[@]}" "${pass_errors[@]}"
+exit "$step_status"
