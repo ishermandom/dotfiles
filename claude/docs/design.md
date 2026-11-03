@@ -139,11 +139,11 @@ only the durable design choices behind it:
 - **One Stop entry**: same-event hooks run in parallel, so an array of several
   gives the format-before-check layout no force — ruff and prettier can rewrite
   a file while mypy and pytest read it. Edit-time formatting means most files
-  reach Stop already formatted, so the race is rare, but nothing bounds it.
-  `stop_checks.sh` runs the steps in order and stops at the first failure. A
-  formatter's findings are dropped, since they would garble the verdict, while
-  anything that keeps a tool from running at all — the step script missing, or
-  the tool itself absent or broken — halts the turn with its reason on stderr.
+  reach Stop already formatted, so the race is rare, but nothing bounds it. So
+  `stop_checks.sh` is the one entry, and orders the steps itself: formatting,
+  then the checks. Within each, the work runs in parallel, at one cost: a
+  failing turn waits for every check rather than stopping at the first, which is
+  acceptable because checks rarely fail.
 - **Ruff lints in a check step of its own**: ruff both fixes and finds, and the
   fixing half already runs in `format.sh`. `ruff-lint.sh` runs the lint pass
   again as an ordinary check, where a non-zero exit halts the turn with the

@@ -48,19 +48,21 @@ make_steps_dir() { # make_steps_dir  -> prints the directory
   echo "$steps_dir"
 }
 
-# --- the steps run in a fixed order -----------------------------------------
+# --- formatting finishes before any check starts ----------------------------
 
+# The checks run in parallel, so their order in the log is whatever the
+# scheduler made it; only formatting's place at the head is fixed.
 steps=$(make_steps_dir)
 for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh; do
   write_step "$steps" "$step" "echo $step >> $steps/order.log"
 done
 "$steps/stop_checks.sh" > /dev/null
 
-expect "formatting runs before the checks, which run in order" \
-  test "$(cat "$steps/order.log")" = "format.sh
-mypy-check.sh
-run_tests.sh
-ruff-lint.sh"
+expect_equal "formatting runs before the checks" \
+  "$(head -1 "$steps/order.log")" "format.sh"
+expect_equal "and every check runs" \
+  "$(tail -n +2 "$steps/order.log" | sort | tr '\n' ' ')" \
+  "mypy-check.sh ruff-lint.sh run_tests.sh "
 
 # --- a clean run says nothing -----------------------------------------------
 
@@ -96,15 +98,21 @@ reason=$(jq -r '.stopReason' <<< "$("$steps/stop_checks.sh")")
 expect "a check that reports on stderr still reaches the user" \
   test "$reason" = "error: Need type annotation"
 
-# --- a failing check skips the checks after it ------------------------------
+# --- the earliest failing check in order is the one reported ----------------
 
+# A type error usually explains the test failures that follow from it, so its
+# report alone reaches the user. The tests finish first here, so the report the
+# user sees follows the checks' order rather than the order they finished in.
 steps=$(make_steps_dir)
-write_step "$steps" "mypy-check.sh" "exit 1"
-write_step "$steps" "run_tests.sh" "echo ran >> $steps/tests.log"
-"$steps/stop_checks.sh" > /dev/null
+write_step "$steps" "mypy-check.sh" 'sleep 0.1
+echo "error: Missing return statement"
+exit 1'
+write_step "$steps" "run_tests.sh" 'echo "FAILED test_parse"
+exit 1'
+reason=$(jq -r '.stopReason' <<< "$("$steps/stop_checks.sh")")
 
-expect "the tests are skipped once mypy has failed" \
-  test ! -e "$steps/tests.log"
+expect_equal "mypy's failure is the reason" \
+  "$reason" "error: Missing return statement"
 
 # --- formatter chatter stays out of the verdict -----------------------------
 
