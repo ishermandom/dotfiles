@@ -912,6 +912,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: the session's system prompt tells Claude to name a scratchpad file by
     its full absolute path, which hands the user a path they cannot open; the
     rule has to state that it takes priority.
+  - Note: the rule should also say how to write the path: when a path ends a
+    sentence, put a space before the period. Ghostty otherwise reads the period
+    as part of the path, and the link points nowhere.
 
 - [ ] **Consider a `markdown.md` rule for spec examples that quote a program's
       output** — such an example goes stale as the program changes, and nothing
