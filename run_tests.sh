@@ -10,6 +10,9 @@
 # the code they cover by bare name, as the root pyproject.toml explains.
 # Arguments are forwarded to pytest; naming a path narrows the run to that path,
 # and to pytest alone — the shell tests take no arguments.
+#
+# A run from the Stop hook, which sets PYTEST_FROM_HOOK, leaves out the shell
+# tests and the Python tests marked `slow`. Every other run includes them.
 
 # Resolve the test directories against the script's own location so the suite
 # runs identically regardless of the caller's working directory; per the testing
@@ -39,23 +42,36 @@ if [ "$names_test_path" = false ]; then
   # The shell tests are standalone executables, which pytest cannot collect, so
   # the suite runs them itself. They go first so a passing run still ends on
   # pytest's summary — the one line quiet-tests.sh keeps on success.
-  shell_tests=("$root"/claude/hooks/*-test.sh "$root"/claude/scripts/*-test.sh
-    "$root"/tests/*/*-test.sh)
-  for shell_test in "${shell_tests[@]}"; do
-    # An unmatched glob stays literal in bash, so -e skips the pattern itself.
-    [ -e "$shell_test" ] || continue
-    "$shell_test" || shell_test_status=1
-  done
+  #
+  # The Stop hook's run skips them: together they take seconds, too long to pay
+  # at the end of every turn. `:-` reads an unset variable as empty.
+  if [ -z "${PYTEST_FROM_HOOK:-}" ]; then
+    shell_tests=("$root"/*-test.sh "$root"/claude/hooks/*-test.sh
+      "$root"/claude/scripts/*-test.sh "$root"/tests/*/*-test.sh)
+    for shell_test in "${shell_tests[@]}"; do
+      # An unmatched glob stays literal in bash, so -e skips the pattern itself.
+      [ -e "$shell_test" ] || continue
+      "$shell_test" || shell_test_status=1
+    done
+  fi
 
   # `set --` puts the suite's directories ahead of the caller's options.
   set -- "$root/claude/hooks" "$root/claude/scripts" "$root/chromium" "$@"
+fi
+
+# The Stop hook's run also leaves out the Python tests marked `slow`, a mark
+# pyproject.toml defines. The flags sit in an array so that, empty, it adds no
+# argument at all.
+hook_args=()
+if [ -n "${PYTEST_FROM_HOOK:-}" ]; then
+  hook_args=(-m "not slow")
 fi
 
 # `uv run --project` uses this checkout's own `.venv`, building it from uv.lock
 # when absent — so a fresh clone or a new worktree runs green with no setup
 # step, and each worktree tests against its own environment rather than
 # whichever venv the caller's shell activated.
-uv run --project "$root" pytest "$@"
+uv run --project "$root" pytest "${hook_args[@]}" "$@"
 pytest_status=$?
 
 # Either half failing fails the run.

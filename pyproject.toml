@@ -41,13 +41,19 @@ package = false
 # bare name — `import gate_git` — which resolves on its own: pytest's default
 # `prepend` import mode puts each test file's own directory on `sys.path`.
 #
-# The empty table still earns its place. pytest treats a `pyproject.toml` as its
-# config file only when this table is present, and anchors rootdir at whichever
-# one it finds. Drop the table and pytest walks past this checkout into the one
-# above it — a worktree under `.claude/worktrees/` then runs against the main
-# checkout's configuration.
+# The table would earn its place even empty. pytest treats a `pyproject.toml` as
+# its config file only when this table is present, and anchors rootdir at
+# whichever one it finds. Drop the table and pytest walks past this checkout
+# into the one above it — a worktree under `.claude/worktrees/` then runs
+# against the main checkout's configuration.
 #
 # Which directories hold tests is run_tests.sh's to say.
+#
+# `slow` keeps a test out of the Stop hook's run, which happens every turn.
+# tasks.md #slow-annotations says how to measure a test against it.
+markers = [
+  "slow: takes 25ms or more, with the cost of shared setup and caches amortized across the tests that use them (the target for any test is under 10ms); skipped when the Stop hook runs the suite, run everywhere else",
+]
 
 [tool.mypy]
 # mypy doesn't read .gitignore, so it needs its own exclusion for Claude's

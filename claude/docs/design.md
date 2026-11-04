@@ -129,6 +129,13 @@ only the durable design choices behind it:
   anchor-stability rationale drives the prose-reflow hook.
 - **Tests and type checks at Stop, not per edit**: a single turn often has
   multiple interdependent edits; mid-turn runs produce false failures.
+- **The Stop hook's run leaves out the slowest tests**: each test in the hook's
+  run costs time on every turn. Unchecked, this can result in noticeable lag.
+  The hook therefore leaves out the shell tests, which are slow as a group, and
+  the Python tests marked `slow`. Both still run on any other call of
+  `run_tests.sh`, mid-turn or by hand. `run_tests.sh` makes the selection when
+  the hook sets `PYTEST_FROM_HOOK`, and `pyproject.toml` defines the `slow`
+  mark.
 - **One Stop entry**: same-event hooks run in parallel, so an array of several
   gives the format-before-check layout no force — ruff and prettier can rewrite
   a file while mypy and pytest read it. Edit-time formatting means most files

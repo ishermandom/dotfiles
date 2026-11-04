@@ -960,6 +960,7 @@ def test_a_projects_line_length_sets_the_shell_reflow_width(
   assert 80 < widest <= 100
 
 
+@pytest.mark.slow
 def test_zsh_startup_file_is_recognized_by_name(tmp_path: Path) -> None:
   """`.zshrc` carries no extension, so dispatch has to match on the name."""
   target = tmp_path / '.zshrc'
@@ -993,6 +994,7 @@ def _make_checkout(directory: Path, origin_url: str) -> None:
   )
 
 
+@pytest.mark.slow
 def test_a_file_in_someone_elses_checkout_is_left_untouched(
   tmp_path: Path,
 ) -> None:
@@ -1006,6 +1008,7 @@ def test_a_file_in_someone_elses_checkout_is_left_untouched(
   assert target.read_text() == '# alpha beta\n# gamma delta\n'
 
 
+@pytest.mark.slow
 def test_a_file_in_an_owned_checkout_is_reflowed(tmp_path: Path) -> None:
   """The mirror case: an owned remote leaves the hook doing its usual work."""
   _make_checkout(tmp_path, 'git@github.com:ishermandom/dotfiles.git')
@@ -1181,6 +1184,7 @@ def test_swallowed_separator_falls_back_to_per_chunk_calls() -> None:
 # --- integration with real prettier ---
 
 
+@pytest.mark.slow
 def test_prettier_wraps_bullets_with_hanging_indent() -> None:
   """Markdown structure in comments survives and wraps correctly."""
   source = (
@@ -1198,6 +1202,7 @@ def test_prettier_wraps_bullets_with_hanging_indent() -> None:
   assert lines[1].startswith('#   ')  # continuation under the marker
 
 
+@pytest.mark.slow
 def test_a_list_stays_tight_against_its_introducing_line() -> None:
   """prettier sets a list off with a blank line; that added line is dropped."""
   # The introducing line has to be overlong, or the chunk sits at the reflow
@@ -1222,6 +1227,7 @@ def test_a_list_stays_tight_against_its_introducing_line() -> None:
   )
 
 
+@pytest.mark.slow
 def test_tight_list_reflow_is_idempotent() -> None:
   """Re-reflowing settles: prettier re-adds the blank line, reflow drops it."""
   source = (
@@ -1237,6 +1243,7 @@ def test_tight_list_reflow_is_idempotent() -> None:
   assert twice == once
 
 
+@pytest.mark.slow
 def test_a_bare_comment_line_still_separates_a_list_from_its_intro() -> None:
   """Dropping prettier's blank lines leaves the author's own break intact."""
   source = (
@@ -1254,6 +1261,7 @@ def test_a_bare_comment_line_still_separates_a_list_from_its_intro() -> None:
   assert '# be rewrapped:\n#\n# - first item\n' in result
 
 
+@pytest.mark.slow
 def test_setext_heading_underline_survives_the_filler_fallback() -> None:
   """A dash-run underline is structure even when emphasis forces the filler."""
   # The *emphasis* makes real prettier rewrite characters, so the whole chunk
@@ -1273,6 +1281,7 @@ def test_setext_heading_underline_survives_the_filler_fallback() -> None:
   assert 'model ------------' not in result
 
 
+@pytest.mark.slow
 def test_prettier_emphasis_rewrite_falls_back_to_plain_fill() -> None:
   """Real prettier escapes bare asterisks; the filler still merges the prose."""
   source = '# Accepts *args and\n# **kwargs in its signature.\nx = 1\n'
@@ -1282,6 +1291,7 @@ def test_prettier_emphasis_rewrite_falls_back_to_plain_fill() -> None:
   assert result == '# Accepts *args and **kwargs in its signature.\nx = 1\n'
 
 
+@pytest.mark.slow
 def test_prettier_merging_a_listing_falls_back_to_plain_fill() -> None:
   """Real prettier reads a listing under a bullet as the bullet wrapping."""
   source = (
@@ -1303,6 +1313,7 @@ def test_prettier_merging_a_listing_falls_back_to_plain_fill() -> None:
   )
 
 
+@pytest.mark.slow
 def test_a_fenced_copy_does_not_excuse_a_merged_listing() -> None:
   """The same text elsewhere is not the block; both sides are read alike."""
   source = (
@@ -1322,6 +1333,7 @@ def test_a_fenced_copy_does_not_excuse_a_merged_listing() -> None:
   assert '#   be rewrapped by prettier:\n#       make install\n' in result
 
 
+@pytest.mark.slow
 def test_prettier_still_reindents_a_nested_bullet() -> None:
   """A nested item is structure prettier may restyle, not a block to hold."""
   source = (
@@ -1338,6 +1350,7 @@ def test_prettier_still_reindents_a_nested_bullet() -> None:
   assert '#   - nested bullet written at four spaces\n' in result
 
 
+@pytest.mark.slow
 def test_reflow_is_idempotent_with_prettier() -> None:
   """Reflowing already-reflowed source changes nothing."""
   source = (
