@@ -208,6 +208,20 @@ only the durable design choices behind it:
   of savings. Meanwhile the type check is around 3% of a Stop chain that test
   suites dominate, so halving it moves the turn by about 1.5%. The remaining
   time is in the suites, not the type check.
+- **Prettier runs as a fresh process, not through `prettierd`**: the daemon
+  would spare prettier's startup on every run, but it formats one file at a
+  time, read from standard input, where the runner hands prettier a whole set of
+  files to rewrite in place with `--write`.
+- **`#!/usr/bin/env bash` is not free**: it resolves to Homebrew's bash, which
+  starts several times slower than the `/bin/bash` that `#!/bin/bash` names. The
+  scripts keep `env` for the newer bash they need. A script on a hot path, such
+  as `statusline.sh`, which renders on every prompt, names `/bin/bash` instead
+  and keeps to what that older version supports.
+- **macOS scans each new executable the first time it runs**: the verdict is
+  cached per file, so later runs of the same file are cheap, but the first run
+  of a freshly written one pays for the scan in full. A test that builds its
+  fake executables afresh for every case pays for it on every case, which is
+  where much of the shell tests' time goes.
 
 ### Memory vs. docs
 
