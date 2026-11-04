@@ -934,9 +934,9 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
 
 ## Recurring maintenance
 
-**Goal:** keep what this repo depends on current, on a chosen cadence rather
-than by surprise. Entries here never complete — a finished run leaves the task
-in place for its next turn — so never prune them.
+**Goal:** refresh what goes stale on its own, on a chosen cadence rather than by
+surprise. Entries here never complete — a finished run leaves the task in place
+for its next turn — so never prune them.
 
 - [ ] **Refresh pinned dependencies** {#dependency-refresh} — about monthly, run
       `uv lock --upgrade` and then `uv sync`, so everything this repo pins picks
@@ -946,6 +946,18 @@ in place for its next turn — so never prune them.
       the lockfile.
   - Note: Use `git log -1 --format=%as -- uv.lock` to determine when this last
     ran.
+
+- [ ] **Review the `slow` marks** {#slow-annotations} — about monthly, measure
+      each Python test's cost and update the marks to match. `pyproject.toml`
+      defines the mark's cutoff.
+  - Last run: 2026-11-03
+  - Note: to measure, time several runs of the suite in the usual order and
+    several in reverse. Charge each test the cheaper of its two medians, not
+    counting shared costs, plus an even share of each shared cost it uses.
+    - Tip: wrapping each `functools.cache` function in a pytest plugin shows
+      what each cached result cost and which tests read it.
+  - Rationale: a periodic review by hand is simpler, for now, than a
+    `conftest.py` report or a check.
 
 - [ ] **Replace the remaining uses of "a reader" in CLAUDE.md**
       {#reader-terminology} — the foundational principle, the inline-comment
