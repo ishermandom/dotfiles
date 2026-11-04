@@ -144,17 +144,28 @@ fi
 
 # Only active, branch-targeting rulesets can protect branches; tag and push
 # rulesets, and disabled ones, cannot.
+#
+# An answer jq cannot read fails the check rather than reading as a repo with no
+# rulesets, which would report every protection missing.
+# `${rulesets_json:0:200}` is the answer's first 200 characters.
 candidate_ids=$(echo "$rulesets_json" | jq -r \
-  '.[] | select(.target == "branch" and .enforcement == "active") | .id')
+  '.[] | select(.target == "branch" and .enforcement == "active") | .id' 2>&1)
+status=$?
+if [ $status -ne 0 ]; then
+  echo "gh-protect: cannot read the ruleset list for $repo ($candidate_ids):" \
+    "${rulesets_json:0:200}" >&2
+  exit 1
+fi
 
 # Collect the rule types enforced on every branch, across all candidates. A
-# ruleset counts only if it targets ~ALL — i.e. its rules reach every branch,
-# not just some. The list response omits rules and conditions, so each candidate
-# needs a detail fetch.
+# ruleset counts only if it targets ~ALL and exempts no branch — i.e. its rules
+# reach every branch, not just some. The list response omits rules and
+# conditions, so each candidate needs a detail fetch.
 covered_rules=""
 for ruleset_id in $candidate_ids; do
   ruleset_rules=$(gh api "repos/$repo/rulesets/$ruleset_id" --jq \
-    'select((.conditions.ref_name.include // []) | index("~ALL"))
+    'select(((.conditions.ref_name.include // []) | index("~ALL"))
+            and ((.conditions.ref_name.exclude // []) | length == 0))
      | (.rules // [])[].type' 2>&1)
   status=$?
   if [ $status -ne 0 ]; then

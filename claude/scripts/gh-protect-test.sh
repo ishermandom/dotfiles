@@ -171,6 +171,29 @@ expect "names every protection missing" \
 expect "names linear history missing" \
   contains "$output" "require linear history"
 
+# A ruleset that includes every branch but exempts one leaves that branch open,
+# so it does not count as protecting every branch.
+begin_stubbed_case ruleset-exempting-a-branch
+GH_STUB_LIST=$(list_one 1 active)
+GH_STUB_DETAIL_1='{"conditions": {"ref_name": {"include": ["~ALL"],
+  "exclude": ["refs/heads/scratch"]}}, "rules": [{"type": "deletion"},
+  {"type": "non_fast_forward"}, {"type": "required_linear_history"}]}'
+run_script
+expect "exits 3" [ "$exit_code" -eq 3 ]
+expect "reports the gap" contains "$output" "is not fully protected"
+
+# An answer that is not JSON fails the check, quoting the answer, rather than
+# reading as a repo with no rulesets.
+begin_stubbed_case unreadable-ruleset-list
+GH_STUB_LIST='<html>502 Bad Gateway</html>'
+run_script
+expect "exits 1" [ "$exit_code" -eq 1 ]
+expect "explains the failure" \
+  contains "$output" "cannot read the ruleset list"
+expect "quotes the answer" contains "$output" "502 Bad Gateway"
+expect "does not call the repo unprotected" \
+  not_contains "$output" "is not fully protected"
+
 # A disabled ruleset enforces nothing, even with the right rules.
 begin_stubbed_case ruleset-disabled
 GH_STUB_LIST=$(list_one 1 disabled)
