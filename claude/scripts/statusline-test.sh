@@ -199,6 +199,21 @@ expect_equal "counts minutes alone" \
 expect_equal "shows nothing at the reset instant" \
   "$(reset_suffix "$FROZEN_NOW" "$FROZEN_NOW")" ""
 
+# git's summary names only the sides that changed, in the singular for one line,
+# and is empty when nothing did.
+begin_case shortstat-counts
+expect_equal "reads both sides" \
+  "$(shortstat_counts ' 16 files changed, 481 insertions(+), 161 deletions(-)')" \
+  "481 161"
+expect_equal "reads a single line on each side" \
+  "$(shortstat_counts ' 1 file changed, 1 insertion(+), 1 deletion(-)')" "1 1"
+expect_equal "counts an absent deletions side as zero" \
+  "$(shortstat_counts ' 1 file changed, 2 insertions(+)')" "2 0"
+expect_equal "counts an absent insertions side as zero" \
+  "$(shortstat_counts ' 1 file changed, 3 deletions(-)')" "0 3"
+expect_equal "counts an empty summary as no changes" \
+  "$(shortstat_counts '')" "0 0"
+
 # --- the line the script assembles ------------------------------------------
 
 # Every segment at once, in the order the line assembles them.

@@ -101,6 +101,19 @@ quota_segment() { # quota_segment <label> <used> <resets at> <window> <now>
   printf '%s' " | $label ${color}${used}%${RESET}${suffix}"
 }
 
+# The added and deleted line counts, as "<added> <deleted>", from the summary
+# `git diff --shortstat` prints, such as `1 file changed, 2 insertions(+)`: it
+# leaves out a side that is zero, and is empty when nothing changed.
+# `BASH_REMATCH[1]` is the number the pattern's group matched.
+shortstat_counts() { # shortstat_counts <shortstat summary>
+  local added=0 deleted=0
+  local insertions_pattern='([0-9]+) insertion'
+  local deletions_pattern='([0-9]+) deletion'
+  [[ $1 =~ $insertions_pattern ]] && added=${BASH_REMATCH[1]}
+  [[ $1 =~ $deletions_pattern ]] && deleted=${BASH_REMATCH[1]}
+  printf '%s %s' "$added" "$deleted"
+}
+
 # Everything below runs only when this file is executed. Sourcing it — which is
 # how the tests reach the functions above — stops here.
 [ "${BASH_SOURCE[0]}" = "$0" ] || return 0
@@ -130,14 +143,17 @@ model_label="$model"
 
 # Line counts vs HEAD (staged + unstaged). A modified line counts as one
 # deletion plus one addition, so +/- covers added, modified, and deleted.
+#
+# Two git calls, since this renders on every prompt. `branch --show-current`
+# fails only outside a repository, so its status decides whether there is git
+# state to show; on a detached head it succeeds with an empty branch.
+# `diff HEAD` fails before the first commit, which leaves nothing to count
+# rather than dropping the branch.
 branch=""
 line_changes=""
-if git -C "$directory" rev-parse --git-dir > /dev/null 2>&1; then
-  branch=$(git -C "$directory" branch --show-current 2> /dev/null)
-  read -r added_lines deleted_lines <<< "$(
-    git -C "$directory" diff HEAD --numstat 2> /dev/null \
-      | awk '{added += $1; deleted += $2} END {printf "%d %d", added, deleted}'
-  )"
+if branch=$(git -C "$directory" branch --show-current 2> /dev/null); then
+  shortstat=$(git -C "$directory" diff HEAD --shortstat 2> /dev/null)
+  read -r added_lines deleted_lines <<< "$(shortstat_counts "$shortstat")"
   [ "$added_lines" -gt 0 ] && line_changes+=" ${GREEN}+${added_lines}${RESET}"
   [ "$deleted_lines" -gt 0 ] && line_changes+=" ${RED}-${deleted_lines}${RESET}"
 fi
