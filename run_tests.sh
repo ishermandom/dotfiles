@@ -45,14 +45,35 @@ if [ "$names_test_path" = false ]; then
   #
   # The Stop hook's run skips them: together they take seconds, too long to pay
   # at the end of every turn. `:-` reads an unset variable as empty.
+  #
+  # Each builds its fixtures under a temporary directory of its own, so they run
+  # in parallel, each into a file of its own. The files print in the order the
+  # tests are listed, so their reports never interleave. The trailing `&` runs a
+  # test in the background, `$!` is its process ID, and `[-1]` is an array's
+  # last element.
+  #
+  # TODO: an interrupt stops this script but leaves the running tests to finish
+  # on their own, since a script's background jobs ignore Ctrl-C.
   if [ -z "${PYTEST_FROM_HOOK:-}" ]; then
     shell_tests=("$root"/*-test.sh "$root"/claude/hooks/*-test.sh
       "$root"/claude/scripts/*-test.sh "$root"/tests/*/*-test.sh)
+    shell_test_outputs=()
+    shell_test_pids=()
     for shell_test in "${shell_tests[@]}"; do
       # An unmatched glob stays literal in bash, so -e skips the pattern itself.
       [ -e "$shell_test" ] || continue
-      "$shell_test" || shell_test_status=1
+      shell_test_outputs+=("$(mktemp)")
+      "$shell_test" > "${shell_test_outputs[-1]}" 2>&1 &
+      shell_test_pids+=($!)
     done
+
+    # `${!shell_test_pids[@]}` lists the array's indices, so each test's report
+    # prints beside its own exit status.
+    for index in "${!shell_test_pids[@]}"; do
+      wait "${shell_test_pids[$index]}" || shell_test_status=1
+      cat "${shell_test_outputs[$index]}"
+    done
+    rm -f "${shell_test_outputs[@]}"
   fi
 
   # `set --` puts the suite's directories ahead of the caller's options.
