@@ -105,6 +105,12 @@ begin_stubbed_case() { # begin_stubbed_case <name>
   : > "$GH_STUB_LOG"
   unset GH_STUB_LIST GH_STUB_DETAIL_1 GH_STUB_DETAIL_2
   unset GH_STUB_VISIBILITY GH_STUB_FAIL_REPO_VIEW
+
+  # Marking the knobs for export while they are unset lets a case set one with
+  # a plain assignment and still reach the stub. Assigning inside `export`
+  # would hide the exit status of the `$(...)` that computes the value.
+  export GH_STUB_LIST GH_STUB_DETAIL_1 GH_STUB_DETAIL_2
+  export GH_STUB_VISIBILITY GH_STUB_FAIL_REPO_VIEW
 }
 
 # Runs gh-protect.sh, capturing combined stdout+stderr into `output` and the
@@ -121,8 +127,8 @@ calls() { cat "$GH_STUB_LOG"; }
 
 # A single ruleset, arbitrarily named, covers everything — name is ignored.
 begin_stubbed_case protected-single-ruleset
-export GH_STUB_LIST=$(list_one 1 active)
-export GH_STUB_DETAIL_1=$(detail "~ALL" \
+GH_STUB_LIST=$(list_one 1 active)
+GH_STUB_DETAIL_1=$(detail "~ALL" \
   deletion non_fast_forward required_linear_history)
 run_script
 expect "exits 0" [ "$exit_code" -eq 0 ]
@@ -131,18 +137,18 @@ expect "sends no write request" not_contains "$(calls)" "--method"
 
 # Protection split across two rulesets still counts — structure is ignored.
 begin_stubbed_case protected-split-across-rulesets
-export GH_STUB_LIST='[{"id": 1, "target": "branch", "enforcement": "active"},
+GH_STUB_LIST='[{"id": 1, "target": "branch", "enforcement": "active"},
   {"id": 2, "target": "branch", "enforcement": "active"}]'
-export GH_STUB_DETAIL_1=$(detail "~ALL" deletion non_fast_forward)
-export GH_STUB_DETAIL_2=$(detail "~ALL" required_linear_history)
+GH_STUB_DETAIL_1=$(detail "~ALL" deletion non_fast_forward)
+GH_STUB_DETAIL_2=$(detail "~ALL" required_linear_history)
 run_script
 expect "exits 0" [ "$exit_code" -eq 0 ]
 expect "reports protection" contains "$output" "is protected"
 
 # One protection missing: the message names just that one.
 begin_stubbed_case missing-one-protection
-export GH_STUB_LIST=$(list_one 1 active)
-export GH_STUB_DETAIL_1=$(detail "~ALL" deletion non_fast_forward)
+GH_STUB_LIST=$(list_one 1 active)
+GH_STUB_DETAIL_1=$(detail "~ALL" deletion non_fast_forward)
 run_script
 expect "exits 3" [ "$exit_code" -eq 3 ]
 expect "reports the gap" contains "$output" "is not fully protected"
@@ -155,8 +161,8 @@ expect "prints a config to create" contains "$output" '"~ALL"'
 # A ruleset that targets only the default branch does not protect all branches,
 # so nothing is covered.
 begin_stubbed_case ruleset-not-all-branches
-export GH_STUB_LIST=$(list_one 1 active)
-export GH_STUB_DETAIL_1=$(detail "~DEFAULT_BRANCH" \
+GH_STUB_LIST=$(list_one 1 active)
+GH_STUB_DETAIL_1=$(detail "~DEFAULT_BRANCH" \
   deletion non_fast_forward required_linear_history)
 run_script
 expect "exits 3" [ "$exit_code" -eq 3 ]
@@ -167,8 +173,8 @@ expect "names linear history missing" \
 
 # A disabled ruleset enforces nothing, even with the right rules.
 begin_stubbed_case ruleset-disabled
-export GH_STUB_LIST=$(list_one 1 disabled)
-export GH_STUB_DETAIL_1=$(detail "~ALL" \
+GH_STUB_LIST=$(list_one 1 disabled)
+GH_STUB_DETAIL_1=$(detail "~ALL" \
   deletion non_fast_forward required_linear_history)
 run_script
 expect "exits 3" [ "$exit_code" -eq 3 ]
@@ -183,9 +189,9 @@ expect "prints a config to create" \
 expect "sends no write request" not_contains "$(calls)" "--method"
 
 begin_stubbed_case private-repo-warning
-export GH_STUB_VISIBILITY=PRIVATE
-export GH_STUB_LIST=$(list_one 1 active)
-export GH_STUB_DETAIL_1=$(detail "~ALL" \
+GH_STUB_VISIBILITY=PRIVATE
+GH_STUB_LIST=$(list_one 1 active)
+GH_STUB_DETAIL_1=$(detail "~ALL" \
   deletion non_fast_forward required_linear_history)
 run_script
 expect "warns about Free-plan enforcement" \
@@ -208,7 +214,7 @@ expect "exits 2" [ "$exit_code" -eq 2 ]
 expect "prints usage" contains "$output" "usage:"
 
 begin_stubbed_case unresolvable-repo
-export GH_STUB_FAIL_REPO_VIEW=1
+GH_STUB_FAIL_REPO_VIEW=1
 run_script nosuch/repo
 expect "exits 1" [ "$exit_code" -eq 1 ]
 expect "explains the failure" \
