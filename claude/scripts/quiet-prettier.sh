@@ -7,9 +7,10 @@
 # printing one line on success and prettier's errors otherwise. Canonical
 # prettier invocation — the Stop hook delegates here.
 
-# Hooks and subshells may run with a minimal environment; Homebrew's bin
-# directory may not be on PATH, so add it explicitly.
-export PATH="/opt/homebrew/bin:$PATH"
+# This script's directory in its own checkout: `readlink -f` follows the
+# `~/.claude` symlink.
+scripts_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+source "$scripts_dir/homebrew-path.sh"
 
 # Lists the files to format by default, each ending in a NUL byte.
 #
@@ -69,9 +70,8 @@ else
 fi
 
 # Prettier starts through run-prettier.sh, the launcher beside this script,
-# which chooses prettier's runtime. `readlink -f` follows the `~/.claude`
-# symlink, so the launcher comes from this script's own checkout.
-run_prettier="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/run-prettier.sh"
+# which chooses prettier's runtime.
+run_prettier="$scripts_dir/run-prettier.sh"
 
 # Fall back to the global config when no project-level config exists, which is
 # when `--find-config-path` fails.

@@ -17,12 +17,10 @@
 # of files checked is unchanged. Outside a git repo there's no root to anchor
 # to, so run in place.
 
-# Hooks and subshells may run with a minimal environment; Homebrew's bin
-# directory may not be on PATH, so append it. uv lives there, and the mypy
-# invocation below goes through it. Appended rather than prepended, matching
-# `quiet-ruff.sh`, so a uv placed earlier on PATH can still be substituted for
-# this one.
-export PATH="$PATH:/opt/homebrew/bin"
+# This script's directory in its own checkout: `readlink -f` follows the
+# `~/.claude` symlink.
+scripts_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+source "$scripts_dir/homebrew-path.sh"
 
 # Collect the paths to check into an array. "$#" and "$@" are the script's
 # argument count and its arguments; with none, default to the current directory.

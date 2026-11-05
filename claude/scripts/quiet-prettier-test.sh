@@ -14,7 +14,7 @@
 # fixture so the global-config fallback is deterministic rather than whatever
 # the machine happens to carry.
 #
-# One level is out of reach here: the script prepends Homebrew's bin to PATH, so
+# One level is out of reach here: the script adds Homebrew's bin to PATH, so
 # prettier cannot be taken away to produce the shell's 127. claude/hooks/
 # format-test.sh covers a runner that exits 127 with a fake. Bun cannot be taken
 # away either, so on a machine with Bun these cases run prettier under it, and
@@ -23,11 +23,11 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 quiet_prettier="$script_dir/quiet-prettier.sh"
 
-# quiet-prettier.sh adds Homebrew's bin itself; mirror that here so the guard
+# quiet-prettier.sh adds Homebrew's bin itself; do the same here so the guard
 # below looks at the same prettier the script will run.
-export PATH="/opt/homebrew/bin:$PATH"
+source "$script_dir/homebrew-path.sh"
 
-. "$script_dir/shell-test-framework.sh"
+source "$script_dir/shell-test-framework.sh"
 
 require_commands prettier git
 

@@ -14,12 +14,10 @@
 # two repos in one turn — the project and the dotfiles checkout. Outside a repo,
 # run in place.
 
-# Hooks and subshells may run with a minimal environment; Homebrew's bin
-# directory may not be on PATH, so append it. uv lives there, and every
-# invocation below goes through it. Appended rather than prepended so that a uv
-# placed earlier on PATH still wins: `quiet-ruff-test.sh` substitutes a stub
-# that way to produce a check/format status pairing real ruff cannot.
-export PATH="$PATH:/opt/homebrew/bin"
+# This script's directory in its own checkout: `readlink -f` follows the
+# `~/.claude` symlink.
+scripts_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
+source "$scripts_dir/homebrew-path.sh"
 
 paths=("$@")
 [ ${#paths[@]} -eq 0 ] && paths=(.)
