@@ -58,7 +58,7 @@ begin_step_case() { # begin_step_case <name>
   git -C "$case_dir/repo" init --quiet
 
   local runner
-  for runner in quiet-prettier.sh quiet-ruff.sh; do
+  for runner in quiet-prettier.sh quiet-ruff.sh quiet-rustfmt.sh; do
     write_runner "$runner" <<< "exit 0"
   done
 }
@@ -147,6 +147,20 @@ exit_code=$?
 expect "a missing prettier fails the step" test "$exit_code" -ne 0
 expect "a missing prettier explains itself on the halting stream" \
   contains "$(cat "$case_dir/stderr")" "command not found"
+
+# rustfmt reports a file it cannot parse on the breakage level, which has to
+# fail the step as a missing tool does.
+begin_step_case fails-on-a-broken-rustfmt
+write_runner quiet-rustfmt.sh << 'BODY'
+echo "error: this file contains an unclosed delimiter"
+exit 2
+BODY
+run_step "$case_dir/repo"
+exit_code=$?
+
+expect "a broken rustfmt fails the step" test "$exit_code" -ne 0
+expect "a broken rustfmt explains itself on the halting stream" \
+  contains "$(cat "$case_dir/stderr")" "unclosed delimiter"
 
 begin_step_case passes-when-the-tools-work
 run_step "$case_dir/repo"

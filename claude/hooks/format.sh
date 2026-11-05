@@ -36,18 +36,18 @@
 # otherwise looks exactly like a clean run, and formatting silently fails.
 
 runners_dir="$HOME/.claude/scripts"
-runners=(quiet-prettier.sh quiet-ruff.sh)
+runners=(quiet-prettier.sh quiet-ruff.sh quiet-rustfmt.sh)
 
 # Runs every runner over one directory and returns this step's verdict for it.
 #
-# Both tools skip whatever .gitignore excludes, so formatting a repo does not
+# Every tool skips whatever .gitignore excludes, so formatting a repo does not
 # reach the worktrees under `.claude/worktrees/`.
 #
 # The runners format different kinds of files — prettier for Markdown and
-# JavaScript, ruff for Python — so they run in parallel, each writing its report
-# to a file of its own. Once both finish, the reports are read in the order
-# above. Only the first breakage is reported, since whatever breaks one runner
-# tends to break the next one too.
+# JavaScript, ruff for Python, rustfmt for Rust — so they run in parallel, each
+# writing its report to a file of its own. Once all finish, the reports are read
+# in the order above. Only the first breakage is reported, since whatever breaks
+# one runner tends to break the next one too.
 format_dir() { # format_dir <directory>
   # Each runner resolves its own config and file globs against the working
   # directory, so move there rather than passing the path. The subshell scopes

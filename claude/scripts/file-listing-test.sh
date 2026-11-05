@@ -6,9 +6,12 @@
 #
 # `list_unignored_files` lists tracked and untracked files alike, leaves out
 # what git ignores, passes an unusual name through whole, and fails outside a
-# repo.
+# repo. `find_crate_manifests` finds a crate at any depth under the current
+# directory, and leaves out a deleted manifest and a crate elsewhere in the
+# repo; outside a repo, only a crate at the current directory counts.
 #
-# The cases run the real git.
+# The cases run the real git. None needs cargo, since only where a manifest sits
+# matters, never what it says.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
@@ -32,6 +35,13 @@ files_from() { # files_from <directory> <pathspec>...
   local directory=$1
   shift
   (cd "$directory" && list_unignored_files "$@") | tr '\0' '\n' | sort
+}
+
+# Lists the crates' manifests found from <directory>, one per line, sorted for
+# the same reason.
+crates_from() { # crates_from <directory>
+  (cd "$1" && find_crate_manifests && printf '%s\n' "${crate_manifests[@]}") \
+    | sort
 }
 
 # --- list_unignored_files ---------------------------------------------------
@@ -68,5 +78,48 @@ exit_code=$?
 
 expect "fails, so the caller can fall back" test "$exit_code" -ne 0
 expect_equal "lists nothing" "$listing" ""
+
+# --- find_crate_manifests ---------------------------------------------------
+
+begin_case no-crate-finds-nothing
+git -C "$case_dir" init --quiet
+
+expect_equal "finds nothing" "$(crates_from "$case_dir")" ""
+
+begin_case crates-at-any-depth-are-found
+git -C "$case_dir" init --quiet
+make_file "$case_dir/Cargo.toml"
+make_file "$case_dir/tools/parser/Cargo.toml"
+
+expect_equal "finds both, relative to the current directory" \
+  "$(crates_from "$case_dir")" "Cargo.toml
+tools/parser/Cargo.toml"
+
+begin_case a-deleted-manifest-is-left-out
+git -C "$case_dir" init --quiet
+make_file "$case_dir/tools/Cargo.toml"
+git -C "$case_dir" add tools
+rm "$case_dir/tools/Cargo.toml"
+
+expect_equal "finds nothing, though git still lists the manifest" \
+  "$(crates_from "$case_dir")" ""
+
+begin_case a-crate-elsewhere-in-the-repo-is-left-out
+git -C "$case_dir" init --quiet
+make_file "$case_dir/app/Cargo.toml"
+make_file "$case_dir/tools/Cargo.toml"
+
+expect_equal "finds only the crate under the current directory" \
+  "$(crates_from "$case_dir/tools")" "Cargo.toml"
+
+begin_case outside-a-repo-only-the-crate-in-place-is-found
+make_file "$case_dir/Cargo.toml"
+make_file "$case_dir/tools/Cargo.toml"
+
+expect_equal "finds the crate at the current directory alone" \
+  "$(crates_from "$case_dir")" "Cargo.toml"
+
+begin_case outside-a-repo-no-crate-finds-nothing
+expect_equal "finds nothing" "$(crates_from "$case_dir")" ""
 
 exit_with_summary
