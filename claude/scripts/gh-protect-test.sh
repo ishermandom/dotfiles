@@ -10,7 +10,7 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 gh_protect="$script_dir/gh-protect.sh"
 
-. "$script_dir/shell-test-framework.sh"
+source "$script_dir/shell-test-framework.sh"
 
 require_commands jq
 

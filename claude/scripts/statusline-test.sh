@@ -19,7 +19,7 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 statusline="$script_dir/statusline.sh"
 
-. "$script_dir/shell-test-framework.sh"
+source "$script_dir/shell-test-framework.sh"
 
 require_commands jq
 
@@ -27,7 +27,7 @@ require_commands jq
 # path is spelled out rather than reusing `$statusline` above, matching how the
 # framework is sourced — shellcheck follows a source it can resolve, and reads
 # neither through a second variable.
-. "$script_dir/statusline.sh"
+source "$script_dir/statusline.sh"
 
 # --- frozen clock -----------------------------------------------------------
 

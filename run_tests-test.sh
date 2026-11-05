@@ -13,7 +13,7 @@
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
-. "$script_dir/claude/scripts/shell-test-framework.sh"
+source "$script_dir/claude/scripts/shell-test-framework.sh"
 
 # --- helpers ----------------------------------------------------------------
 

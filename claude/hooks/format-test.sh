@@ -17,7 +17,7 @@
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
-. "$script_dir/../scripts/shell-test-framework.sh"
+source "$script_dir/../scripts/shell-test-framework.sh"
 
 require_commands git
 

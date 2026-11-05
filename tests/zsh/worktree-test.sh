@@ -11,7 +11,7 @@ script_dir=$(cd "$(dirname "$0")" && pwd)
 repo_root="$script_dir/../.."
 command_file="$repo_root/zsh/.worktree.zsh"
 
-. "$repo_root/claude/scripts/shell-test-framework.sh"
+source "$repo_root/claude/scripts/shell-test-framework.sh"
 
 require_commands zsh
 

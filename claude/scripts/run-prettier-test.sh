@@ -12,7 +12,7 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 run_prettier="$script_dir/run-prettier.sh"
 
-. "$script_dir/shell-test-framework.sh"
+source "$script_dir/shell-test-framework.sh"
 
 # --- stand-ins --------------------------------------------------------------
 

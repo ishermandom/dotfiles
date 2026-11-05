@@ -15,7 +15,7 @@ script_dir=$(cd "$(dirname "$0")" && pwd)
 repo_root="$script_dir/../.."
 audit_file="$repo_root/zsh/.claude-keychain.zsh"
 
-. "$repo_root/claude/scripts/shell-test-framework.sh"
+source "$repo_root/claude/scripts/shell-test-framework.sh"
 
 require_commands security zsh
 

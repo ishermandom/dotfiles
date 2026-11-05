@@ -18,7 +18,7 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 stop_checks="$script_dir/stop_checks.sh"
 
-. "$script_dir/../scripts/shell-test-framework.sh"
+source "$script_dir/../scripts/shell-test-framework.sh"
 
 require_commands jq
 

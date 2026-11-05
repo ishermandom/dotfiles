@@ -17,7 +17,7 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 classifier="$script_dir/is-third-party-repo.sh"
 
-. "$script_dir/../scripts/shell-test-framework.sh"
+source "$script_dir/../scripts/shell-test-framework.sh"
 
 require_commands git
 

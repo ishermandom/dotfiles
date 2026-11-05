@@ -15,7 +15,7 @@ script_dir=$(cd "$(dirname "$0")" && pwd)
 repo_root="$script_dir/../.."
 step_file="$repo_root/zsh/.python-stdlib-bytecode.zsh"
 
-. "$repo_root/claude/scripts/shell-test-framework.sh"
+source "$repo_root/claude/scripts/shell-test-framework.sh"
 
 require_commands zsh
 

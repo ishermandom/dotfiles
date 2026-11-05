@@ -16,7 +16,7 @@
 script_dir=$(cd "$(dirname "$0")" && pwd)
 quiet_shell="$script_dir/quiet-shell.sh"
 
-. "$script_dir/shell-test-framework.sh"
+source "$script_dir/shell-test-framework.sh"
 
 require_commands shfmt shellcheck
 
