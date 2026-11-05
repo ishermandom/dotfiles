@@ -31,6 +31,15 @@ source "$script_dir/shell-test-framework.sh"
 
 require_commands prettier git
 
+# Under Bun, a prettier launch keeps prettier's compiled code in two caches: one
+# in TMPDIR, and one under HOME. Every case gets a fresh HOME and TMPDIR, so
+# left there, both caches would start empty at every launch, costing about 40ms
+# of a 65ms launch (measured 2026-11-04). These variables move the two caches
+# into directories all the cases share. The caches hold compiled code keyed by
+# its source, so sharing them carries nothing from one case into the next.
+export BUN_RUNTIME_TRANSPILER_CACHE_PATH="$test_script_root/bun-cache"
+export NODE_COMPILE_CACHE="$test_script_root/compile-cache"
+
 # --- case helpers -----------------------------------------------------------
 
 # Begins a case whose directory holds a project to format, plus a fake HOME to
