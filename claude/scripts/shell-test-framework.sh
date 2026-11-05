@@ -14,6 +14,8 @@
 # - `$test_script_root`, an empty directory that disappears on exit
 # - `require_commands`, to stop with a clear message when a tool is missing
 # - `begin_case`, which announces a test case and hands it `$case_dir`
+# - `place_executable` and `stub_executable`, to put an executable where the
+#   script under test will reach for it
 # - `expect` and `expect_equal`, with the `contains` and `not_contains`
 #   predicates to assert through
 # - `exit_with_summary`, the last line of every test script
@@ -75,6 +77,135 @@ begin_case() { # begin_case <name>
   echo "case: $1"
   case_dir="$test_script_root/$1"
   mkdir -p "$case_dir"
+}
+
+# --- executable fixtures ----------------------------------------------------
+
+# Executables are the costly fixture here, by a wide margin. macOS scans a file
+# for malware the first time it is executed, and caches the verdict with the
+# file itself rather than with its path: the first run of a newly created
+# executable costs around 115ms, where a second run of the same file costs
+# around 8ms. Writing a fake per case pays that scan per case, so a suite of a
+# few dozen cases spends most of its time waiting on the scanner.
+#
+# Both helpers below put each distinct executable in `$pool_dir` once and give
+# every case a hard link to it. A hard link is a second name for the pooled file
+# rather than a copy of it, so running it reuses the scan already paid for. Each
+# link is still an ordinary executable, at whatever path the case needs it. Only
+# the file's identity is shared, never its location, so the isolation
+# `begin_case` promises is untouched.
+#
+# Hard links rather than symlinks: `format.sh` and `stop_checks.sh` locate their
+# siblings through `readlink -f "${BASH_SOURCE[0]}"`, which follows a symlink to
+# its target. Placed as a symlink, either script would look for its siblings in
+# the pool rather than beside itself in the case's fixture tree.
+#
+# The pool sits outside `$test_script_root` and so outlives the run that filled
+# it: every test script shares it, and the scan for a given executable is paid
+# once on the machine rather than once per script per run. That makes the pool a
+# cache rather than scratch space, so nothing here removes it. Its entries are
+# small, and macOS periodically clears the temporary directory it hands out.
+#
+# A pool entry is named for the contents it holds, so a stale entry cannot be
+# served: edit a script under test, and its new contents hash to a new entry
+# while the old one goes unused. The pool directory's name carries the user id
+# because its fallback location is `/tmp`, which every account on the machine
+# shares: without the id, the first user to run the suite would own a directory
+# the next one cannot write into. `$UID` is a bash variable, so reading it
+# starts no process.
+pool_dir="${TMPDIR:-/tmp}/shell-test-executable-pool-$UID"
+mkdir -p "$pool_dir"
+
+# Makes sure <path>'s parent directory exists. Both helpers below call it for
+# every fixture, often for a directory an earlier call already made, so it uses
+# builtins where the obvious `mkdir -p "$(dirname ...)"` would start two
+# processes every time: `${1%/*}` trims the last path segment as dirname would,
+# and the `-d` test skips a mkdir that a repeat call would waste.
+ensure_parent_dir() { # ensure_parent_dir <path>
+  local parent
+  case "$1" in
+    */*) parent="${1%/*}" ;;
+    # A bare filename's parent is the working directory, always already there.
+    *) return 0 ;;
+  esac
+
+  [ -d "$parent" ] || mkdir -p "$parent"
+}
+
+# Puts <source> in the pool unless an entry for those exact contents is already
+# there, and prints the pooled path. The entry's name starts with <source>'s
+# basename, ahead of the digest, so a listing of the pool stays readable.
+pool_executable() { # pool_executable <source>   -> prints the pooled path
+  local digest
+  digest=$(md5 -q "$1")
+  if [ -z "$digest" ]; then
+    echo "$test_script_name: cannot hash $1 for the executable pool" >&2
+    exit 1
+  fi
+
+  local pooled="$pool_dir/${1##*/}-$digest"
+  if [ ! -x "$pooled" ]; then
+    # Build the entry under a private name and link it into place, so no other
+    # test script can reach a half-written file. `ln` refuses a target that
+    # exists, so a script that loses the race just discards its own copy. Both
+    # copies hold the same contents, so which one survives does not matter.
+    local staging="$pooled.staging.$$"
+    cp "$1" "$staging"
+    chmod +x "$staging"
+    ln "$staging" "$pooled" 2> /dev/null
+    rm -f "$staging"
+  fi
+
+  printf '%s' "$pooled"
+}
+
+# Places <source>, typically the script under test, at <destination> inside a
+# case's fixture tree, as a hard link to its pooled copy.
+place_executable() { # place_executable <source> <destination>
+  ensure_parent_dir "$2"
+  ln "$(pool_executable "$1")" "$2"
+}
+
+# The one pooled executable that every stub is a hard link to, put in the pool
+# as the framework loads. It runs the plan file beside whichever link invoked
+# it, so one file backs every fake in the suite. Since the pool is shared, that
+# file is scanned once on the machine rather than once per test script.
+cat > "$test_script_root/stub-source" << 'STUB'
+#!/usr/bin/env bash
+# A stub's behavior is the plan file beside it. `$0` is the path the caller
+# reached this link through, so each link finds its own plan without having to
+# be told where it is.
+source "$0.plan"
+STUB
+stub_pool_entry=$(pool_executable "$test_script_root/stub-source")
+
+# Creates a fake executable at <destination> that runs a fragment of shell code
+# read from stdin. For example, a fixture's setup can install a `uv` that
+# succeeds silently, and a case can then swap in a `uv` that fails:
+#
+# ```bash
+# stub_executable "$case_dir/bin/uv" <<< 'exit 0'
+# stub_executable "$case_dir/bin/uv" << 'EOF'
+# echo "uv: cannot $1" >&2
+# exit 2
+# EOF
+# ```
+#
+# After the second call, `"$case_dir/bin/uv" sync` prints `uv: cannot sync` on
+# stderr and exits 2. The fragment runs as the stub's own code, so it sees the
+# stub's arguments as `$1`, `"$@"` and so on, and its `exit` ends the stub. A
+# second call for the same destination replaces the first call's fragment, which
+# is how a case overrides a default its setup installed.
+#
+# Every stub is a hard link to one pooled executable, so creating a stub costs
+# no first-run scan. That executable runs the fragment saved beside whichever
+# link invoked it, at `<destination>.plan`: here, `$case_dir/bin/uv.plan`. A
+# case that lists or counts the directory it stubbed into sees those plan files
+# too.
+stub_executable() { # stub_executable <destination>   (fragment on stdin)
+  ensure_parent_dir "$1"
+  [ -e "$1" ] || ln "$stub_pool_entry" "$1"
+  cat > "$1.plan"
 }
 
 # --- assertions -------------------------------------------------------------

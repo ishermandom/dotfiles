@@ -7,9 +7,7 @@
 #
 # The fixtures replace the real checks with fakes, as stop_checks-test.sh does:
 # prewarm_checks.sh resolves its steps from its own directory, so a copy of it
-# beside a fake for each step runs them. macOS scans every new script the first
-# time it runs, which makes each fixture cost a few tenths of a second, so each
-# case asserts everything one run can show.
+# beside a fake for each step runs them.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 prewarm_checks="$script_dir/prewarm_checks.sh"
@@ -21,8 +19,7 @@ require_commands jq
 # --- helpers ----------------------------------------------------------------
 
 write_step() { # write_step <steps dir> <step name> <body>
-  printf '#!/usr/bin/env bash\n%s\n' "$3" > "$1/$2"
-  chmod +x "$1/$2"
+  stub_executable "$1/$2" <<< "$3"
 }
 
 # Builds the case's fixture: a directory to stand for the entered worktree, at
@@ -33,7 +30,7 @@ make_fixture() {
   worktree="$case_dir/worktree"
   steps="$case_dir/steps"
   mkdir -p "$worktree" "$steps"
-  cp "$prewarm_checks" "$steps/"
+  place_executable "$prewarm_checks" "$steps/prewarm_checks.sh"
   local step
   for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh \
     clippy-lint.sh; do

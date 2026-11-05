@@ -21,16 +21,13 @@ require_commands security zsh
 
 # --- id stub ----------------------------------------------------------------
 
-mkdir "$test_script_root/bin"
 # Quoted delimiter: $ID_STUB_ACCOUNT must resolve when the stub runs, not when
 # this file is written.
-cat > "$test_script_root/bin/id" << 'STUB'
-#!/usr/bin/env bash
+stub_executable "$test_script_root/bin/id" << 'STUB'
 # Stubbed id: reports whichever account a case is exercising, so the audit's
 # main-account guard can be driven from either side on any machine.
 echo "$ID_STUB_ACCOUNT"
 STUB
-chmod +x "$test_script_root/bin/id"
 
 # --- helpers ----------------------------------------------------------------
 

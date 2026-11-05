@@ -25,8 +25,7 @@ require_commands jq
 # --- helpers ----------------------------------------------------------------
 
 write_step() { # write_step <steps dir> <step name> <body>
-  printf '#!/usr/bin/env bash\n%s\n' "$3" > "$1/$2"
-  chmod +x "$1/$2"
+  stub_executable "$1/$2" <<< "$3"
 }
 
 # Builds a fixture directory: a copy of stop_checks.sh plus a do-nothing fake
@@ -34,7 +33,7 @@ write_step() { # write_step <steps dir> <step name> <body>
 make_steps_dir() { # make_steps_dir  -> prints the directory
   local steps_dir
   steps_dir=$(mktemp -d "$test_script_root/steps.XXXXXX")
-  cp "$stop_checks" "$steps_dir/"
+  place_executable "$stop_checks" "$steps_dir/stop_checks.sh"
   local step
   for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh \
     clippy-lint.sh; do

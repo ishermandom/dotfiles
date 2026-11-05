@@ -84,9 +84,7 @@ expect "an unparseable file exits 2 or more" test "$exit_code" -ge 2
 # the stub is a uv that reads the subcommand out of its own arguments — the last
 # one, since everything before it configures uv rather than ruff.
 begin_project_case takes-the-worse-of-two-statuses
-mkdir "$case_dir/stub"
-cat > "$case_dir/stub/uv" << 'STUB'
-#!/usr/bin/env bash
+stub_executable "$case_dir/stub/uv" << 'STUB'
 for argument in "$@"; do
   case "$argument" in
     check) exit 2 ;;
@@ -94,7 +92,6 @@ for argument in "$@"; do
   esac
 done
 STUB
-chmod +x "$case_dir/stub/uv"
 printf 'X = 1\n' > "$case_dir/clean.py"
 PATH="$case_dir/stub:$PATH" "$quiet_ruff" "$case_dir" > /dev/null 2>&1
 exit_code=$?

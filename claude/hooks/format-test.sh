@@ -27,21 +27,15 @@ require_commands git
 # each case can write it as a quoted heredoc, where `$PWD` and `$HOME` stay
 # literal for the fake itself to expand when the step runs it.
 write_runner() { # write_runner <runner name>   (body on stdin)
-  local runner="$case_dir/home/.claude/scripts/$1"
-  {
-    echo '#!/usr/bin/env bash'
-    cat
-  } > "$runner"
-  chmod +x "$runner"
+  stub_executable "$case_dir/home/.claude/scripts/$1"
 }
 
 # Writes the fake `is-third-party-repo.sh` the step consults about the session's
 # repo. The exit status stands in for the verdict: 0 for someone else's
 # checkout, 1 for the user's own.
 write_classifier() { # write_classifier <exit status>
-  local classifier="$case_dir/repo/claude/hooks/is-third-party-repo.sh"
-  printf '#!/usr/bin/env bash\nexit %s\n' "$1" > "$classifier"
-  chmod +x "$classifier"
+  stub_executable "$case_dir/repo/claude/hooks/is-third-party-repo.sh" \
+    <<< "exit $1"
 }
 
 # Begins a case whose directory holds a fake dotfiles repo carrying the step,
@@ -49,8 +43,8 @@ write_classifier() { # write_classifier <exit status>
 # case overrides only the runner it is about.
 begin_step_case() { # begin_step_case <name>
   begin_case "$1"
-  mkdir -p "$case_dir/repo/claude/hooks" "$case_dir/home/.claude/scripts"
-  cp "$script_dir/format.sh" "$case_dir/repo/claude/hooks/"
+  place_executable "$script_dir/format.sh" \
+    "$case_dir/repo/claude/hooks/format.sh"
   write_classifier 1
 
   # The step locates the dotfiles repo with git, so the fake one has to be a

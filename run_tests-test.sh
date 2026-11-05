@@ -21,23 +21,20 @@ source "$script_dir/claude/scripts/shell-test-framework.sh"
 # `bin/` holds a `uv` that writes its arguments, one per line, to
 # `$case_dir/uv-arguments`.
 make_suite() {
-  mkdir -p "$case_dir/repo/claude/hooks" "$case_dir/bin"
-  cp "$script_dir/run_tests.sh" "$case_dir/repo/run_tests.sh"
+  mkdir -p "$case_dir/repo/claude/hooks"
+  place_executable "$script_dir/run_tests.sh" "$case_dir/repo/run_tests.sh"
 
-  # The unquoted EOF expands `$case_dir` now, while the file is written; the
-  # escaped `\$@` stays for the stand-in to expand when it runs.
-  cat > "$case_dir/bin/uv" << EOF
-#!/bin/sh
+  # The unquoted EOF expands `$case_dir` now, while the stub's plan is written;
+  # the escaped `\$@` stays for the stub to expand when it runs.
+  stub_executable "$case_dir/bin/uv" << EOF
 printf '%s\n' "\$@" > "$case_dir/uv-arguments"
 EOF
-  chmod +x "$case_dir/bin/uv"
 }
 
 # Adds a stand-in shell test named `<name>-test.sh` that runs the given
 # commands.
 add_shell_test() { # add_shell_test <name> <commands>
-  printf '#!/bin/sh\n%s\n' "$2" > "$case_dir/repo/claude/hooks/$1-test.sh"
-  chmod +x "$case_dir/repo/claude/hooks/$1-test.sh"
+  stub_executable "$case_dir/repo/claude/hooks/$1-test.sh" <<< "$2"
 }
 
 # Adds a stand-in shell test that marks itself started, then waits up to five

@@ -17,13 +17,10 @@ require_commands zsh
 
 # --- zed stub ---------------------------------------------------------------
 
-mkdir "$test_script_root/bin"
-cat > "$test_script_root/bin/zed" << 'STUB'
-#!/usr/bin/env bash
+stub_executable "$test_script_root/bin/zed" << 'STUB'
 # Reports the directory it was asked to open, instead of starting an editor.
 echo "zed opened $1"
 STUB
-chmod +x "$test_script_root/bin/zed"
 
 # --- helpers ----------------------------------------------------------------
 
