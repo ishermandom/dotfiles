@@ -155,7 +155,9 @@ only the durable design choices behind it:
   there would stop every turn in every project on the machine. Scope decides the
   split, not cost: ruff caches across runs, so the second pass is 60ms against a
   26-second chain (measured 2026-08-11; both numbers track the repo and the
-  machine, so the ratio is the durable part).
+  machine, so the ratio is the durable part). Rust follows the same split:
+  `quiet-rustfmt.sh` formats both repos, and `clippy-lint.sh` lints only the
+  session's.
 - **Someone else's checkout is left alone** {#third-party-checkouts}: formatting
   applies this machine's conventions, and the checks grade against its global
   ruff and mypy configuration — neither of which a clone of another project

@@ -35,7 +35,8 @@ make_fixture() {
   mkdir -p "$worktree" "$steps"
   cp "$prewarm_checks" "$steps/"
   local step
-  for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh; do
+  for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh \
+    clippy-lint.sh; do
     write_step "$steps" "$step" "echo \"$step \$PWD\" >> '$case_dir/run.log'"
   done
 
@@ -63,7 +64,8 @@ expect_equal \
   "the checks run in the entered worktree, in the Stop hook's order" \
   "$(cat "$case_dir/run.log")" "mypy-check.sh $worktree
 run_tests.sh $worktree
-ruff-lint.sh $worktree"
+ruff-lint.sh $worktree
+clippy-lint.sh $worktree"
 
 # --- failing checks ---------------------------------------------------------
 
