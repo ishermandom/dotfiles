@@ -11,30 +11,20 @@
 # `~/.claude` symlink.
 scripts_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
 source "$scripts_dir/homebrew-path.sh"
+source "$scripts_dir/file-listing.sh"
 
-# Lists the files to format by default, each ending in a NUL byte.
+# Lists the files to format by default, each ending in a NUL byte. In a git
+# repo, `list_unignored_files` lists them.
 #
-# In a git repo, git lists them:
-#
-# - `--cached`: the tracked files; the index is what git calls its cache
-# - `--others`: the untracked files too
-# - `--exclude-standard`: minus any untracked file an ignore rule covers. Git
-#   reads every ignore source — each folder's `.gitignore`, `.git/info/exclude`,
-#   the global excludes file — where prettier reads only the `.gitignore` in the
-#   directory it runs from.
-# - `-z`: each path ends in a NUL byte rather than a newline, and an unusual
-#   name comes unquoted, so any name arrives whole
-#
-# Outside a repo, git fails without listing anything, and `find` lists the files
-# instead. Its tests join with an implied AND, and `-o` means OR, so the
-# expression offers two alternatives. A folder named node_modules is pruned,
-# skipped wholesale, as prettier would skip it. Anything else is printed, with a
-# NUL ending, if it is a regular file (`-type f`) whose name matches one of the
-# three patterns; the parentheses keep those three ORs inside the second
-# alternative.
+# Outside a repo, `list_unignored_files` fails without listing anything, and
+# `find` lists the files instead. Its tests join with an implied AND, and `-o`
+# means OR, so the expression offers two alternatives. A folder named
+# node_modules is pruned, skipped wholesale, as prettier would skip it. Anything
+# else is printed, with a NUL ending, if it is a regular file (`-type f`) whose
+# name matches one of the three patterns; the parentheses keep those three ORs
+# inside the second alternative.
 list_default_targets() {
-  git ls-files -z --cached --others --exclude-standard \
-    -- '*.md' '*.js' '*.ts' 2> /dev/null \
+  list_unignored_files '*.md' '*.js' '*.ts' \
     || find . -name node_modules -prune -o -type f \
       \( -name '*.md' -o -name '*.js' -o -name '*.ts' \) -print0
 }
@@ -44,9 +34,10 @@ if [ $# -gt 0 ]; then
 else
   # Hand prettier the files themselves, not patterns such as `**/*.md`. Given a
   # pattern, prettier would expand it by walking every folder, ignored ones
-  # included, and apply ignore rules only afterwards. In a checkout whose
-  # ignored `.claude/` holds other worktrees, that walk alone would cost more
-  # than the formatting.
+  # included, and apply ignore rules only afterwards, reading only the
+  # `.gitignore` in the directory it runs from. In a checkout whose ignored
+  # `.claude/` holds other worktrees, that walk alone would cost more than the
+  # formatting.
   #
   # `read -d ''` takes one NUL-ended path at a time, so a name holding spaces or
   # newlines stays whole. `IFS=` empties the shell's field separators for this
