@@ -37,7 +37,10 @@ make_worktree() { # make_worktree <project> <name>
 # either stream.
 #
 # `compinit` has to run first, because `.worktree.zsh` registers a completion.
-# `-d` keeps the completion dump inside each test case.
+# `-d` keeps the completion dump inside this test run, shared by its cases. The
+# dump holds only what compinit finds in the function path, the same for every
+# case, and reading it back takes about 25ms where rebuilding it takes about
+# 140ms (measured 2026-11-04).
 #
 # Dropping `FPATH` keeps the `compinit` run independent of the shell
 # environment. `brew shellenv` exports an `FPATH` naming Homebrew's completion
@@ -50,7 +53,7 @@ run_zsh() { # run_zsh <snippet>
   env -u FPATH WORKTREE_CODE_ROOT="$case_dir" \
     PATH="$test_script_root/bin:$PATH" \
     zsh -c "autoload -Uz compinit
-      compinit -d '$case_dir/zcompdump'
+      compinit -d '$test_script_root/zcompdump'
       source '$command_file'
       $1" 2>&1
 }
