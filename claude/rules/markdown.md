@@ -105,10 +105,13 @@ Standard labels:
 - `Worktree:` — the worktree holding this task's in-flight work
 
 Place notes directly under the relevant task or collect them in a subsection —
-whichever keeps related content together. Include what Claude or the user
-couldn't infer in a future session; omit the rest. For longer rationale, a
-`### Notes` or `### Background` subsection under the phase header is cleaner
-than deeply indented task bullets.
+whichever keeps related content together. For longer rationale, a `### Notes` or
+`### Background` subsection under the phase header is cleaner than deeply
+indented task bullets.
+
+Include a note only when it would change how the task is acted on — a decision,
+a constraint, an open question, the next step — and Claude or the user couldn't
+easily infer it in a future session.
 
 When a decision is settled in the spec, the note is a pointer — e.g.
 `Note: settled — see spec.md #session-log.` — not a summary. A summary
