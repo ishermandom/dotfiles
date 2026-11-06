@@ -6,6 +6,13 @@
 # Markdown/JS/TS file under the current directory that git does not ignore),
 # printing one line on success and prettier's errors otherwise. Canonical
 # prettier invocation — the Stop hook delegates here.
+#
+# With `--check`, the runner rewrites nothing: it reports the files prettier
+# would change, and exits 1 when there are any. A check fills the same cache
+# that formatting reads, so a later formatting run skips every file the check
+# found formatted.
+#
+# Usage: quiet-prettier.sh [--check] [target...]
 
 # This script's directory in its own checkout: `readlink -f` follows the
 # `~/.claude` symlink.
@@ -28,6 +35,13 @@ list_default_targets() {
     || find . -name node_modules -prune -o -type f \
       \( -name '*.md' -o -name '*.js' -o -name '*.ts' \) -print0
 }
+
+mode_flag=--write
+if [ "$1" = --check ]; then
+  mode_flag=--check
+  # `shift` drops the flag from the arguments, so `$@` holds only the targets.
+  shift
+fi
 
 if [ $# -gt 0 ]; then
   targets=("$@")
@@ -94,7 +108,7 @@ cache_args=(--cache --cache-strategy content
   --cache-location "$cache_dir/$(printf '%s' "$PWD" | md5 -q)")
 
 output=$("$run_prettier" "${config_args[@]}" "${cache_args[@]}" \
-  --log-level warn --write "${targets[@]}" 2>&1)
+  --log-level warn "$mode_flag" "${targets[@]}" 2>&1)
 status=$?
 
 if [ $status -eq 0 ]; then

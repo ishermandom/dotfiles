@@ -221,6 +221,24 @@ run_runner
 expect_equal "a changed config reaches a file the cache had seen" \
   "$(cat "$case_dir/project/app.js")" "const a = 1"
 
+# A check earns its keep through the cache it leaves for a later formatting run.
+# Nothing the check prints or changes shows what it cached, so the case reads
+# the cache file itself.
+begin_project_case checks-without-rewriting
+printf '#   Unformatted\n' > "$case_dir/project/unformatted.md"
+printf '# Clean\n' > "$case_dir/project/clean.md"
+run_runner --check
+exit_code=$?
+
+expect "a check that finds an unformatted file reports a finding" \
+  test "$exit_code" -eq 1
+expect "and names the file" \
+  contains "$(cat "$case_dir/stdout")" "unformatted.md"
+expect_equal "and leaves the file as it was" \
+  "$(head -1 "$case_dir/project/unformatted.md")" "#   Unformatted"
+expect "and caches the file it found formatted" \
+  contains "$(cat "$case_dir/prettier-cache-$UID"/*)" "clean.md"
+
 # --- summary ----------------------------------------------------------------
 
 exit_with_summary
