@@ -611,6 +611,21 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     per-lane tax became a per-session one.
   - Worktree: worktree-cleanup
 
+- [ ] **Review the commit series before `fanout-teardown` lands it**
+      {#teardown-series-review} — add a step that checks the branch's commits
+      before `git land`: each one focused and self-contained, and the series
+      reading as a logical set. Restructure the branch where it falls short,
+      then land.
+  - Rationale: queued 2026-11-05 from the bridge marker-offset-test lane, where
+    the user asked for this check by hand before landing. Five commits became
+    three: the first commit's test was renamed and rebuilt by later commits, and
+    an intermediate commit stated a spec rule its own stylesheet broke.
+  - Note: the step belongs after `wrap-session`, so it also covers wrap's
+    tracker commits, and before the rebase onto `main`, so the rebase replays
+    the final series.
+  - Open question: whether the step restructures on its own, as CLAUDE.md allows
+    for branch history, or shows the user the proposed series first.
+
 - [ ] **Stop the worktree git guard refusing commands that only mention `git`**
       {#guard-git-mentions} — in a worktree-isolated session the guard refused a
       `curl` of a `raw.githubusercontent.com` URL ("names git in a form too
