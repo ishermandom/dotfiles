@@ -26,9 +26,16 @@ write_step() { # write_step <steps dir> <step name> <body>
 # `$worktree`, and a copy of prewarm_checks.sh in `$steps` beside a fake for
 # each step it might run. Each fake logs its name and working directory to
 # `$case_dir/run.log`. A case overrides only the steps it is about.
+#
+# prewarm_checks.sh looks for the prettier runner in the directory beside its
+# own, so the runner's fake sits in `$scripts`, beside `$steps`. The fake logs
+# its arguments and working directory to a file of its own,
+# `$case_dir/prettier.log`: prewarm_checks.sh starts the runner alongside the
+# checks, so the runner's line could land anywhere in their log.
 make_fixture() {
   worktree="$case_dir/worktree"
   steps="$case_dir/steps"
+  scripts="$case_dir/scripts"
   mkdir -p "$worktree" "$steps"
   place_executable "$prewarm_checks" "$steps/prewarm_checks.sh"
   local step
@@ -36,6 +43,8 @@ make_fixture() {
     clippy-lint.sh; do
     write_step "$steps" "$step" "echo \"$step \$PWD\" >> '$case_dir/run.log'"
   done
+  write_step "$scripts" "quiet-prettier.sh" \
+    "echo \"quiet-prettier.sh \$* \$PWD\" >> '$case_dir/prettier.log'"
 
   # Exit 1 is its verdict for the user's own repo, which every case but one is
   # about.
@@ -56,13 +65,15 @@ begin_case "own-worktree"
 make_fixture
 prewarm > /dev/null
 
-# The log matching exactly also shows formatting was left to the Stop hook.
+# The log matching exactly also shows format.sh was left to the Stop hook.
 expect_equal \
   "the checks run in the entered worktree, in the Stop hook's order" \
   "$(cat "$case_dir/run.log")" "mypy-check.sh $worktree
 run_tests.sh $worktree
 ruff-lint.sh $worktree
 clippy-lint.sh $worktree"
+expect_equal "prettier checks the entered worktree without rewriting it" \
+  "$(cat "$case_dir/prettier.log")" "quiet-prettier.sh --check $worktree"
 
 # --- failing checks ---------------------------------------------------------
 
@@ -71,6 +82,8 @@ make_fixture
 write_step "$steps" "mypy-check.sh" "exit 1"
 write_step "$steps" "run_tests.sh" 'echo "1 failed, 30 passed"
 echo "warning: slow test" >&2
+exit 1'
+write_step "$scripts" "quiet-prettier.sh" 'echo "[warn] notes.md"
 exit 1'
 output=$(prewarm)
 
@@ -88,6 +101,7 @@ write_step "$steps" "is-third-party-repo.sh" "exit 0"
 prewarm > /dev/null
 
 expect "someone else's checkout runs no checks" test ! -e "$case_dir/run.log"
+expect "and no prettier check" test ! -e "$case_dir/prettier.log"
 
 # --- summary ----------------------------------------------------------------
 
