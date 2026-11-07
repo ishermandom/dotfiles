@@ -19,11 +19,11 @@ or Write, so match the post-reflow wording, not the pre-reflow snapshot.
   cross-language rule, and lives in CLAUDE.md. What reflow leaves alone and
   which markdown shapes survive is written up in `hooks/reflow_prose.py`'s
   module header. -->
-- **Run `~/.claude/scripts/quiet-shell.sh` after writing shell**: it formats
-  with shfmt and lints with shellcheck. Nothing else will — unlike Markdown,
-  JavaScript, and Python, shell code has no edit-time or Stop-time formatter,
-  and shfmt never wraps a long line of code. Giving shell a Stop-time check is
-  queued: tasks.md #shell-stop-check
+- **Wrap a long line of shell code by hand**: shfmt formats every shell file at
+  Stop, but it never breaks a long line, so an over-long command or condition
+  survives each pass untouched. Comment prose is the exception — the reflow hook
+  rewraps it at edit time. Find the code lines still over 80 columns with
+  `rg -n '.{81,}'`.
 - **Avoid `# shellcheck` pragmas**: a suppression usually means either the
   flagged code is wrong or the tool is a poor fit, and a finding local to one
   line usually means that line is the problem — so fix the code rather than

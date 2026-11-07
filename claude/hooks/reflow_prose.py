@@ -99,10 +99,11 @@
 # Invoke with file paths to reflow them directly, or with no arguments to read a
 # hook payload (JSON with .tool_input.file_path) from stdin. A file whose parser
 # rejects it is left unchanged by design: mid-turn edits pass through broken
-# states, and the real syntax errors are reported by ruff at Stop or by
-# shellcheck through `quiet-shell.sh`. A shell file is likewise left alone when
-# shfmt is missing or hangs — silently, the way a missing ruff falls back to the
-# default width, since reflow is best-effort and must never block the edit loop.
+# states, and the real syntax errors are reported at Stop, by ruff for Python
+# and by shfmt and shellcheck for shell. A shell file is likewise left alone
+# when shfmt is missing or hangs — silently, the way a missing ruff falls back
+# to the default width, since reflow is best-effort and must never block the
+# edit loop.
 
 import ast
 import dataclasses
@@ -1178,12 +1179,9 @@ def reflow_file(
     )
   except (SyntaxError, tokenize.TokenError, ShellParseError):
     # Mid-turn edits pass through broken states, so a quiet skip is the correct
-    # contract here: ruff reports the real Python syntax errors at Stop.
-    # ShellParseError also covers an absent shfmt, which likewise leaves the
-    # file as the author wrote it.
-    #
-    # TODO: no automatic check reports a shell parse error; shellcheck catches
-    # it but runs by hand. See tasks.md #shell-stop-check
+    # contract here: the real syntax errors are reported at Stop, by ruff for
+    # Python and by shfmt and shellcheck for shell. ShellParseError also covers
+    # an absent shfmt, which likewise leaves the file as the author wrote it.
     return False
   if updated == source:
     return False

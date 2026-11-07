@@ -40,7 +40,7 @@ make_fixture() {
   place_executable "$prewarm_checks" "$steps/prewarm_checks.sh"
   local step
   for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh \
-    clippy-lint.sh; do
+    clippy-lint.sh shellcheck-lint.sh; do
     write_step "$steps" "$step" "echo \"$step \$PWD\" >> '$case_dir/run.log'"
   done
   write_step "$scripts" "quiet-prettier.sh" \
@@ -71,7 +71,8 @@ expect_equal \
   "$(cat "$case_dir/run.log")" "mypy-check.sh $worktree
 run_tests.sh $worktree
 ruff-lint.sh $worktree
-clippy-lint.sh $worktree"
+clippy-lint.sh $worktree
+shellcheck-lint.sh $worktree"
 expect_equal "prettier checks the entered worktree without rewriting it" \
   "$(cat "$case_dir/prettier.log")" "quiet-prettier.sh --check $worktree"
 

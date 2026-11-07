@@ -80,15 +80,16 @@ wait "$third_party_pid" && exit 0
 # held-back finding shows then.
 #
 # The order puts first what tends to explain the rest — a type error usually
-# explains the test failures that follow it — and the lints last, ruff's and
-# then clippy's, since their findings explain nothing above them.
+# explains the test failures that follow it — and the lints last, ruff's, then
+# clippy's, then shellcheck's, since their findings explain nothing above them.
 #
 # Both streams are captured, so a step is free to report on either: stderr is
 # the natural stream for a diagnostic, and a check that used it would otherwise
 # halt the turn with nothing but its exit status.
 #
 # prewarm_checks.sh runs this same list; a check added here belongs there too.
-checks=(mypy-check.sh run_tests.sh ruff-lint.sh clippy-lint.sh)
+checks=(mypy-check.sh run_tests.sh ruff-lint.sh clippy-lint.sh
+  shellcheck-lint.sh)
 check_outputs=()
 check_pids=()
 for check in "${checks[@]}"; do

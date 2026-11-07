@@ -36,7 +36,7 @@ make_steps_dir() { # make_steps_dir  -> prints the directory
   place_executable "$stop_checks" "$steps_dir/stop_checks.sh"
   local step
   for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh \
-    clippy-lint.sh; do
+    clippy-lint.sh shellcheck-lint.sh; do
     write_step "$steps_dir" "$step" "exit 0"
   done
 
@@ -53,7 +53,8 @@ make_steps_dir() { # make_steps_dir  -> prints the directory
 # The checks run in parallel, so their order in the log is whatever the
 # scheduler made it; only formatting's place at the head is fixed.
 steps=$(make_steps_dir)
-for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh clippy-lint.sh; do
+for step in format.sh mypy-check.sh run_tests.sh ruff-lint.sh clippy-lint.sh \
+  shellcheck-lint.sh; do
   write_step "$steps" "$step" "echo $step >> $steps/order.log"
 done
 "$steps/stop_checks.sh" > /dev/null
@@ -62,7 +63,7 @@ expect_equal "formatting runs before the checks" \
   "$(head -1 "$steps/order.log")" "format.sh"
 expect_equal "and every check runs" \
   "$(tail -n +2 "$steps/order.log" | sort | tr '\n' ' ')" \
-  "clippy-lint.sh mypy-check.sh ruff-lint.sh run_tests.sh "
+  "clippy-lint.sh mypy-check.sh ruff-lint.sh run_tests.sh shellcheck-lint.sh "
 
 # --- a clean run says nothing -----------------------------------------------
 

@@ -52,7 +52,8 @@ begin_step_case() { # begin_step_case <name>
   git -C "$case_dir/repo" init --quiet
 
   local runner
-  for runner in quiet-prettier.sh quiet-ruff.sh quiet-rustfmt.sh; do
+  for runner in quiet-prettier.sh quiet-ruff.sh quiet-rustfmt.sh \
+    quiet-shfmt.sh; do
     write_runner "$runner" <<< "exit 0"
   done
 }

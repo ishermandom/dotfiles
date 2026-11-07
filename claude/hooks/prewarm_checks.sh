@@ -52,7 +52,8 @@ prettier_pid=$!
 # The same checks, in the same order, as stop_checks.sh. Each runs even when the
 # one before it fails: a failure is the Stop hook's to report, and every check's
 # caches are worth building regardless.
-for check in mypy-check.sh run_tests.sh ruff-lint.sh clippy-lint.sh; do
+for check in mypy-check.sh run_tests.sh ruff-lint.sh clippy-lint.sh \
+  shellcheck-lint.sh; do
   "$hooks_dir/$check" > /dev/null 2>&1
 done
 wait "$prettier_pid"

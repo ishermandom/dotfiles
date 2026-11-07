@@ -160,9 +160,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     2026-07-31, so the convention holds today; nothing was kept.
   - Note: build it as a step in `stop_checks.sh`, not as another parallel Stop
     entry.
-  - Note: sequenced behind #shell-stop-check, which is adding a check step to
-    the same file. Running one `stop_checks.sh` task at a time is the user's
-    call, and whichever lands first sets the shape a second check step follows.
 
 - [ ] **Consider rotating `sessions.md` as part of the distillation skill** —
       `sessions.md` is the curated session log; it is deliberately _not_
@@ -396,30 +393,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
   - Note: whatever replaces the trigger should keep what makes path matching
     worth having — a guide costs context only in the sessions that touch its
     file type, rather than every session paying for every guide.
-
-- [ ] **Give shell a Stop-time check** {#shell-stop-check} — shfmt and
-      shellcheck run only from `claude/scripts/quiet-shell.sh`, invoked by hand,
-      so nothing catches unformatted or unlinted shell the way Stop catches
-      Python.
-  - Rationale: running `quiet-shell.sh` by hand was chosen deliberately as the
-    starting point; promoting it to a Stop-time step is the open follow-on.
-  - Note: the two halves now want different homes — shfmt fits `format.sh`'s
-    runner list, where findings deliberately do not halt, while shellcheck has
-    to be its own check step in `stop_checks.sh` to gate at all. Neither belongs
-    in a parallel Stop entry. `quiet-shell.sh` runs both from one invocation, so
-    separating them is part of the work.
-  - Note: `rules/shell.md` tells Claude to run `quiet-shell.sh` by hand because
-    nothing else will. Correct that claim when a hook starts doing it.
-  - Note: shellcheck reports 15 findings today (12 × SC2155 in
-    `gh-protect-test.sh`, plus SC2164, SC2086, SC2001), so a gating check needs
-    those cleared or consciously accepted first.
-  - Note: the zsh files are linted by nothing at all — shellcheck rejects the
-    dialect, so `quiet-shell.sh` formats `.zsh`, `.zshrc` and `.zprofile` while
-    linting none of them. `zsh -n` parses a file without running it and is the
-    only validator that reads zsh, so it is what a check step here could use. It
-    catches syntax errors alone, nothing like shellcheck's quoting or
-    unused-variable analysis.
-  - Worktree: shell-stop-check
 
 - [ ] **Have Zed run the repo's formatters on save** — the formatting hooks fire
       on Claude's `Edit` and `Write` only, so a file edited by hand in Zed

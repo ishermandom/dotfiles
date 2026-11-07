@@ -54,6 +54,8 @@ DENYLISTED: tuple[str, ...] = (
   'cd /repo && mypy',  # after && separator
   'echo hi | ruff check -',  # after | separator
   'ruff check .\nmypy src/',  # tool at the start of a later line
+  'shfmt -w script.sh',
+  'shellcheck -f gcc script.sh',
 )
 
 # --- runners, data, and path fragments defer to the prompt ---
@@ -63,6 +65,11 @@ DENYLISTED: tuple[str, ...] = (
 DEFERRED: tuple[str, ...] = (
   '~/.claude/scripts/quiet-ruff.sh .',
   '~/.claude/scripts/quiet-mypy.sh',
+  '~/.claude/scripts/quiet-shellcheck.sh',
+  '~/.claude/scripts/quiet-shfmt.sh',
+  # The step that drives the shellcheck runner, whose name starts with the
+  # tool's:
+  '~/.claude/hooks/shellcheck-lint.sh',
   'git add ruff/pyproject.toml',  # path fragment, not a command
   'git commit -m "note: mypy is not the authority; ruff stays the gate"',
   # Heredoc commit message — the case that misfired before the rewrite:
