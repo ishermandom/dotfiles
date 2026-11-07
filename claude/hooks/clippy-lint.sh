@@ -6,12 +6,13 @@
 # repo the session is working in. Stays silent while the code is clean, and
 # where there is no crate at all; on findings it prints them and exits non-zero,
 # which `stop_checks.sh` turns into the message that halts the turn.
+#
+# The clippy invocation is the quiet-clippy runner's, so its flags live in one
+# place (~/.claude/scripts/quiet-clippy.sh).
 
 # This hook's directory in its own checkout: `readlink -f` follows the
 # `~/.claude` symlink.
 hooks_dir=$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")
-source "$hooks_dir/../scripts/homebrew-path.sh"
-source "$hooks_dir/../scripts/file-listing.sh"
 
 # The hook inherits the session's current directory, which may sit below the
 # repo root, where a crate elsewhere in the repo would go unchecked. Anchor on
@@ -19,33 +20,12 @@ source "$hooks_dir/../scripts/file-listing.sh"
 repo_root=$(git rev-parse --show-toplevel 2> /dev/null)
 cd "${repo_root:-$PWD}" || exit 1
 
-# `${#crate_manifests[@]}` counts the crates found; with none, there is nothing
-# to check.
-find_crate_manifests
-[ ${#crate_manifests[@]} -gt 0 ] || exit 0
+lint_output=$("$hooks_dir/../scripts/quiet-clippy.sh" 2>&1)
+lint_status=$?
 
-if ! command -v cargo > /dev/null; then
-  echo "clippy-lint.sh: cargo not found; install it with 'brew install rust'"
-  exit 1
-fi
-
-# --all-targets extends the lints to the tests, and --deny warnings makes any
-# finding fail the step. --color always because cargo, unlike ruff, ignores the
-# session's FORCE_COLOR that the hook inherits, and would leave its findings
-# plain in a pipe; the terminal renders the codes in the message that halts the
-# turn.
-lint_status=0
-findings=""
-for manifest in "${crate_manifests[@]}"; do
-  output=$(cargo clippy --quiet --all-targets --color always \
-    --manifest-path "$manifest" -- --deny warnings 2>&1)
-  clippy_status=$?
-  if [ $clippy_status -ne 0 ]; then
-    findings+="$output"$'\n'
-    lint_status=1
-  fi
-done
-
+# The runner's summary line on a clean run is for a run by hand; the step stays
+# silent. Any failure halts the turn with whatever the runner said.
 [ $lint_status -eq 0 ] && exit 0
-printf '%s' "$findings"
+
+printf '%s\n' "$lint_output"
 exit 1
