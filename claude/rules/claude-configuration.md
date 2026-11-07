@@ -342,3 +342,11 @@ finalizing; add new ones here as they are hit.
   a pass as provisional until a fresh session shows the same result after the
   change lands: `--settings` is a different source from the user's settings
   file, and the CLI resolves some keys differently by source.
+- **Testing `format.sh` with a worktree's runners**: `format.sh` finds its
+  runners through `$HOME/.claude/scripts`, so the test needs a fake `HOME` whose
+  `.claude/scripts` links to the worktree's `claude/scripts`. Link the
+  formatters' configs from the real home into the fake one too, such as ruff's
+  `~/.config/ruff/pyproject.toml` and prettier's `~/.prettierrc`. Without them,
+  ruff and prettier reformat the whole repo to their own defaults rather than
+  the house style, and in `git status` the damage looks just like an ordinary
+  formatting pass.
