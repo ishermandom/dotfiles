@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: MIT
 #
 # Lists the files under the current directory that git does not ignore, and
-# finds the Rust crates among them.
+# finds two kinds of file in that listing: Rust crate manifests and shell files.
 #
 # Sourced rather than run, so listing the files starts no shell of its own. The
 # shebang only names the dialect for shellcheck and editors, and the file is
@@ -52,4 +52,61 @@ find_crate_manifests() {
   done < <(
     list_unignored_files ':(glob)**/Cargo.toml' || printf 'Cargo.toml\0'
   )
+}
+
+# Sets the array `shell_files` to the shell files under the current directory
+# that git does not ignore, each path relative to that directory. Outside a
+# repo, git ignores nothing, so every file under the current directory is
+# considered, except those inside `.git`. When shfmt is missing, returns 2 and
+# leaves `shell_files` empty.
+#
+# A file counts as shell when `shfmt -f` takes it for one, by its extension or
+# its shebang. shfmt skips every file whose name starts with a dot, so for those
+# files the name alone decides: `.zshrc`, `.zprofile`, and any dot-prefixed name
+# ending in `.sh`, `.bash` or `.zsh`.
+find_shell_files() {
+  shell_files=()
+
+  # Without shfmt, the search would find only the dot-prefixed files, and a
+  # caller would wrongly conclude that the rest of the repo holds no shell.
+  if ! command -v shfmt > /dev/null; then
+    echo "find_shell_files: shfmt is not installed;" \
+      "try 'brew install shfmt'" >&2
+    return 2
+  fi
+
+  # The loop reads the listing as `find_crate_manifests` does. `${candidate#./}`
+  # drops the `./` that `find` puts in front of each path, so a file is named
+  # the same way in a repo and out of one.
+  local candidate shfmt_candidates=() dot_prefixed=()
+  while IFS= read -r -d '' candidate; do
+    candidate=${candidate#./}
+
+    # A deleted file is passed over, and so is a symlink: shfmt refuses to
+    # rewrite one and fails the whole run. A link's target inside the repo is
+    # listed under its own name.
+    if [ ! -f "$candidate" ] || [ -L "$candidate" ]; then
+      continue
+    fi
+
+    # `${candidate##*/}` is the file's name without its directories.
+    case "${candidate##*/}" in
+      .zshrc | .zprofile | .*.sh | .*.bash | .*.zsh)
+        dot_prefixed+=("$candidate")
+        ;;
+      .*) ;;
+      *) shfmt_candidates+=("$candidate") ;;
+    esac
+  done < <(
+    list_unignored_files || find . -path '*/.git' -prune -o -type f -print0
+  )
+
+  # shfmt prints, one per line, the candidates it takes for shell. xargs runs
+  # shfmt as many times as the system's limit on arguments requires.
+  if [ ${#shfmt_candidates[@]} -gt 0 ]; then
+    while IFS= read -r candidate; do
+      shell_files+=("$candidate")
+    done < <(printf '%s\0' "${shfmt_candidates[@]}" | xargs -0 shfmt -f)
+  fi
+  shell_files+=("${dot_prefixed[@]}")
 }
