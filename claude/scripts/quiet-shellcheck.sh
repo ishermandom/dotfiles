@@ -2,9 +2,9 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Token-lean shellcheck runner: lint the given shell files (default: every shell
-# file under the current directory that git does not ignore), printing one
-# summary line when clean and the findings otherwise. Canonical shellcheck
+# Token-lean `shellcheck` runner: lint the given shell files (default: every
+# shell file under the current directory that git does not ignore), printing one
+# summary line when clean and the findings otherwise. Canonical `shellcheck`
 # invocation — the Stop hook's lint step delegates here.
 #
 # Usage: quiet-shellcheck.sh [file...]
@@ -24,10 +24,10 @@ else
   find_shell_files || exit $?
 fi
 
-# Lint only what shellcheck understands: it covers sh, bash, dash, and ksh, and
-# rejects zsh outright. The zsh startup files carry no shebang for it to key on,
-# so they would come back as an unknown shell. `quiet-shfmt.sh` still formats
-# them.
+# Lint only what `shellcheck` understands: it covers sh, bash, dash, and ksh,
+# and rejects zsh outright. The zsh startup files carry no shebang for it to key
+# on, so they would come back as an unknown shell. `quiet-shfmt.sh` still
+# formats them.
 lint_files=()
 for shell_file in "${shell_files[@]}"; do
   case "$shell_file" in

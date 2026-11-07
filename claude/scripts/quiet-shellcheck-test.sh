@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: MIT
 #
 # Tests quiet-shellcheck.sh: which of the shell files it lints, and that its
-# exit status separates a finding from shellcheck being unable to run.
+# exit status separates a finding from `shellcheck` being unable to run.
 # `shellcheck-lint.sh` halts the turn on either, but a caller reading the levels
 # apart sees breakage rather than something to fix.
 #
 # Which files count as shell is `find_shell_files`'s to decide, and
 # file-listing-test.sh covers it.
 #
-# Runs the real shellcheck, shfmt and git against a temporary tree. No network
+# Runs the real `shellcheck`, shfmt and git against a temporary tree. No network
 # calls, so it is safe to run anywhere.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
@@ -33,7 +33,7 @@ run_runner() { # run_runner [runner arguments...]
 
 begin_case reports-a-finding
 git -C "$case_dir" init --quiet
-# An unguarded cd is SC2164, which shellcheck reports on any bash file.
+# An unguarded cd is SC2164, which `shellcheck` reports on any bash file.
 printf '#!/usr/bin/env bash\ncd /tmp\n' > "$case_dir/unguarded.sh"
 run_runner
 

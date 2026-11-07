@@ -81,7 +81,8 @@ wait "$third_party_pid" && exit 0
 #
 # The order puts first what tends to explain the rest — a type error usually
 # explains the test failures that follow it — and the lints last, ruff's, then
-# clippy's, then shellcheck's, since their findings explain nothing above them.
+# clippy's, then `shellcheck`'s, since their findings explain nothing above
+# them.
 #
 # Both streams are captured, so a step is free to report on either: stderr is
 # the natural stream for a diagnostic, and a check that used it would otherwise

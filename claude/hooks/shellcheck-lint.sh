@@ -2,7 +2,7 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# A `stop_checks.sh` step: report shellcheck's findings on the shell files in
+# A `stop_checks.sh` step: report `shellcheck`'s findings on the shell files in
 # the repo the session is working in. Stays silent while the shell is clean; on
 # findings it prints them and exits non-zero, which `stop_checks.sh` turns into
 # the message that halts the turn.
@@ -26,9 +26,9 @@ cd "${repo_root:-$PWD}" || exit 1
 lint_output=$("$hooks_dir/../scripts/quiet-shellcheck.sh" 2>&1)
 lint_status=$?
 
-# The runner grades its exits — 1 for findings, 2 or more when shellcheck could
-# not run at all — but both halt the turn with whatever it said, so the level
-# goes unread here.
+# The runner grades its exits — 1 for findings, 2 or more when `shellcheck`
+# could not run at all — but both halt the turn with whatever it said, so the
+# level goes unread here.
 [ $lint_status -eq 0 ] && exit 0
 
 printf '%s\n' "$lint_output"

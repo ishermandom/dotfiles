@@ -24,6 +24,10 @@ or Write, so match the post-reflow wording, not the pre-reflow snapshot.
   survives each pass untouched. Comment prose is the exception — the reflow hook
   rewraps it at edit time. Find the code lines still over 80 columns with
   `rg -n '.{81,}'`.
+- **In comment prose, put shellcheck's name in backticks**: a comment line whose
+  first word is the bare name reads to shellcheck as a directive. It fails to
+  parse, and shellcheck stops checking the file. The reflow hook can move any
+  word to the start of a line; the backticks keep the name prose.
 - **Avoid `# shellcheck` pragmas**: a suppression usually means either the
   flagged code is wrong or the tool is a poor fit, and a finding local to one
   line usually means that line is the problem — so fix the code rather than

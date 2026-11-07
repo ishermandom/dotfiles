@@ -6,7 +6,7 @@
 # finds two kinds of file in that listing: Rust crate manifests and shell files.
 #
 # Sourced rather than run, so listing the files starts no shell of its own. The
-# shebang only names the dialect for shellcheck and editors, and the file is
+# shebang only names the dialect for `shellcheck` and editors, and the file is
 # deliberately not executable.
 
 # Prints the files under the current directory that match the given pathspecs,
