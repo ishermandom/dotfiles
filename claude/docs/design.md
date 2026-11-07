@@ -223,7 +223,13 @@ only the durable design choices behind it:
   cached per file, so later runs of the same file are cheap, but the first run
   of a freshly written one pays for the scan in full. A test that builds its
   fake executables afresh for every case pays for it on every case, which is
-  where much of the shell tests' time goes.
+  where much of the shell tests' time goes. The usual fix, listing the terminal
+  under Developer Tools in System Settings, exempts every process the terminal
+  starts. It stays off here: it would switch off malware scanning for everything
+  Claude runs, downloaded code included, and would need an entry for each way a
+  session starts, the background daemon among them. The shell tests pool their
+  executables instead (`claude/scripts/shell-test-framework.sh`), so each is
+  scanned once.
 
 ### Memory vs. docs
 
