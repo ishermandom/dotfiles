@@ -106,9 +106,9 @@ begin_stubbed_case() { # begin_stubbed_case <name>
   unset GH_STUB_LIST GH_STUB_DETAIL_1 GH_STUB_DETAIL_2
   unset GH_STUB_VISIBILITY GH_STUB_FAIL_REPO_VIEW
 
-  # Marking the knobs for export while they are unset lets a case set one with
-  # a plain assignment and still reach the stub. Assigning inside `export`
-  # would hide the exit status of the `$(...)` that computes the value.
+  # Marking the knobs for export while they are unset lets a case set one with a
+  # plain assignment and still reach the stub. Assigning inside `export` would
+  # hide the exit status of the `$(...)` that computes the value.
   export GH_STUB_LIST GH_STUB_DETAIL_1 GH_STUB_DETAIL_2
   export GH_STUB_VISIBILITY GH_STUB_FAIL_REPO_VIEW
 }
@@ -152,11 +152,13 @@ GH_STUB_DETAIL_1=$(detail "~ALL" deletion non_fast_forward)
 run_script
 expect "exits 3" [ "$exit_code" -eq 3 ]
 expect "reports the gap" contains "$output" "is not fully protected"
-expect "names the missing protection" \
-  contains "$output" "require linear history"
-expect "omits the satisfied ones" \
-  not_contains "$output" "no active all-branch ruleset enforces: block"
-expect "prints a config to create" contains "$output" '"~ALL"'
+expect "names the missing rule by GitHub's label" \
+  contains "$output" "Require linear history"
+expect "omits a satisfied rule" not_contains "$output" "Restrict deletions"
+expect "and the other one" not_contains "$output" "Block force pushes"
+expect "prints a ruleset to import" contains "$output" '"~ALL"'
+expect "and says how to import it" \
+  contains "$output" "New ruleset → Import a ruleset"
 
 # A ruleset that targets only the default branch does not protect all branches,
 # so nothing is covered.
@@ -166,10 +168,9 @@ GH_STUB_DETAIL_1=$(detail "~DEFAULT_BRANCH" \
   deletion non_fast_forward required_linear_history)
 run_script
 expect "exits 3" [ "$exit_code" -eq 3 ]
-expect "names every protection missing" \
-  contains "$output" "block force pushes"
+expect "names every rule missing" contains "$output" "Block force pushes"
 expect "names linear history missing" \
-  contains "$output" "require linear history"
+  contains "$output" "Require linear history"
 
 # A ruleset that includes every branch but exempts one leaves that branch open,
 # so it does not count as protecting every branch.
@@ -207,7 +208,7 @@ begin_stubbed_case no-rulesets
 run_script
 expect "exits 3" [ "$exit_code" -eq 3 ]
 expect "reports the gap" contains "$output" "is not fully protected"
-expect "prints a config to create" \
+expect "prints a ruleset to import" \
   contains "$output" '"required_linear_history"'
 expect "sends no write request" not_contains "$(calls)" "--method"
 

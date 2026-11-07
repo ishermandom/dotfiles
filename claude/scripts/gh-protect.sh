@@ -14,7 +14,7 @@
 # ruleset. Creating one is left to the user via the GitHub UI: a token that
 # could write rulesets could also remove them, defeating the backstop, so that
 # power stays off the tokens Claude holds. On a gap, the script names the
-# missing protections and prints a config to create.
+# missing rules and prints a ruleset to import.
 #
 # Authentication: a GH_TOKEN / GH_ENTERPRISE_TOKEN env var or a prior
 # `gh auth login` is used when present. Otherwise, for the current repo, the
@@ -27,15 +27,16 @@
 # operational error; 2 = usage error; 3 = not protected (a required protection
 # is missing).
 
-# The rule types every branch must be covered by, paired with how each reads to
-# the user.
+# The rule types every branch must be covered by, each paired with its label on
+# GitHub's ruleset page, so a report names a missing rule the way the page it
+# sends the user to shows it.
 required_rules=(deletion non_fast_forward required_linear_history)
 
-rule_description() {
+rule_label() {
   case "$1" in
-    deletion) echo "block branch deletion" ;;
-    non_fast_forward) echo "block force pushes" ;;
-    required_linear_history) echo "require linear history" ;;
+    deletion) echo "Restrict deletions" ;;
+    non_fast_forward) echo "Block force pushes" ;;
+    required_linear_history) echo "Require linear history" ;;
   esac
 }
 
@@ -177,28 +178,32 @@ for ruleset_id in $candidate_ids; do
 done
 
 # A required rule is satisfied when some all-branch ruleset enforces it.
-missing_descriptions=()
+missing_labels=()
 for required_rule in "${required_rules[@]}"; do
   # -F fixed string, -x whole-line, -q quiet: an exact match against one
   # collected rule type, so a short name can't match inside a longer one.
   if ! echo "$covered_rules" | grep -Fqx "$required_rule"; then
-    missing_descriptions+=("$(rule_description "$required_rule")")
+    missing_labels+=("$(rule_label "$required_rule")")
   fi
 done
 
-if [ ${#missing_descriptions[@]} -eq 0 ]; then
+if [ ${#missing_labels[@]} -eq 0 ]; then
   echo "gh-protect: $repo is protected — every branch blocks force pushes" \
     "and deletion and requires linear history"
   exit 0
 fi
 
-# Join the missing protections into one human-readable clause.
-missing_list=$(printf '%s; ' "${missing_descriptions[@]}")
-missing_list=${missing_list%; }
-
-echo "gh-protect: $repo is not fully protected — no active all-branch" \
-  "ruleset enforces: $missing_list. Create one in the repo's Settings →" \
-  "Rules → Rulesets; for example:"
+# The report lists each missing rule under its label, then gives the steps for
+# importing the ruleset printed below, so the user can act on it without
+# translating. The steps follow GitHub's documentation as read 2026-11-05.
+echo "gh-protect: $repo is not fully protected. No active ruleset that targets" \
+  "every branch turns on these rules:"
+# printf repeats its format once per argument, so each label gets a line.
+printf '  - %s\n' "${missing_labels[@]}"
+echo "To add a ruleset that does, save the JSON below to a file, then import" \
+  "it: in the repo's Settings, under \"Code, planning, and automation\"," \
+  "click Rulesets and then Rulesets again, and choose New ruleset → Import a" \
+  "ruleset."
 
 # ~ALL matches every branch, current and future. The name is just a label — the
 # check above ignores it. If blanket protection adds friction later (rebase
