@@ -7,9 +7,10 @@
 # SPDX-License-Identifier: MIT
 #
 # PreToolUse(Bash) gate: deny bare invocations of the tools the Stop hook
-# already runs (pytest, ruff, mypy, prettier, shfmt, shellcheck), steering
-# intentional runs to the token-lean runners in ~/.claude/scripts/. The runners
-# don't appear in command position, so they pass through.
+# already runs (pytest, ruff, mypy, prettier, rustfmt, clippy, shfmt,
+# shellcheck), steering intentional runs to the token-lean runners in
+# ~/.claude/scripts/. The runners don't appear in command position, so they pass
+# through.
 #
 # A tool name counts only in *command position* — at the start of a line or
 # right after a separator (; | & && ||). Heredoc bodies and quoted strings are
@@ -75,6 +76,8 @@ _COMMAND_POSITION = re.compile(
     | ruff
     | mypy
     | prettier
+    | rustfmt
+    | cargo \s+ (?: fmt | clippy )  # cargo's front ends to rustfmt and clippy
     | shfmt
     | shellcheck
   )
@@ -85,11 +88,11 @@ _COMMAND_POSITION = re.compile(
 )
 
 _DENY_REASON = (
-  'pytest, ruff, mypy, prettier, shfmt, and shellcheck run automatically at '
-  'Stop — do not re-run them reflexively mid-turn. If this run adds value (e.g. '
-  'confirming an intermediate state lets more work land this turn), use the '
-  'token-lean runners instead: '
-  '~/.claude/scripts/quiet-{tests,mypy,ruff,prettier,shfmt,shellcheck}.sh '
+  'pytest, ruff, mypy, prettier, rustfmt, clippy, shfmt, and shellcheck run '
+  'automatically at Stop — do not re-run them reflexively mid-turn. If this run '
+  'adds value (e.g. confirming an intermediate state lets more work land this '
+  'turn), use the token-lean runners instead: ~/.claude/scripts/'
+  'quiet-{tests,mypy,ruff,prettier,rustfmt,clippy,shfmt,shellcheck}.sh '
   '[paths]. Their output is shown to the user automatically.'
 )
 

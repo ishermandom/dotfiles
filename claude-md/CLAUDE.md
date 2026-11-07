@@ -370,12 +370,12 @@ Every session, without being asked:
   a dotfiles repo — always dereference before editing any path in that
   directory. Read at the resolved path too: a pre-edit `Read` via the symlink
   path doesn't satisfy `Edit`/`Write`'s real-path tracking, so it gets redone.
-- **Before running pytest, mypy, ruff, prettier, shfmt, or shellcheck**: they
-  run automatically at Stop — never invoke the bare tools yourself (a PreToolUse
-  gate denies them). Run a check mid-turn only when its result changes what
-  happens this turn (e.g. confirming an intermediate state lets more work land
-  now), and then via the runners
-  `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier,shfmt,shellcheck}.sh [paths]`
+- **Before running pytest, mypy, ruff, prettier, rustfmt, clippy, shfmt, or
+  shellcheck**: they run automatically at Stop — never invoke the bare tools
+  yourself (a PreToolUse gate denies them). Run a check mid-turn only when its
+  result changes what happens this turn (e.g. confirming an intermediate state
+  lets more work land now), and then via the runners
+  `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier,rustfmt,clippy,shfmt,shellcheck}.sh [paths]`
   — terse output, auto-surfaced to the user.
 - **After a raw edit that bypasses `Edit`/`Write`** (e.g. a script-driven
   multi-file find/replace): their `PostToolUse` formatting hooks never fired

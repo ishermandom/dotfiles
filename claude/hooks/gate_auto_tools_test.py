@@ -56,6 +56,10 @@ DENYLISTED: tuple[str, ...] = (
   'ruff check .\nmypy src/',  # tool at the start of a later line
   'shfmt -w script.sh',
   'shellcheck -f gcc script.sh',
+  'rustfmt src/lib.rs',
+  'cargo fmt',
+  'cargo clippy --all-targets',
+  'cd crate && cargo clippy',  # cargo's subcommand after a separator
 )
 
 # --- runners, data, and path fragments defer to the prompt ---
@@ -70,6 +74,12 @@ DEFERRED: tuple[str, ...] = (
   # The step that drives the shellcheck runner, whose name starts with the
   # tool's:
   '~/.claude/hooks/shellcheck-lint.sh',
+  '~/.claude/scripts/quiet-rustfmt.sh',
+  '~/.claude/scripts/quiet-clippy.sh',
+  '~/.claude/hooks/clippy-lint.sh',
+  # cargo's other subcommands are not the Stop hook's to run:
+  'cargo build --release',
+  'cargo test',
   'git add ruff/pyproject.toml',  # path fragment, not a command
   'git commit -m "note: mypy is not the authority; ruff stays the gate"',
   # Heredoc commit message — the case that misfired before the rewrite:
