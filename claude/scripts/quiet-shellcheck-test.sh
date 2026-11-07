@@ -75,6 +75,22 @@ run_runner absent.sh
 expect "exits above the findings level" test "$exit_code" -gt 1
 expect "names the missing file" contains "$output" "absent.sh"
 
+# The runner checks its files in up to four batches at once, so its report has
+# to gather all of them. Eight files make four batches of two: the finding sits
+# in the first, and the missing file in the last.
+begin_case reports-every-batch
+git -C "$case_dir" init --quiet
+printf '#!/usr/bin/env bash\ncd /tmp\n' > "$case_dir/unguarded.sh"
+for name in b c d e f g; do
+  printf '#!/usr/bin/env bash\necho %s\n' "$name" > "$case_dir/$name.sh"
+done
+run_runner unguarded.sh b.sh c.sh d.sh e.sh f.sh g.sh absent.sh
+
+expect "reports the first batch's finding" contains "$output" "SC2164"
+expect "and the last batch's missing file" contains "$output" "absent.sh"
+expect "and exits at the breakage level, which outranks a finding" \
+  test "$exit_code" -gt 1
+
 # --- summary ----------------------------------------------------------------
 
 exit_with_summary
