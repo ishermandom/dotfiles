@@ -26,9 +26,8 @@ repo_root=$(git rev-parse --show-toplevel 2> /dev/null)
 # No --fix: a check reports rather than rewrites, and the format step has
 # already applied whatever ruff could fix on its own.
 #
-# --color never because the findings reach the user inside a JSON string that
-# renders as plain text, while the session environment the hook inherits sets
-# FORCE_COLOR.
+# The findings keep ruff's color: the hook inherits the session's FORCE_COLOR,
+# and the terminal renders the codes in the message that halts the turn.
 #
 # The `:-` runs ruff in place outside a repo, and the cd runs in the command
 # substitution's subshell, leaving this script's own directory alone.
@@ -40,7 +39,7 @@ run_dir="${repo_root:-$PWD}"
 # `--with` supplies a ruff for a repo that declares none, without overriding a
 # declared pin.
 lint_output=$(cd "$run_dir" \
-  && uv run --project "$run_dir" --with ruff ruff check --color never 2>&1)
+  && uv run --project "$run_dir" --with ruff ruff check 2>&1)
 lint_status=$?
 
 # Ruff grades its own exits — 1 for findings, 2 or more when it could not run —

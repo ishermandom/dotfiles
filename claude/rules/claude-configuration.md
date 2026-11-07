@@ -327,11 +327,6 @@ finalizing; add new ones here as they are hit.
   including `disable-model-invocation`, making a user-only skill
   model-invocable. The description is the usual carrier, since prose is where a
   `: ` lands naturally.
-- **A tool's output placed in a hook's JSON field**: silence the tool's color
-  (`ruff check --color never`) or strip the escapes, as `show-check-output.sh`
-  does — the session environment a hook inherits sets `FORCE_COLOR`, so a tool
-  emits ANSI codes even into a pipe, and a `stopReason` or `systemMessage`
-  renders as plain text where the escapes read as garbage.
 - **A relative path in a hook**: resolve it against a directory the hook
   determines for itself, such as the repo root. A hook runs in the shell's
   current directory, wherever the turn's own `cd` commands left the shell —

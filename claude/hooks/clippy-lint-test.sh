@@ -2,10 +2,9 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Tests for clippy-lint.sh: a finding halts the turn with clippy's own words and
-# no color codes, a clean crate or no crate passes silently, and a session below
-# the repo root still checks the whole repo. `file-listing-test.sh` covers which
-# crates count.
+# Tests for clippy-lint.sh: a finding halts the turn with clippy's own words, a
+# clean crate or no crate passes silently, and a session below the repo root
+# still checks the whole repo. `file-listing-test.sh` covers which crates count.
 #
 # The cases run the real `cargo clippy` over small crates in scratch repos.
 
@@ -61,20 +60,15 @@ exit_code=$?
 expect_equal "exits 0" "$exit_code" 0
 expect_equal "prints nothing" "$(cat "$case_dir/output")" ""
 
-# CARGO_TERM_COLOR=always has cargo color its output even into a pipe, so a step
-# letting color through would be caught here.
-begin_case a-finding-halts-the-turn-in-plain-text
+begin_case a-finding-halts-the-turn
 git -C "$case_dir" init --quiet
 make_crate "$case_dir" "$linted"
-(cd "$case_dir" && CARGO_TERM_COLOR=always "$script_dir/clippy-lint.sh") \
-  > "$case_dir/output" 2>&1
+run_step "$case_dir"
 exit_code=$?
 
 expect "fails the step" test "$exit_code" -ne 0
 expect "passes on clippy's finding" \
   contains "$(cat "$case_dir/output")" "&Vec"
-expect "carries no color codes" \
-  not_contains "$(cat "$case_dir/output")" "$(printf '\033')"
 
 begin_case a-session-below-the-root-checks-the-whole-repo
 git -C "$case_dir" init --quiet

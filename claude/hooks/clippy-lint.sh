@@ -30,14 +30,14 @@ if ! command -v cargo > /dev/null; then
 fi
 
 # --all-targets extends the lints to the tests, and --deny warnings makes any
-# finding fail the step. --color never because the findings reach the user
-# inside a JSON string that renders as plain text: cargo leaves color off in a
-# pipe by default, but a CARGO_TERM_COLOR or CLICOLOR_FORCE in the environment
-# would turn it on.
+# finding fail the step. --color always because cargo, unlike ruff, ignores the
+# session's FORCE_COLOR that the hook inherits, and would leave its findings
+# plain in a pipe; the terminal renders the codes in the message that halts the
+# turn.
 lint_status=0
 findings=""
 for manifest in "${crate_manifests[@]}"; do
-  output=$(cargo clippy --quiet --all-targets --color never \
+  output=$(cargo clippy --quiet --all-targets --color always \
     --manifest-path "$manifest" -- --deny warnings 2>&1)
   clippy_status=$?
   if [ $clippy_status -ne 0 ]; then

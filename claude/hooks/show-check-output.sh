@@ -19,7 +19,4 @@ stderr=$(jq -r '.tool_response.stderr // ""' <<< "$input")
 output="${stdout}${stderr}"
 [ -z "$output" ] && exit 0
 
-# Strip ANSI escape codes — system messages render as plain text.
-output=$(sed 's/\x1b\[[0-9;]*[mGKHF]//g' <<< "$output")
-
 jq -n --arg msg "$output" '{"systemMessage": $msg}'
