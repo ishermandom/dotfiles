@@ -23,7 +23,7 @@
 # excluded" as a hard error. Anchor to the repo root so the check spans the
 # whole repo.
 repo_root=$(git rev-parse --show-toplevel 2> /dev/null)
-[ -n "$repo_root" ] && cd "$repo_root"
+cd "${repo_root:-$PWD}" || exit 1
 
 # -print -quit stops find after the first match, for speed.
 has_python_files=$(find . -name "*.py" -print -quit 2> /dev/null)

@@ -35,12 +35,6 @@ while getopts ":n" opt; do
   esac
 done
 
-# stow -n: no-op (simulate only); -v: verbose (print each link created/removed).
-STOW_FLAGS=""
-if [ -n "$is_dry_run" ]; then
-  STOW_FLAGS="-n -v"
-fi
-
 # command -v reports whether a command exists without running it. Checking once
 # up front keeps a missing stow from failing every package in turn.
 if ! command -v stow > /dev/null; then
@@ -71,9 +65,7 @@ stow_package() {
   # Without a target directory stow has nothing to link into, so stop here
   # rather than compounding one failure with another.
   mkdir -p "$target" || return 1
-  # --restow removes stale symlinks then recreates all links for this package,
-  # which handles renames and deletions cleanly.
-  #
+
   # --no-folding keeps config dirs as real directories; most tools expect this.
   #
   # Two packages want folding instead, for different reasons:
@@ -84,12 +76,20 @@ stow_package() {
   #     detaches the config from this repo. Folding links ~/.config/zed as a
   #     single directory symlink, so those renames land inside the repo.
   case "$package" in
-    claude | zed) no_folding="" ;;
-    *) no_folding="--no-folding" ;;
+    claude | zed) keeps_real_dirs="" ;;
+    *) keeps_real_dirs="yes" ;;
   esac
+
+  # `${var:+text}` expands to `text` when var is set and to nothing at all when
+  # it is empty, so each optional flag appears exactly when it applies. -n: a
+  # no-op run (simulate only); -v: verbose (print each link created or removed).
+  #
+  # --restow removes stale symlinks then recreates all links for this package,
+  # which handles renames and deletions cleanly.
+  #
   # stow's exit status is the function's, so the caller sees linking failures.
-  stow $STOW_FLAGS $no_folding --dir "$source_dir" --target "$target" \
-    --restow "$package"
+  stow ${is_dry_run:+-n -v} ${keeps_real_dirs:+--no-folding} \
+    --dir "$source_dir" --target "$target" --restow "$package"
 }
 
 # Each package maps to the directory where its contents should appear. This
