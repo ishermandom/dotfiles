@@ -288,7 +288,7 @@ home, no drift.
 - **Give every directly-invoked Python hook a self-contained launch header**:
   first line `#!/usr/bin/env -S uv run --script`, then a `# /// script` block
   declaring `requires-python` and any dependencies. A hook launched outside a
-  shell that sourced `.zshrc` otherwise runs under Apple's `python3` — 3.9.6,
+  shell that sourced `.zprofile` otherwise runs under Apple's `python3` — 3.9.6,
   carrying no third-party packages — where this repo needs 3.11 or newer, and a
   hook written to degrade rather than crash fails silently there. Keep the block
   with `dependencies = []` even when nothing outside the standard library is
@@ -316,11 +316,6 @@ home, no drift.
 Mechanical traps whose failure is silent. Check the matching entry before
 finalizing; add new ones here as they are hit.
 
-- **Measuring which interpreter or tool `uv run` resolves**: clear `VIRTUAL_ENV`
-  from the probe's environment first. uv honours an active virtual environment
-  over the project it was pointed at, so a measurement taken from an activated
-  shell reports that venv's version whatever the project pins — and reports
-  success where the real, unactivated case fails.
 - **`SKILL.md` frontmatter value containing `: `**: quote it or use a `>-` block
   scalar — a `: ` inside a plain (unquoted) YAML scalar is a parse error that
   voids the skill's entire frontmatter block. Claude Code then falls back to the

@@ -98,10 +98,3 @@ select-word-style bash
 # The `wt` command. Sourced after compinit, because `.worktree.zsh` registers a
 # completion.
 source "$HOME/.worktree.zsh"
-
-# Python agent environment
-#
-# Note that pip packages should be installed separately on each account.
-if [ -f "$HOME/.venvs/default/bin/activate" ]; then
-  source "$HOME/.venvs/default/bin/activate"
-fi

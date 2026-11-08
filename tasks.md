@@ -63,27 +63,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     that which version gates a repo is now deterministic, which is what makes
     aligning three tools on one standard tractable at all.
 
-- [ ] **Decide whether `~/.venvs/default` can go** {#retire-default-venv} — the
-      toolchain no longer reaches for it: the Python hooks declare their own
-      interpreter and dependencies, the check runners reach ruff and mypy
-      through `uv run` against the repo being checked, and `run_tests.sh` goes
-      through `uv run --project`. Work out what still would, then either delete
-      the directory on both accounts and drop the activation from
-      `zsh/.zshrc:101`, or write down what keeps it alive.
-  - Note: it is not only ruff and mypy. Its `bin/` holds 72 entries, among them
-    project entry points installed with an editable install — `clue-gen` is
-    crosswords' — and unrelated tooling picked up over time: cmake, fastapi,
-    huggingface-cli, mlx_lm and its dozen subcommands, playwright, streamlit,
-    transformers, websockets. Deleting it takes all of those with it, so the
-    question is which are still wanted and where each should come from instead.
-  - Note: the activation is unconditional for interactive shells, so it also
-    supplies a bare `python3` newer than Apple's 3.9.6. What depends on that,
-    and whether `uv run` covers those uses, is part of the answer.
-  - Note: `websockets` is there, and google-photos-deduper's `tools/cdp.py`
-    needs it. That repo now declares the dependency itself, so this no longer
-    waits on it — but the same question applies to every other entry in `bin/`:
-    which are reached by something that declares them, and which only by hand.
-
 - [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
       (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring
       prose only when that file is next edited, so files untouched since the

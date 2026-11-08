@@ -112,9 +112,8 @@ What the shape forecloses: `.venv` is effectively a cache, and any command that
 clears the venv temporarily breaks access to every tool it provides. Recovery is
 `uv sync`.
 
-`~/.venvs/default` still exists on each account, but nothing here depends on it
-any more. A Python hook declares its own interpreter and dependencies inline, so
-it runs from any process regardless of what PATH holds; the check runners reach
-ruff and mypy through `uv run` against the repo being checked, so each repo is
-held to the versions it pins rather than to whatever a venv happened to have
-installed. What is left is interactive convenience.
+No venv sits outside a repo, on either account. A Python hook declares its own
+interpreter and dependencies inline, so it runs from any process regardless of
+what PATH holds. The check runners reach ruff and mypy through `uv run` against
+the repo being checked, so each repo is held to the versions it pins rather than
+to whatever an account-wide venv happened to have installed.
