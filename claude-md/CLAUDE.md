@@ -376,7 +376,8 @@ Every session, without being asked:
   result changes what happens this turn (e.g. confirming an intermediate state
   lets more work land now), and then via the runners
   `~/.claude/scripts/quiet-{tests,mypy,ruff,prettier,rustfmt,clippy,shfmt,shellcheck}.sh [paths]`
-  — terse output, auto-surfaced to the user.
+  — their output is terse, and the `show-check-output.sh` hook shows it to the
+  user too.
 - **After a raw edit that bypasses `Edit`/`Write`** (e.g. a script-driven
   multi-file find/replace): their `PostToolUse` formatting hooks never fired
   either, so run the file's formatter rather than hand-fixing line lengths,
