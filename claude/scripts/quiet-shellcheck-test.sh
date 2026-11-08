@@ -49,12 +49,14 @@ run_runner
 expect "exits 0" test "$exit_code" -eq 0
 expect "summarizes rather than listing files" contains "$output" "1 linted"
 
-# `shellcheck` rejects zsh outright, so linting one would report the rejection
-# as a finding and halt every turn. quiet-shfmt.sh still formats them.
+# `shellcheck` rejects zsh outright, so linting a zsh file would report the
+# rejection as a finding and halt every turn. A zsh file is known by its name,
+# or, for a script with no extension, by its shebang.
 begin_case leaves-zsh-files-unlinted
 git -C "$case_dir" init --quiet
 printf 'cd /tmp\n' > "$case_dir/.settings.zsh"
 printf 'cd /tmp\n' > "$case_dir/.zshrc"
+printf '#!/usr/bin/env zsh\ncd /tmp\n' > "$case_dir/tool"
 run_runner
 
 expect "exits 0" test "$exit_code" -eq 0

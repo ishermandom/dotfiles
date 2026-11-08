@@ -24,16 +24,35 @@ else
   find_shell_files || exit $?
 fi
 
+# Succeeds when <path> is a zsh file. The zsh startup files carry no shebang, so
+# a name ending in `.zsh`, `.zshrc` or `.zprofile` decides on its own. Any other
+# file is zsh when its shebang runs zsh, by path or through `env`, with or
+# without flags after it.
+is_zsh_file() { # is_zsh_file <path>
+  case "$1" in
+    *.zsh | *.zshrc | *.zprofile) return 0 ;;
+  esac
+
+  # A named file that does not exist has no first line to read. `2> /dev/null`
+  # comes ahead of the input redirection so that it hides that failure too,
+  # leaving `shellcheck` to report the missing file.
+  local first_line=''
+  IFS= read -r first_line 2> /dev/null < "$1"
+  case "$first_line" in
+    '#!'*[/\ ]zsh | '#!'*[/\ ]zsh\ *) return 0 ;;
+  esac
+  return 1
+}
+
 # Lint only what `shellcheck` understands: it covers sh, bash, dash, and ksh,
-# and rejects zsh outright. The zsh startup files carry no shebang for it to key
-# on, so they would come back as an unknown shell. `quiet-shfmt.sh` still
-# formats them.
+# and rejects zsh outright. `quiet-shfmt.sh` still formats the zsh files, and so
+# still parses them: a zsh syntax error fails formatting, which halts the turn
+# at Stop.
 lint_files=()
 for shell_file in "${shell_files[@]}"; do
-  case "$shell_file" in
-    *.zsh | *.zshrc | *.zprofile) ;;
-    *) lint_files+=("$shell_file") ;;
-  esac
+  if ! is_zsh_file "$shell_file"; then
+    lint_files+=("$shell_file")
+  fi
 done
 
 if [ ${#lint_files[@]} -eq 0 ]; then
