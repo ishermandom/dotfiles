@@ -22,6 +22,11 @@ The rules below override the global CLAUDE.md and the rules files, such as
 - **`tasks.md` is tracked upstream**: the upstream owner agreed to it, so it
   belongs in pull requests like any other file. Queue follow-ups and tidy-ups
   there.
+- **When fanning out a task from `tasks.md`**: never add a `Worktree:` line to
+  `tasks.md`, though the fanout skill's tracker step asks for one. Recording it
+  would mean committing to `main` and pushing unreviewed work, both of which the
+  rules above forbid. Write the task's text into the lane's launch prompt
+  instead, since the prompt has no tracker line to point at.
 
 ## Code style
 
