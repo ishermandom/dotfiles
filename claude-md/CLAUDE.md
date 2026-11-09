@@ -468,11 +468,12 @@ Every session, without being asked:
   the message being acted on — check it there, never inherit it from an earlier
   turn. A request to make a change does not itself grant permission to commit
   it.
-- **Message format**: subject line <= 72 chars; wrap the remaining lines at 80
-  columns.
+- **Message format**: subject line <= 72 chars; wrap the body at 72 columns, not
+  the 80 used elsewhere — `git log` indents the body four spaces, so 72 fits an
+  80-column terminal.
 - **Multi-line messages**: always pass through a heredoc
   (`git commit -F - <<'EOF'`), never stacked `-m` flags — the heredoc shows the
-  line breaks literally, so the 72/80-col wrapping is verifiable in the command
+  line breaks literally, so the 72-column wrapping is verifiable in the command
   itself.
 - **Before amending a commit**: amend only when the intermediate state has no
   standalone value (typo fixes, immediate fix-ups); otherwise — and whenever
