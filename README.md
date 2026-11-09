@@ -6,8 +6,10 @@ This repo manages system configuration via symlinks, managed using GNU Stow.
 
 - `accounts/` — per-account overlays, layered over the packages below
 - `acrostic-club/` — the acrostic-club fork's Claude Code instructions, linked
-  into the checkout as `CLAUDE.md`; the checkout's `.git/info/exclude` lists
-  `/CLAUDE.md`, so git ignores the link
+  into the checkout as `CLAUDE.local.md`: a session started inside one of the
+  checkout's worktrees still reads that file, but not a `CLAUDE.md` beside it;
+  the checkout's `.git/info/exclude` lists `/CLAUDE.local.md`, so git ignores
+  the link
 - `acrostic-club-git-hooks/` — git hooks for the acrostic-club checkout, linked
   into its `.git/hooks`
 - `chromium/` — the Chromium checkout's task list, linked into the checkout as

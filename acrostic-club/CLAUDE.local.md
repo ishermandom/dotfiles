@@ -46,6 +46,23 @@ The rules below override the global CLAUDE.md and the rules files, such as
 
 ## Building and testing
 
+- **After entering a worktree, or starting a session in one**: run the command
+  below. The generator reads its data from the worktree's `submodules/` folders,
+  which start out empty; the command fills them with copy-on-write clones of the
+  main checkout's files. A plain `git worktree add` runs a `post-checkout` hook
+  that does the same, but Claude Code creates worktrees with git hooks switched
+  off. The command skips any folder that already holds files, so running it
+  again is harmless.
+
+  ```bash
+  /Users/Shared/code/acrostic-club/.git/hooks/post-checkout \
+    0000000000000000000000000000000000000000
+  ```
+
+  The all-zeros argument marks the worktree as new; without it, the command does
+  nothing. When the generator can't read `quotes.csv.br` or another file under
+  `submodules/`, the worktree has missed this step.
+
 - **Build and test with `RUSTC_BOOTSTRAP=1`**, as in
   `RUSTC_BOOTSTRAP=1 cargo build`: the code enables unstable features, and the
   installed compiler is Homebrew's stable Rust.

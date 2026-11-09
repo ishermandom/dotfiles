@@ -5,6 +5,7 @@ paths:
   - "**/.claude/rules/*.md"
   - "**/.claude/settings*.json"
   - "**/.claude/skills/**/*.md"
+  - "**/CLAUDE.local.md"
   - "**/CLAUDE.md"
   - "**/claude/docs/**/*.md"
   - "**/claude/hooks/**"

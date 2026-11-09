@@ -24,6 +24,10 @@
 # Git runs this hook after `git worktree add`, among other commands. Every
 # worktree shares the one copy in the main checkout's `.git/hooks`, where
 # install.sh links it.
+#
+# Claude Code creates its worktrees with git hooks switched off. For those
+# worktrees, the fork's instructions in `acrostic-club/CLAUDE.local.md` have
+# Claude run this script by hand.
 
 # Opens each message, so a reader of git's output can tell which messages came
 # from this hook.
@@ -118,7 +122,6 @@ while IFS= read -r -d '' config_entry; do
   # A failed clone has already said so, and the generator fails loudly on
   # missing data, so `|| true` lets the loop succeed regardless — and with it
   # the hook, whose last command is the loop. A failing status would instead
-  # make `git worktree add` report failure for a worktree it did create,
-  # failing Claude Code's worktree creation along with it.
+  # make `git worktree add` report failure for a worktree it did create.
   clone_submodule_files "$main_checkout" "$worktree" "$submodule_path" || true
 done < <(git config --file "$gitmodules" --null --get-regexp '\.path$')
