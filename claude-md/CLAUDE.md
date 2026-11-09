@@ -284,12 +284,11 @@ doc or config.
   draft is otherwise authored without them. When a new file is already written,
   `Read` a short excerpt, check it against the rules that then load, and `Edit`
   the gaps.
-- **Before reading or editing files in the dotfiles repo**: edits happen at the
-  real paths behind the `~/.claude` symlinks — outside the project, where
-  path-matched rules never fire. (Exception: in a session whose working project
-  is the dotfiles repo itself, skip this — reading a file at its repo path loads
-  the matching rules automatically.) First `Read` the matching rules file, then
-  check the work against it:
+- **Before reading or editing files in the dotfiles repo**: edits happen outside
+  the project, where path-matched rules never fire. (Exception: in a session
+  whose working project is the dotfiles repo itself, skip this — reading a file
+  at its repo path loads the matching rules automatically.) First `Read` the
+  matching rules file, then check the work against it:
   - `*.py` → `~/.claude/rules/python.md`
   - `*.sh` → `~/.claude/rules/shell.md`
   - `*.md` → `~/.claude/rules/markdown.md` and
@@ -446,10 +445,11 @@ Every session, without being asked:
 
 ## Git
 
-- **Default** {#worktree-default}: prefer a worktree — call `EnterWorktree` at
-  the start of the work rather than committing straight to `main`. The branch
-  holds the work until the user approves the landing (#land-go-ahead), leaving
-  one checkpoint on everything that reaches `main`.
+- **Prefer a worktree over committing directly to `main`** {#prefer-worktree}:
+  at the start of the work, call `EnterWorktree` for the session's project, or
+  run `git worktree add` for any other repo. The branch holds the work until the
+  user approves the landing (#land-go-ahead), leaving one checkpoint on
+  everything that reaches `main`.
 
 ### Committing
 

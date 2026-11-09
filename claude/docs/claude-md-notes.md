@@ -253,7 +253,7 @@ worktrees. `git land` only ever runs from a branch regardless, so a "from a
 worktree" qualifier would narrow nothing while adding a precondition that has to
 hold before the rule can fire.
 
-## Default (CLAUDE.md #worktree-default)
+## Prefer to work in a worktree (CLAUDE.md #prefer-worktree)
 
 As of 2026-08, the built-in harness prompt says to branch first when on the
 default branch, with no mention of worktrees; the user prefers worktrees, which

@@ -579,7 +579,7 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     Removing will discard this work permanently." So it counts commits on the
     branch without asking whether `main` already holds them, and landing first
     cannot satisfy it — only `discard_changes: true` clears it. Seen 2026-08-20.
-  - Note: the worktree default (CLAUDE.md #worktree-default) widens this past
+  - Note: the worktree default (CLAUDE.md #prefer-worktree) widens this past
     fanout lanes — ordinary sessions now end in a worktree teardown too, so the
     per-lane tax became a per-session one.
   - Worktree: worktree-cleanup
