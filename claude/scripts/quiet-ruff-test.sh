@@ -10,16 +10,17 @@
 # flattens those levels turns a broken toolchain into a clean-looking turn.
 #
 # Two invocations produce that one status, and the cases below cover both how
-# they combine and what each level means. A stub ruff on PATH stands in where
-# the pairing matters, since real ruff cannot be asked for one status from
-# `check` and a different one from `format`.
+# they combine and what each level means. A stub uv on PATH stands in where the
+# pairing matters, since real ruff cannot be asked for one status from `check`
+# and a different one from `format`.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 quiet_ruff="$script_dir/quiet-ruff.sh"
 
 source "$script_dir/shell-test-framework.sh"
 
-require_commands ruff
+# The runner reaches ruff through uv, so uv is what has to be installed.
+require_commands uv git
 
 # --- case helpers -----------------------------------------------------------
 
