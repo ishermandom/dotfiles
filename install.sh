@@ -50,12 +50,13 @@ stow_package() {
   source_dir="$1"
   package="$2"
   target="$3"
-  # acrostic-club and chromium link into code checkouts rather than config
-  # directories. Making a missing checkout directory here would put a folder,
-  # already holding a link, in the way of the `git clone` or `fetch chromium`
-  # that later creates it, so skip the package until the checkout exists.
+  # The acrostic-club packages and chromium link into code checkouts rather than
+  # config directories. Making a missing checkout directory here would put a
+  # folder, already holding a link, in the way of the `git clone` or `fetch
+  # chromium` that later creates it, so skip the package until the checkout
+  # exists.
   case "$package" in
-    acrostic-club | chromium)
+    acrostic-club | acrostic-club-git-hooks | chromium)
       if [ ! -d "$target" ]; then
         echo "$SCRIPT_NAME: skipping $package: no checkout at $target"
         return 0
@@ -105,12 +106,18 @@ stow_package() {
 # A directory holding no other file has nothing to trigger that discovery, so
 # adding a second file to claude-md brings the duplicate back.
 #
+# acrostic-club-git-hooks is a package of its own, targeting the acrostic-club
+# checkout's .git/hooks. Folding the hooks into the acrostic-club package would
+# put them under a directory named .git, which git skips without tracking
+# anything inside it.
+#
 # zed targets ~/.config rather than ~/.config/zed, and nests its own zed/
 # directory inside the package, so that stow links that directory as a whole
 # instead of linking its contents one file at a time — see the folding note
 # above for why Zed needs it that way.
 packages="
   acrostic-club:/Users/Shared/code/acrostic-club
+  acrostic-club-git-hooks:/Users/Shared/code/acrostic-club/.git/hooks
   chromium:/Users/Shared/code/chromium/src
   claude:$HOME/.claude
   claude-md:$HOME/.claude

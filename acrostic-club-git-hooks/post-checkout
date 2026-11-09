@@ -1,0 +1,124 @@
+#!/usr/bin/env bash
+# Copyright 2026 Ilya Sherman (ishermandom@)
+# SPDX-License-Identifier: MIT
+#
+# Gives each new acrostic-club worktree the main checkout's submodule files, as
+# copy-on-write clones.
+#
+# The generator reads the submodules' data relative to its own checkout, so
+# every worktree needs the files. Yet a new worktree starts with each submodule
+# directory empty. Initializing the submodules afresh would download hundreds of
+# megabytes per worktree, and store them twice over. A clone made with `cp -c`
+# instead shares its disk blocks with the original until either copy changes,
+# so cloning every submodule costs almost no disk.
+#
+# Git leaves the cloned files alone: the submodules stay uninitialized in the
+# worktree, so `git status` stays clean and `git add` stages none of the files.
+# A symlink at each submodule path would be simpler, but it breaks git: `git
+# status` fails when it finds a symlink where it expects a submodule.
+#
+# The clones are a snapshot of the main checkout's submodules at the moment the
+# worktree is created; they don't follow a later `git submodule update` in the
+# main checkout.
+#
+# Git runs this hook after `git worktree add`, among other commands. Every
+# worktree shares the one copy in the main checkout's `.git/hooks`, where
+# install.sh links it.
+
+# Opens each message, so a reader of git's output can tell which messages came
+# from this hook.
+hook_name="post-checkout"
+
+# Succeeds when <ref> is git's null object name: all zeros, at whichever length
+# the repository's hash gives object names — 40 for SHA-1, 64 for SHA-256.
+is_null_ref() { # is_null_ref <ref>
+  case "$1" in
+    # Empty, or holding any character other than a zero.
+    "" | *[!0]*) return 1 ;;
+    *) return 0 ;;
+  esac
+}
+
+# Fills a new worktree's copy of the submodule at <submodule_path> with
+# copy-on-write clones of the main checkout's files there. The submodule's own
+# `.git` pointer stays behind: it reaches the main checkout's `.git` by a
+# relative path, which leads nowhere from inside the worktree. A copy that
+# already holds files is left alone.
+#
+# Parentheses in place of braces around the body run it in a subshell, which
+# keeps the glob settings below from leaking into the caller.
+#
+# Usage: clone_submodule_files <main_checkout> <worktree> <submodule_path>
+clone_submodule_files() (
+  main_checkout="$1"
+  worktree="$2"
+  submodule_path="$3"
+
+  # `dotglob` lets `*` match names that start with a dot. `nullglob` expands a
+  # pattern that matches nothing to nothing, rather than to the pattern itself.
+  shopt -s dotglob nullglob
+
+  # `${#array[@]}` counts an array's elements.
+  existing_files=("$worktree/$submodule_path"/*)
+  [ ${#existing_files[@]} -eq 0 ] || return 0
+
+  source_files=()
+  for source_file in "$main_checkout/$submodule_path"/*; do
+    # `##*/` strips everything through the last slash, leaving the name.
+    # `+=` appends to the array.
+    [ "${source_file##*/}" = .git ] || source_files+=("$source_file")
+  done
+
+  if [ ${#source_files[@]} -eq 0 ]; then
+    echo "$hook_name: the main checkout's $submodule_path holds no files," \
+      "so this worktree's copy stays empty" >&2
+    return 1
+  fi
+
+  # -c clones each file rather than copying its contents. cp falls back to a
+  # full copy on a volume that can't clone. Calling /bin/cp by its full path
+  # rules out GNU cp, which reads -c differently.
+  if ! /bin/cp -c -R "${source_files[@]}" "$worktree/$submodule_path/"; then
+    echo "$hook_name: could not clone $submodule_path from the main checkout;" \
+      "this worktree's copy may be incomplete" >&2
+    return 1
+  fi
+  echo "$hook_name: cloned $submodule_path from the main checkout"
+)
+
+# Everything below runs only when this file is executed, not when sourced.
+[ "${BASH_SOURCE[0]}" = "$0" ] || return 0
+
+# Git passes the previous HEAD first. It is the null object name only when
+# nothing was checked out before: in a worktree `git worktree add` just created,
+# or in a fresh clone. A branch switch passes a real commit.
+is_null_ref "$1" || exit 0
+
+# Each linked worktree has a git directory of its own, nested inside the shared
+# one that belongs to the main checkout. The two match only in the main checkout
+# itself, which the hook leaves alone: after a fresh clone, the main checkout
+# has nothing to clone from but itself.
+git_dir=$(git rev-parse --path-format=absolute --git-dir)
+shared_git_dir=$(git rev-parse --path-format=absolute --git-common-dir)
+[ "$git_dir" != "$shared_git_dir" ] || exit 0
+
+# The shared git directory is the main checkout's `.git`.
+main_checkout=$(dirname "$shared_git_dir")
+worktree=$(git rev-parse --show-toplevel)
+gitmodules="$worktree/.gitmodules"
+
+# Keys ending in `.path` are exactly the `submodule.<name>.path` entries.
+# `--null` ends each entry with a NUL byte and puts a newline between key and
+# value, so every path reads back intact. `read -d ''` reads up to a NUL byte.
+# `< <(...)` feeds the loop the output of the command inside.
+while IFS= read -r -d '' config_entry; do
+  # `#*$'\n'` strips everything through the first newline, leaving the value.
+  submodule_path=${config_entry#*$'\n'}
+
+  # A failed clone has already said so, and the generator fails loudly on
+  # missing data, so `|| true` lets the loop succeed regardless — and with it
+  # the hook, whose last command is the loop. A failing status would instead
+  # make `git worktree add` report failure for a worktree it did create,
+  # failing Claude Code's worktree creation along with it.
+  clone_submodule_files "$main_checkout" "$worktree" "$submodule_path" || true
+done < <(git config --file "$gitmodules" --null --get-regexp '\.path$')
