@@ -40,6 +40,12 @@ The user opens every pull request (PR) from their main account, so never run
    account can open files under `/Users/Shared/code`, but not Claude's home
    folder, which holds the scratchpad and `$CLAUDE_JOB_DIR/tmp`. Git ignores
    `.claude/` through `.git/info/exclude`.
+
+   Write each paragraph of the description on a single line rather than wrapping
+   at 80 columns: GitHub shows every newline in a pull request description as a
+   line break, unlike in a Markdown file. Note that Prettier does not run in
+   this repo.
+
 3. Hand the user a command to run from the main account:
 
    ```bash
