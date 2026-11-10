@@ -28,6 +28,31 @@ The rules below override the global CLAUDE.md and the rules files, such as
   rules above forbid. Write the task's text into the lane's launch prompt
   instead, since the prompt has no tracker line to point at.
 
+## When opening a pull request
+
+The user opens every pull request (PR) from their main account, so never run
+`gh pr create`. Instead, prepare the pull request and hand it over:
+
+1. Push the branch to `origin` under a name that describes the change, without
+   the `worktree-` prefix that local branches carry.
+2. Write the description to `.claude/pr-description.md` in the branch's
+   worktree, where the user can review the description before posting. The main
+   account can open files under `/Users/Shared/code`, but not Claude's home
+   folder, which holds the scratchpad and `$CLAUDE_JOB_DIR/tmp`. Git ignores
+   `.claude/` through `.git/info/exclude`.
+3. Hand the user a command to run from the main account:
+
+   ```bash
+   gh pr create --repo nathdobson/acrostic-club --base main \
+     --head ishermandom:<branch> --title "<title>" \
+     --body-file <absolute path to pr-description.md>
+   ```
+
+Target `main` even when the branch is stacked on another pull request's branch:
+GitHub can't base a pull request from a fork on a fork branch. Instead, list the
+pull requests the branch includes in the description, and say which commits are
+new.
+
 ## Code style
 
 - **Follow upstream's conventions where they apply**:
