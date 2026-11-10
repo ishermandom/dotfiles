@@ -45,9 +45,9 @@ The rules below override the global CLAUDE.md and the rules files, such as
   `#[test]` functions where they are.
 - **Leave existing code outside the change as it is**: don't reformat or tidy it
   in passing. `tasks.md` queues the codebase-wide tidy-ups.
-- **Never run rustfmt over existing files**: the code resembles rustfmt's
-  default style but isn't formatted by it, so rustfmt would rewrite most files.
-  Write new code in rustfmt's default style by hand.
+- **Format Rust according to `rustfmt.toml`**:
+  - Run `~/.claude/scripts/quiet-rustfmt.sh`. The end-of-turn formatter skips
+    this fork as someone else's project, so nothing else formats the code.
 
 ## Building and testing
 
