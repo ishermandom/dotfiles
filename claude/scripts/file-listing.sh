@@ -28,6 +28,25 @@ list_unignored_files() { # list_unignored_files <pathspec>...
   git ls-files -z --cached --others --exclude-standard -- "$@" 2> /dev/null
 }
 
+# Succeeds when <manifest> declares a `[workspace]` table but no `[package]`
+# table. Cargo calls such a manifest virtual. It sits at the root of a workspace
+# and lists the workspace's crates. It is not a crate itself. For example:
+#
+# ```toml
+# [workspace]
+# members = ["app", "tools"]
+# ```
+#
+# Handed a manifest, `cargo fmt` formats the crate that manifest declares. A
+# virtual manifest declares none. So when a workspace has two or more members,
+# `cargo fmt` fails on its virtual manifest. (With a single member, `cargo fmt`
+# formats that member instead.)
+is_workspace_only_manifest() { # is_workspace_only_manifest <manifest>
+  # `-x` matches whole lines and `-F` takes the text literally, so the brackets
+  # need no escaping.
+  grep -qxF '[workspace]' "$1" && ! grep -qxF '[package]' "$1"
+}
+
 # Sets the array `crate_manifests` to the Cargo.toml of every Rust crate under
 # the current directory, each path relative to that directory. A crate's
 # Cargo.toml is its manifest, which cargo takes through `--manifest-path`.
@@ -45,8 +64,10 @@ find_crate_manifests() {
   local manifest
   while IFS= read -r -d '' manifest; do
     # A deleted manifest is passed over, as is the candidate outside a repo when
-    # the current directory holds no crate.
-    if [ -f "$manifest" ]; then
+    # the current directory holds no crate. So is a workspace-only manifest,
+    # which names no crate; the workspace's members are each found through their
+    # own manifests.
+    if [ -f "$manifest" ] && ! is_workspace_only_manifest "$manifest"; then
       crate_manifests+=("$manifest")
     fi
   done < <(

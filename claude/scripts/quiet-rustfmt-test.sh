@@ -2,9 +2,10 @@
 # Copyright 2026 Ilya Sherman (ishermandom@)
 # SPDX-License-Identifier: MIT
 #
-# Tests for quiet-rustfmt.sh: a crate comes out formatted, and a file rustfmt
-# cannot parse reads as breakage rather than as a clean run.
-# `file-listing-test.sh` covers which crates count.
+# Tests for quiet-rustfmt.sh: a crate comes out formatted, a workspace root that
+# names no crate leaves the run clean, and a file rustfmt cannot parse reads as
+# breakage rather than as a clean run. `file-listing-test.sh` covers which
+# crates count.
 #
 # The cases run the real `cargo fmt` over small crates in scratch directories.
 
@@ -20,11 +21,13 @@ require_commands git cargo
 # --- case helpers -----------------------------------------------------------
 
 # Writes a crate at <directory> whose library is <source>, on the 2024 edition
-# the repo's own crate uses.
-make_crate() { # make_crate <directory> <source>
+# the repo's own crate uses. The package is named <name>, `fixture` by default;
+# two crates in one workspace need names of their own.
+make_crate() { # make_crate <directory> <source> [name]
+  local name=${3:-fixture}
   mkdir -p "$1/src"
-  printf '[package]\nname = "fixture"\nversion = "0.1.0"\nedition = "2024"\n' \
-    > "$1/Cargo.toml"
+  printf '[package]\nname = "%s"\nversion = "0.1.0"\nedition = "2024"\n' \
+    "$name" > "$1/Cargo.toml"
   printf '%s\n' "$2" > "$1/src/lib.rs"
 }
 
@@ -60,6 +63,24 @@ exit_code=$?
 
 expect_equal "exits 0" "$exit_code" 0
 expect_equal "the crate comes out formatted" \
+  "$(cat "$case_dir/tools/src/lib.rs")" "$formatted"
+
+begin_case a-workspace-root-without-a-package-formats-its-members
+git -C "$case_dir" init --quiet
+printf '[workspace]\nmembers = ["app", "tools"]\nresolver = "2"\n' \
+  > "$case_dir/Cargo.toml"
+make_crate "$case_dir/app" "$unformatted" app
+make_crate "$case_dir/tools" "$unformatted" tools
+run_runner "$case_dir"
+exit_code=$?
+
+# Handed the root's manifest, `cargo fmt` looks for the package that manifest
+# names, finds none, and fails. The workspace needs two members to show the
+# failure: given one, `cargo fmt` formats that lone member instead.
+expect_equal "exits 0" "$exit_code" 0
+expect_equal "the first member comes out formatted" \
+  "$(cat "$case_dir/app/src/lib.rs")" "$formatted"
+expect_equal "the second member comes out formatted" \
   "$(cat "$case_dir/tools/src/lib.rs")" "$formatted"
 
 begin_case an-unparseable-file-is-breakage

@@ -7,14 +7,15 @@
 # `list_unignored_files` lists tracked and untracked files alike, leaves out
 # what git ignores, passes an unusual name through whole, and fails outside a
 # repo. `find_crate_manifests` finds a crate at any depth under the current
-# directory, and leaves out a deleted manifest and a crate elsewhere in the
-# repo; outside a repo, only a crate at the current directory counts.
-# `find_shell_files` finds shell files by extension or shebang, and by name
-# alone for the dot-prefixed files shfmt skips; it leaves out what git ignores,
-# a deleted file, and a symlink.
+# directory, and leaves out a deleted manifest, a crate elsewhere in the repo,
+# and a workspace root that declares no package; outside a repo, only a crate at
+# the current directory counts. `find_shell_files` finds shell files by
+# extension or shebang, and by name alone for the dot-prefixed files shfmt
+# skips; it leaves out what git ignores, a deleted file, and a symlink.
 #
-# The cases run the real git and shfmt. None needs cargo, since only where a
-# manifest sits matters, never what it says.
+# The cases run the real git and shfmt. None needs cargo: the finder reads only
+# where a manifest sits and whether it declares a workspace or a package, never
+# whether cargo could build the crate.
 
 script_dir=$(cd "$(dirname "$0")" && pwd)
 
@@ -127,6 +128,20 @@ make_file "$case_dir/tools/Cargo.toml"
 
 expect_equal "finds only the crate under the current directory" \
   "$(crates_from "$case_dir/tools")" "Cargo.toml"
+
+begin_case a-workspace-root-without-a-package-is-left-out
+git -C "$case_dir" init --quiet
+printf '[workspace]\nmembers = ["app"]\n' > "$case_dir/Cargo.toml"
+make_file "$case_dir/app/Cargo.toml"
+
+expect_equal "finds only the member crate" \
+  "$(crates_from "$case_dir")" "app/Cargo.toml"
+
+begin_case a-workspace-root-with-a-package-is-found
+git -C "$case_dir" init --quiet
+printf '[package]\nname = "app"\n\n[workspace]\n' > "$case_dir/Cargo.toml"
+
+expect_equal "finds the root crate" "$(crates_from "$case_dir")" "Cargo.toml"
 
 begin_case outside-a-repo-only-the-crate-in-place-is-found
 make_file "$case_dir/Cargo.toml"
