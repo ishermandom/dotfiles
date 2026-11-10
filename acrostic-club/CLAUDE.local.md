@@ -50,7 +50,7 @@ The user opens every pull request (PR) from their main account, so never run
 
    ```bash
    gh pr create --repo nathdobson/acrostic-club --base main \
-     --head ishermandom:<branch> --title "<title>" \
+     --head ishermandom:<branch> --title '<title>' \
      --body-file <absolute path to pr-description.md>
    ```
 
