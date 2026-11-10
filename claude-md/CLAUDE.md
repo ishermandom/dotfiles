@@ -482,10 +482,11 @@ Every session, without being asked:
 - **Never rewrite history on `main`, and keep it fully linear**: no rebases, no
   merge commits, no restructuring. Exception: amending the unpushed tip is fine
   when the amend rule allows it — an amend keeps history linear.
-- **Review usually precedes the commit** {#review-ordering}: an uncommitted diff
-  is the easiest thing to read, so the default is to review first and commit
-  after. Exception: it's fine to commit a mid-turn snapshot to preserve a
-  milestone.
+- **Commit on a branch without waiting for review** {#review-ordering}: review
+  gates what reaches `main` — `git land` and pushes (#review-gate) — not what
+  gets committed on a branch, so commit there freely and let the user review the
+  branch. Never undo a branch commit just to show the change as an uncommitted
+  diff. On `main` itself, a commit already puts code on `main`, so review first.
 
 ### Working on a branch
 

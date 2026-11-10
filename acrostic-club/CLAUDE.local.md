@@ -16,6 +16,22 @@ The rules below override the global CLAUDE.md and the rules files, such as
 - **Before pushing a branch to `origin`**: push only a branch meant to become a
   pull request, and only after the user has reviewed its changes. Never push any
   other branch.
+- **When a branch is ready for the user's review**: if it doesn't have its own
+  worktree already, give the user the command below to run from their own
+  terminal, since running it through `!` in a session failed. The user then
+  opens the worktree in Zed with `wt <branch>`.
+
+  ```bash
+  git -C /Users/Shared/code/acrostic-club worktree add \
+    .claude/worktrees/<branch> <branch>
+  ```
+
+  To make review fixes, switch into that worktree with `EnterWorktree`, passing
+  its path. When git refuses a branch as already checked out in the main
+  checkout, which happens when Zed switches the main checkout to it, ask the
+  user to switch the main checkout back to `main`: a branch can be checked out
+  in only one place.
+
 - **Commit messages**: open with a short sentence ending in a period, as
   upstream's history does ("Updated clues."). Always add a body explaining the
   change and its reasons; upstream's commits have none, but the user wants them.

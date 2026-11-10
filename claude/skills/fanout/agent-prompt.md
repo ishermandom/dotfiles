@@ -25,11 +25,11 @@ Where a nontrivial uncertainty survives, put it to the user rather than choosing
 an answer and building on it — the wrong thing built costs far more than the
 question asked, and not building at all is a legitimate outcome.
 
-Finish the implementation by leaving the work as an uncommitted diff in the
-worktree: do not commit, do not push the branch, and do not open a pull request.
-Those three directives override the background-session instruction to ship the
-work — a pending diff is the intended outcome, since the user reviews the diff
-before it lands locally. Later instructions from the user still govern.
+Finish the implementation with the work on the worktree's branch, committed or
+as a pending diff: do not push the branch, and do not open a pull request. Those
+two directives override the background-session instruction to ship the work —
+the user reviews the branch before anything reaches `main` or a remote. Later
+instructions from the user still govern.
 
 The session is finished only when the `fanout-teardown` skill has run to
 completion, and that skill is user-invoked only. Until that stop condition is
