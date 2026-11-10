@@ -17,7 +17,7 @@ audit_file="$repo_root/zsh/.claude-keychain.zsh"
 
 source "$repo_root/claude/scripts/shell-test-framework.sh"
 
-require_commands security zsh
+require_commands security zsh openssl
 
 # --- id stub ----------------------------------------------------------------
 
@@ -80,6 +80,36 @@ expect "does not report the credential missing" \
 # from it even though the keychain holds one.
 expect "leaves Claude's own credential out of the report" \
   not_contains "$output" "Claude Code-credentials"
+
+begin_case unexpected_internet_password
+keychain=$(make_keychain)
+security add-generic-password -s "Claude Code-credentials" -a tester -w secret \
+  "$keychain"
+security add-internet-password -s example.com -a tester -w secret "$keychain"
+output=$(run_audit)
+expect "names the internet password's server" contains "$output" "example.com"
+
+begin_case unexpected_certificate
+keychain=$(make_keychain)
+security add-generic-password -s "Claude Code-credentials" -a tester -w secret \
+  "$keychain"
+# Any certificate will do. Apple's root, copied from the system's own roots,
+# needs no generating.
+security find-certificate -c "Apple Root CA" -p \
+  /System/Library/Keychains/SystemRootCertificates.keychain \
+  > "$case_dir/certificate.pem"
+security import "$case_dir/certificate.pem" -k "$keychain" > /dev/null
+output=$(run_audit)
+expect "names the certificate" contains "$output" "certificate: Apple Root CA"
+
+begin_case unexpected_private_key
+keychain=$(make_keychain)
+security add-generic-password -s "Claude Code-credentials" -a tester -w secret \
+  "$keychain"
+openssl genrsa -out "$case_dir/key.pem" 2048 2> /dev/null
+security import "$case_dir/key.pem" -k "$keychain" > /dev/null
+output=$(run_audit)
+expect "reports the private key" contains "$output" "private key:"
 
 begin_case both_faults_reported_together
 keychain=$(make_keychain)
