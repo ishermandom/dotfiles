@@ -450,6 +450,11 @@ Every session, without being asked:
   run `git worktree add` for any other repo. The branch holds the work until the
   user approves the landing (#land-go-ahead), leaving one checkpoint on
   everything that reaches `main`.
+- **Before running a command containing `git` in a session isolated by
+  `EnterWorktree`**: keep it a plain invocation, chained with `&&` at most, and
+  pass values between commands through files or literal hashes. The isolation
+  guard refuses any such command that uses a loop or `$(...)`, and it matches
+  `git` anywhere in the text, even inside a word such as `github`.
 
 ### Committing
 
