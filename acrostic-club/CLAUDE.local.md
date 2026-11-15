@@ -62,6 +62,11 @@ The user opens every pull request (PR) from their main account, so never run
    line break, unlike in a Markdown file. Note that Prettier does not run in
    this repo.
 
+   End the description at its `🤖 Generated with [Claude Code]` line, leaving
+   out the session link that Claude Code's attribution reminder places after
+   that line. In the PR description, the session link is more noise than signal.
+   Commit messages keep their `Claude-Session:` trailer.
+
 3. Hand the user a command to run from the main account:
 
    ```bash
