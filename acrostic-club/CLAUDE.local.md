@@ -120,6 +120,16 @@ new.
   nothing. When the generator can't read `quotes.csv.br` or another file under
   `submodules/`, the worktree has missed this step.
 
+- **Before running a `global` stage in a worktree, or when the generator can't
+  open a file under `build/`**: run
+  `/Users/Shared/code/acrostic-club/generator/clone-build.sh` from inside the
+  worktree. The script clones the main checkout's `build/` at almost no disk
+  cost, where rebuilding stores the worktree's own copy of many gigabytes.
+  Rebuild an output only when the branch changes how its stage builds it. The
+  main checkout's copy of the script serves branches older than the script too.
+  Leave the script out of worktree setup: the user wants clones only where
+  needed.
+
 - **Build and test with `RUSTC_BOOTSTRAP=1`**, as in
   `RUSTC_BOOTSTRAP=1 cargo build`: the code enables unstable features, and the
   installed compiler is Homebrew's stable Rust.
