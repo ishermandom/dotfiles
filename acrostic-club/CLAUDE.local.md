@@ -51,6 +51,11 @@ The user opens every pull request (PR) from their main account, so never run
 
 1. Push the branch to `origin` under a name that describes the change, without
    the `worktree-` prefix that local branches carry.
+
+   Before pushing, give the message of each commit new to this pull request a
+   prose.md pass (inline, no subagents): the fork's ruleset blocks force pushes,
+   so it's worth getting each message into a great state before pushing.
+
 2. Write the description to `.claude/pr-description.md` in the branch's
    worktree, where the user can review the description before posting. The main
    account can open files under `/Users/Shared/code`, but not Claude's home
