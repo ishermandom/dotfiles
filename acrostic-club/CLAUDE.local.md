@@ -79,7 +79,6 @@ new.
 
 - **Follow upstream's conventions where they apply**:
   - never add a license header; the repository's `LICENSE` covers its files
-  - wrap Rust near 100 columns, rustfmt's default width, rather than 80
   - write plain `//` comments, never `///` doc comments
 - **In new code, follow the user's preferences over upstream's habits**:
   - `.expect("…")` with a message stating the invariant that should hold, never
@@ -92,9 +91,10 @@ new.
   `#[test]` functions where they are.
 - **Leave existing code outside the change as it is**: don't reformat or tidy it
   in passing. `tasks.md` queues the codebase-wide tidy-ups.
-- **Format Rust according to `rustfmt.toml`**:
-  - Run `~/.claude/scripts/quiet-rustfmt.sh`. The end-of-turn formatter skips
-    this fork as someone else's project, so nothing else formats the code.
+- **Format Rust by running `~/.claude/scripts/quiet-rustfmt.sh`** from the
+  repository root. The end-of-turn formatter skips this fork as someone else's
+  project, so nothing else formats the code. rustfmt leaves comments alone, so
+  wrap them by hand at `rustfmt.toml`'s 100 columns, not `rust.md`'s 80.
 
 ## Building and testing
 
