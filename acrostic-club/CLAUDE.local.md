@@ -32,9 +32,9 @@ The rules below override the global CLAUDE.md and the rules files, such as
   user to switch the main checkout back to `main`: a branch can be checked out
   in only one place.
 
-- **Commit messages**: open with a short sentence ending in a period, as
-  upstream's history does ("Updated clues."). Always add a body explaining the
-  change and its reasons; upstream's commits have none, but the user wants them.
+- **Commit messages**: open with a short imperative sentence ending in a period,
+  such as "Update the clues." Always add a body explaining the change and its
+  reasons; upstream's commits have none, but the user wants them.
 - **`tasks.md` is tracked upstream**: the upstream owner agreed to it, so it
   belongs in pull requests like any other file. Queue follow-ups and tidy-ups
   there.
