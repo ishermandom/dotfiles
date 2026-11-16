@@ -932,6 +932,17 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     necessity check turns on whether markdown.md's "Record decisions, not
     operative details" already covers the case.
 
+- [ ] **Update acrostic-club's rule on upstream's inline tests** — the rule in
+      `acrostic-club/CLAUDE.local.md` says to leave upstream's inline `#[test]`
+      functions where they are. Upstream commit `a6627f5` moved each crate's
+      inline tests into its `tests/` directory, leaving only
+      `generator/src/util/average.rs` with any. Cut the rule, or narrow it to
+      that file.
+  - Note: the acrostic-club checkout reaches this file through a symlink into
+    the dotfiles main checkout, so sessions there read `main`'s copy, not the
+    worktree's.
+  - Worktree: acrostic-inline-tests-rule
+
 ---
 
 ## Recurring maintenance
