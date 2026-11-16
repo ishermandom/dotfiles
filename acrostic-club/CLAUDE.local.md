@@ -11,8 +11,8 @@ The rules below override the global CLAUDE.md and the rules files, such as
   `upstream/main` and only fast-forwards to match it. A commit on `main`
   diverges it from upstream, and undoing the divergence means rewriting `main`'s
   history.
-- **When the user asks to sync `main`**, in words such as "sync" or "re-sync":
-  bring both local `main` and the fork's `main` on `origin` up to
+- **When the user asks to sync `main`** {#sync-main}, in words such as "sync" or
+  "re-sync": bring both local `main` and the fork's `main` on `origin` up to
   `upstream/main`. Run `git fetch upstream`, then
   `git merge --ff-only upstream/main` in the main checkout with `main` checked
   out, then `git push origin main`. Push `main` rather than `upstream/main`,
@@ -113,6 +113,8 @@ In this fork, a lane lands when upstream merges its pull request, not through
 - **Skip the tracker commit**: `tasks.md` reaches `main` only through a pull
   request. If the lane's task still appears in `upstream/main`'s `tasks.md`,
   report it to the user instead.
+- **After cleaning up the worktree, sync `main`** (#sync-main): invoking the
+  skill counts as the user asking for the sync.
 
 ## Code style
 
