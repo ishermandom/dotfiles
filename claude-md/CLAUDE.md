@@ -284,6 +284,14 @@ doc or config.
   draft is otherwise authored without them. When a new file is already written,
   `Read` a short excerpt, check it against the rules that then load, and `Edit`
   the gaps.
+- **Before editing a file in the dotfiles repo** {#dotfiles-worktree}, including
+  a file reached through a symlink such as `~/.claude/CLAUDE.md` or a project's
+  `CLAUDE.local.md`: make the edit in a dotfiles worktree, never in the main
+  checkout. When the session has no such worktree, run `readlink -f` on the
+  symlink to find the checkout, then create the worktree with
+  `git -C <checkout> worktree add -b worktree-<name> .claude/worktrees/<name>`.
+  The main checkout is the live configuration every session reads, so an edit
+  there takes effect everywhere at once, committed or not.
 - **Before reading or editing files in the dotfiles repo**: edits happen outside
   the project, where path-matched rules never fire. (Exception: in a session
   whose working project is the dotfiles repo itself, skip this — reading a file
@@ -366,9 +374,11 @@ Every session, without being asked:
 - **Resolve symlinks before editing** — `Edit` and `Write` reject symlink paths,
   wasting a round-trip. Use `readlink -f <path>` to get the real path first.
   Many files under `~/.claude` (including `CLAUDE.md` itself) are symlinks into
-  a dotfiles repo — always dereference before editing any path in that
-  directory. Read at the resolved path too: a pre-edit `Read` via the symlink
-  path doesn't satisfy `Edit`/`Write`'s real-path tracking, so it gets redone.
+  the dotfiles repo's main checkout, so the resolved path names the file to
+  change, not the place to change it: edit that file's copy in a dotfiles
+  worktree (#dotfiles-worktree). Read at the path being edited too: a pre-edit
+  `Read` via the symlink path doesn't satisfy `Edit`/`Write`'s real-path
+  tracking, so it gets redone.
 - **Before running pytest, mypy, ruff, prettier, rustfmt, clippy, shfmt, or
   shellcheck**: they run automatically at Stop — never invoke the bare tools
   yourself (a PreToolUse gate denies them). Run a check mid-turn only when its
@@ -445,10 +455,13 @@ Every session, without being asked:
 
 ## Git
 
-- **Prefer a worktree over committing directly to `main`** {#prefer-worktree}:
-  at the start of the work, call `EnterWorktree` for the session's project, or
-  run `git worktree add` for any other repo. The branch holds the work until the
-  user approves the landing (#land-go-ahead), leaving one checkpoint on
+- **Before the first edit in any repo, prefer a worktree over its main
+  checkout** {#prefer-worktree}: call `EnterWorktree` for the session's project,
+  or run `git worktree add` for any other repo, including one a side task
+  reaches mid-session. The main checkout is the user's working copy, often
+  shared with other sessions, so an edit there reaches the user and those
+  sessions at once, committed or not. The worktree's branch holds the work until
+  the user approves the landing (#land-go-ahead), leaving one checkpoint on
   everything that reaches `main`.
 - **Before running a command containing `git` in a session isolated by
   `EnterWorktree`**: keep it a plain invocation, chained with `&&` at most, and

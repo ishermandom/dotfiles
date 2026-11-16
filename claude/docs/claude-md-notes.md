@@ -262,3 +262,10 @@ better support parallel work.
 Strength is `prefer`, with no exception clause attached. `prefer` already
 licenses skipping a worktree where it would cost more than it buys, and an
 enumerated carve-out would over-fit whichever cases came to mind at the time.
+
+The rule fires at the first edit in any repo, and names the mid-session case,
+because a session can reach a second repo after its own worktree exists: most
+often the dotfiles repo, through a symlinked file such as a project's
+`CLAUDE.local.md`. "Committed or not" stays because the rules requiring
+permission to commit otherwise make an uncommitted edit in a main checkout look
+safe.
