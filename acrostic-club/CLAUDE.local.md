@@ -97,8 +97,7 @@ new.
     bind an expression to a descriptive local first
   - full-word names
 - **Put tests for new code in the crate's `tests/` directory**, which reaches
-  the generator through its library target. Leave upstream's existing inline
-  `#[test]` functions where they are.
+  the crate through its library target.
 - **Leave existing code outside the change as it is**: don't reformat or tidy it
   in passing. `tasks.md` queues the codebase-wide tidy-ups.
 - **Format Rust by running `~/.claude/scripts/quiet-rustfmt.sh`** from the
