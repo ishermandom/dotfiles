@@ -85,6 +85,29 @@ GitHub can't base a pull request from a fork on a fork branch. Instead, list the
 pull requests the branch includes in the description, and say which commits are
 new.
 
+## When tearing down a lane with `fanout-teardown`
+
+In this fork, a lane lands when upstream merges its pull request, not through
+`git land`. Adapt the skill's steps as follows:
+
+- **Before the skill's first step, confirm the merge**: run
+  `git fetch upstream`, then `git cherry -v upstream/main <branch>`. Every
+  commit should show a leading `-`, meaning `upstream/main` holds the same
+  change; stop and report any commit marked `+`. Compare changes rather than
+  hashes: GitHub's rebase merge gives each commit a new hash, so an ancestry
+  check reports a merged branch as unmerged. For the same reason, delete the
+  local branch at cleanup with `git branch -D`, since `git branch -d` refuses a
+  branch that git sees as unmerged.
+- **Then confirm the pushed branch is gone**: run
+  `git ls-remote --heads origin <pushed name>`, which should print nothing,
+  since the branch is deleted automatically before teardown. If the branch still
+  exists, report it to the user rather than deleting it.
+- **Skip the rebase onto `main` and the `git land`**: the merge was the landing,
+  and local `main` only fast-forwards to match `upstream/main`.
+- **Skip the tracker commit**: `tasks.md` reaches `main` only through a pull
+  request. If the lane's task still appears in `upstream/main`'s `tasks.md`,
+  report it to the user instead.
+
 ## Code style
 
 - **Follow upstream's conventions where they apply**:
