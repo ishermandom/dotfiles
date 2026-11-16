@@ -11,11 +11,17 @@ The rules below override the global CLAUDE.md and the rules files, such as
   `upstream/main` and only fast-forwards to match it. A commit on `main`
   diverges it from upstream, and undoing the divergence means rewriting `main`'s
   history.
+- **When the user asks to sync `main`**, in words such as "sync" or "re-sync":
+  bring both local `main` and the fork's `main` on `origin` up to
+  `upstream/main`. Run `git fetch upstream`, then
+  `git merge --ff-only upstream/main` in the main checkout with `main` checked
+  out, then `git push origin main`. Push `main` rather than `upstream/main`,
+  which another session's fetch can move between the merge and the push.
 - **Base each pull request branch on `upstream/main`**: the fork's `main` on
-  `origin` may lag behind, since Claude never pushes to it.
+  `origin` moves only when the user asks for a sync, so it may lag behind.
 - **Before pushing a branch to `origin`**: push only a branch meant to become a
   pull request, and only after the user has reviewed its changes. Never push any
-  other branch.
+  other branch, except `main` when the user asks for a sync.
 - **When a branch is ready for the user's review**: if it doesn't have its own
   worktree already, give the user the command below to run from their own
   terminal, since running it through `!` in a session failed. The user then
