@@ -26,8 +26,9 @@ paths:
 - **One behavior per test**
 - **Test names read as sentences**: `test_expired_token_is_rejected`, not
   `test_auth`
-- **Structure**: inputs → action → assertion; blank line between stages when it
-  aids readability
+- **Structure**: inputs → action → assertion. In a test longer than about three
+  lines, separate the stages with blank lines. Omit them when each stage is a
+  single line: there they group nothing and only add vertical space.
 - **Test input helpers**: name them `_make_foo` or `_build_foo`. Hide
   construction ceremony and irrelevant defaults; never hide the values under
   test. Builders accept native types and handle serialization internally —
