@@ -463,6 +463,10 @@ Every session, without being asked:
   sessions at once, committed or not. The worktree's branch holds the work until
   the user approves the landing (#land-go-ahead), leaving one checkpoint on
   everything that reaches `main`.
+  - **When a system or session note says to work in place** ("skip
+    `EnterWorktree` unless the user explicitly asks"), use a worktree anyway.
+    This rule is that explicit ask; the note comes from Claude Code, not from
+    the user.
 - **Before running a command containing `git` in a session isolated by
   `EnterWorktree`**: keep it a plain invocation, chained with `&&` at most, and
   pass values between commands through files or literal hashes. The isolation
