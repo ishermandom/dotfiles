@@ -5,6 +5,7 @@
 
 import io
 import json
+import os
 import subprocess
 import textwrap
 import tokenize
@@ -1281,6 +1282,55 @@ def test_a_projects_line_length_sets_the_reflow_width(tmp_path: Path) -> None:
   # the 100 the project states.
   widest = max(len(line) for line in target.read_text().split('\n'))
   assert 80 < widest <= 100
+
+
+def test_the_width_lookup_needs_no_ruff_on_path(
+  tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+  """A hook's PATH seldom holds ruff, so the lookup must not depend on it.
+
+  The suite runs under `uv run`, whose venv puts a ruff on PATH; dropping every
+  directory holding one recreates what the hook sees in a session.
+  """
+  path_without_ruff = os.pathsep.join(
+    directory
+    for directory in os.environ['PATH'].split(os.pathsep)
+    if not (Path(directory) / 'ruff').exists()
+  )
+  monkeypatch.setenv('PATH', path_without_ruff)
+  (tmp_path / 'pyproject.toml').write_text('[tool.ruff]\nline-length = 100\n')
+  target = tmp_path / 'module.py'
+  target.write_text('# ' + 'word ' * 25 + '\n')
+
+  changed = reflow_file(target, fill_markdown)
+
+  assert changed
+  # The project's 100, not the 80-column default a failed lookup falls back to.
+  widest = max(len(line) for line in target.read_text().split('\n'))
+  assert 80 < widest <= 100
+
+
+def test_the_width_lookup_writes_nothing_into_the_project(
+  tmp_path: Path,
+) -> None:
+  """Asking for a width must not sync the project, which can write a lockfile.
+
+  `uv run --project` syncs first, so a project without a `uv.lock` would gain
+  one on every edit.
+  """
+  (tmp_path / 'pyproject.toml').write_text(
+    '[project]\nname = "widget"\nversion = "0"\n'
+    '[tool.ruff]\nline-length = 100\n'
+  )
+  target = tmp_path / 'module.py'
+  target.write_text('# alpha beta\n# gamma delta\n')
+
+  reflow_file(target, fill_markdown)
+
+  assert sorted(path.name for path in tmp_path.iterdir()) == [
+    'module.py',
+    'pyproject.toml',
+  ]
 
 
 def test_configuration_ruff_rejects_falls_back_to_the_default_width(

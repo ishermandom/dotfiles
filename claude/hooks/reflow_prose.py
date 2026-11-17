@@ -381,8 +381,8 @@ def _tool_environment() -> Mapping[str, str]:
   """The process environment with both Homebrew bin directories on PATH.
 
   Hooks can run with a minimal environment, and the subprocesses this hook
-  shells out to — prettier, ruff, rustfmt, and shfmt among them — usually live
-  in one of those directories.
+  shells out to — prettier, uvx, rustfmt, and shfmt among them — usually live in
+  one of those directories.
   """
   environment = dict(os.environ)
   environment['PATH'] = '/opt/homebrew/bin:/usr/local/bin:' + environment.get(
@@ -1299,6 +1299,13 @@ def _discover_line_width(path: Path, language: Language) -> int:
   one width across both languages, and a project with no ruff configuration at
   all falls through to the same 80 columns it would have been given anyway.
 
+  ruff comes through `uvx`, since a hook's PATH seldom holds it. `uv run`, the
+  way `quiet-ruff.sh` reaches ruff at Stop, would sync the project first and
+  write a `uv.lock` into one lacking it, a side effect no edit should have.
+  `uvx` runs a cached ruff and touches nothing; its first run after uv's cache
+  is cleared fetches ruff, can outlast the timeout below, and leaves that one
+  edit at the 80-column default.
+
   Rust files ask rustfmt, whose `--print-config current` resolves the
   configuration formatting that path would use. A crate with no `rustfmt.toml`
   gets rustfmt's own default of 100 rather than the house 80, matching where its
@@ -1314,7 +1321,7 @@ def _discover_line_width(path: Path, language: Language) -> int:
     command = ['rustfmt', '--print-config', 'current', str(path)]
     width_pattern = _RUSTFMT_WIDTH_PATTERN
   else:
-    command = ['ruff', 'check', '--show-settings', str(path)]
+    command = ['uvx', 'ruff', 'check', '--show-settings', str(path)]
     width_pattern = _RUFF_WIDTH_PATTERN
   try:
     result = subprocess.run(
@@ -1329,8 +1336,8 @@ def _discover_line_width(path: Path, language: Language) -> int:
       timeout=3,
     )
   except (OSError, subprocess.TimeoutExpired, UnicodeDecodeError):
-    # No formatter on PATH, or a hang: reflow is best-effort, and a width it can
-    # guess well enough must never block the edit loop.
+    # No uvx or rustfmt on PATH, or a hang: reflow is best-effort, and a width
+    # it can guess well enough must never block the edit loop.
     return DEFAULT_LINE_WIDTH
   # Both commands report settings instead of checking or formatting the file, so
   # its own lint violations and syntax errors leave the exit status at zero; a
