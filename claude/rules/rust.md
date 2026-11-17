@@ -6,6 +6,12 @@ paths:
 
 # Rust style guide
 
+After any file-modification notice for a Rust file this turn, re-read the target
+region before composing an `old_string` — the prose reflow hook
+(`~/.claude/hooks/reflow_prose.py`) rewraps comment prose, doc comments
+included, right after each Edit or Write, so match the post-reflow wording, not
+the pre-reflow snapshot.
+
 - **Set the line width to 80-col**, with `max_width = 80` in `rustfmt.toml`
 - **Prefer thin binaries**: A typical binary should handle input and output, and
   leave the rest of the implementation to the library, where it can be tested.

@@ -7,29 +7,45 @@
 # SPDX-License-Identifier: MIT
 #
 # PostToolUse(Edit|Write) hook: reflow comment and docstring prose in a
-# just-edited Python or shell file to the line width that file's project uses,
-# or 80 columns by default.
+# just-edited Python, shell, or Rust file to the line width that file's project
+# uses, or 80 columns by default.
 #
-# Formatters deliberately leave comment and docstring text alone — ruff and
-# shfmt both do — so fitting prose to the line limit is manual work. This hook
-# closes that gap with two engines that both split overlong lines and merge
-# ragged short ones, paragraph by paragraph: comments go through prettier
+# Formatters deliberately leave comment and docstring text alone — ruff, shfmt,
+# and stable rustfmt all do — so fitting prose to the line limit is manual work.
+# This hook closes that gap with two engines that both split overlong lines and
+# merge ragged short ones, paragraph by paragraph: comments go through prettier
 # (`--parser=markdown --prose-wrap=always`) for markdown-aware layout, and
 # docstrings through a plain word-preserving filler (see below for why).
 #
-# Where the comments come from differs by language and neither is a line scan.
-# Python's come from `tokenize`, shell's from `shfmt --to-json` — so a `#` line
-# inside a heredoc, which a scan would take for a comment, is correctly left
-# alone. Shell has no docstring equivalent, so comments are its whole job.
+# Where the comments come from differs by language, and none is a line scan:
+#
+# - Python's come from `tokenize`.
+# - Shell's come from `shfmt --to-json`, so a `#` line inside a heredoc, which a
+#   scan would take for a comment, is correctly left alone.
+# - Rust's come from a small lexer in this file, which steps over strings,
+#   character literals, and nested block comments to reach the `//` lines
+#   between them. Rust's lexical grammar is small enough to carry here, where a
+#   parser would add a dependency the hook otherwise does without.
+#
+# Shell and Rust have no docstring equivalent, so comments are their whole job.
+# Rust's doc comments, `///` and `//!`, are markdown that rustdoc renders, so
+# they reflow as comments do. For simplicity of implementation, block comments,
+# `/* */`, never reflow: Rust code rarely writes prose in them, and the comment
+# path relies on a marker opening every line, which a block comment's lines need
+# not have.
 #
 # The contract that makes this safe:
 #
-# - Comment prose is markdown, and a chunk is a run of adjacent `# ` lines: a
-#   blank comment line ends the chunk, so paragraphs are separated by being
-#   formatted as separate documents. Adjacent plain lines are one paragraph and
-#   will merge. Bullets are `-`: prettier rewrites `*` and `+` to `-`, which
-#   trips the word-preservation check below and drops the whole chunk to the
-#   plain filler.
+# - Comment prose is markdown, and a chunk is a run of adjacent lines sharing
+#   one comment marker — `#`, or Rust's `//`, `///`, and `//!` — so a doc
+#   comment never merges into a plain one beside it. A blank comment line ends
+#   the chunk, so paragraphs are separated by being formatted as separate
+#   documents. Adjacent plain lines are one paragraph and will merge. Bullets
+#   are `-`: prettier rewrites `*` and `+` to `-`, which trips the
+#   word-preservation check below and drops the whole chunk to the plain filler.
+# - A fenced block in a comment stays verbatim whole, fences included, and a
+#   blank comment line inside one is part of its content rather than a paragraph
+#   break — a Rust doctest routinely holds one.
 # - Structure that survives reflow intact: `-` bullet lists (continuations wrap
 #   under a hanging indent), ordered lists numbered from `1.`, fenced blocks,
 #   tables, headings, and blockquotes. Nested bullets survive too, reindented to
@@ -99,13 +115,17 @@
 # Invoke with file paths to reflow them directly, or with no arguments to read a
 # hook payload (JSON with .tool_input.file_path) from stdin. A file whose parser
 # rejects it is left unchanged by design: mid-turn edits pass through broken
-# states, and the real syntax errors are reported at Stop, by ruff for Python
-# and by shfmt and shellcheck for shell. A shell file is likewise left alone
-# when shfmt is missing or hangs — silently, the way a missing ruff falls back
-# to the default width, since reflow is best-effort and must never block the
-# edit loop.
+# states, and the real syntax errors are reported at Stop, by ruff for Python,
+# by shfmt and shellcheck for shell, and by rustfmt for Rust. The Rust lexer
+# rejects only source ending inside a string or block comment, past which
+# comment text and string text can no longer be told apart; any other broken
+# Rust still reflows, since its comments are found correctly all the same. A
+# shell file is likewise left alone when shfmt is missing or hangs — silently,
+# the way a missing ruff falls back to the default width, since reflow is
+# best-effort and must never block the edit loop.
 
 import ast
+import bisect
 import dataclasses
 import enum
 import io
@@ -132,8 +152,15 @@ _SHELL_FILENAMES = frozenset({'.zprofile', '.zshrc'})
 # `ruff check --show-settings` prints a file's resolved configuration as
 # `key = value` lines. The formatter's wrap width is the one prose should match,
 # since it is where ruff breaks the code around that prose.
-_LINE_WIDTH_PATTERN = re.compile(
+_RUFF_WIDTH_PATTERN = re.compile(
   r'^formatter\.line_width = (?P<width>\d+)$', re.MULTILINE
+)
+
+# `rustfmt --print-config current` prints the same for Rust, as TOML. The anchor
+# matters: other keys end in `max_width` too, such as
+# `single_line_if_else_max_width`.
+_RUSTFMT_WIDTH_PATTERN = re.compile(
+  r'^max_width = (?P<width>\d+)$', re.MULTILINE
 )
 
 # Formats a markdown document to a print width; comment chunks go through this.
@@ -230,6 +257,47 @@ _RULE_LINE_PATTERN = re.compile(rf'\s*(?:{_RULE_CHARACTER}[ \t]*)+$')
 # so a `-- like this --` prose aside still reflows as prose.
 _DECORATED_HEADING_PATTERN = re.compile(r'\s*-{3,}\s.*-{3,}\s*$')
 
+# The Rust lexer's tokens: every construct whose text could hold a `//` that is
+# not a comment, each matched whole so the scan steps over it. Alternatives are
+# tried in order, so a raw string's `r` claims the text before the identifier
+# rule can, and a quote no string could close is caught before `other` would
+# step past it.
+_RUST_LINE_COMMENT = r'(?P<line_comment>//[^\n]*)'
+_RUST_BLOCK_COMMENT_OPEN = r'(?P<block_comment_open>/\*)'
+# A raw string has no escapes and ends at the first quote followed by as many
+# `#` as opened it. A `b` or `c` prefix makes a byte or C string.
+_RUST_RAW_STRING = r'(?P<raw_string>[bc]?r(?P<hashes>#*)".*?"(?P=hashes))'
+_RUST_STRING = r'(?P<string>[bc]?"(?:\\.|[^"\\])*")'
+# A quote opens a character literal only when one character or one escape and a
+# closing quote follow; otherwise it opens a lifetime or a loop label, such as
+# `'a`, and falls through to `other`.
+_RUST_CHARACTER = r"(?P<character>b?'(?:\\.[^'\n]*|[^'\\\n])')"
+_RUST_UNTERMINATED_STRING = r'(?P<unterminated_string>(?:[bc]?r#*)?")'
+_RUST_IDENTIFIER = r'(?P<identifier>\w+)'
+# Whitespace and punctuation a run at a time, or any one character nothing above
+# claimed: a `/` dividing, a lifetime's quote.
+_RUST_OTHER = r"""(?P<other>[^/"'\w]+|.)"""
+_RUST_TOKEN_PATTERN = re.compile(
+  '|'.join(
+    (
+      _RUST_LINE_COMMENT,
+      _RUST_BLOCK_COMMENT_OPEN,
+      _RUST_RAW_STRING,
+      _RUST_STRING,
+      _RUST_CHARACTER,
+      _RUST_UNTERMINATED_STRING,
+      _RUST_IDENTIFIER,
+      _RUST_OTHER,
+    )
+  ),
+  # A string, raw or not, may span lines.
+  re.DOTALL,
+)
+
+# Rust block comments nest, so the lexer counts both delimiters to find where
+# one ends.
+_RUST_BLOCK_COMMENT_DELIMITER_PATTERN = re.compile(r'/\*|\*/')
+
 
 class PrettierError(Exception):
   """prettier exited nonzero or could not be run."""
@@ -244,10 +312,19 @@ class ShellParseError(Exception):
   """
 
 
+class RustLexError(Exception):
+  """Rust source ended inside a string or block comment.
+
+  Past that point, comment text and string text cannot be told apart, so the
+  caller leaves the file alone.
+  """
+
+
 class Language(enum.Enum):
   """A source language this hook knows how to find the comments of."""
 
   PYTHON = enum.auto()
+  RUST = enum.auto()
   SHELL = enum.auto()
 
 
@@ -262,9 +339,9 @@ class ChunkKind(enum.Enum):
 class ProseChunk:
   """One markdown document to reflow, with what's needed to reinsert it.
 
-  Line numbers are 1-indexed and inclusive; `indent` is the column where the `#`
-  or opening quotes sit, applied to every reinserted line; `line_width` is the
-  width the reinserted source lines have to fit.
+  Line numbers are 1-indexed and inclusive; `indent` is the column where the
+  comment marker or opening quotes sit, applied to every reinserted line;
+  `line_width` is the width the reinserted source lines have to fit.
   """
 
   kind: ChunkKind
@@ -274,6 +351,10 @@ class ProseChunk:
   markdown: str
   line_width: int
 
+  # The marker opening every line of a comment chunk — `#`, `//`, `///`, or
+  # `//!` — and empty for a docstring, which has none.
+  comment_marker: str = ''
+
   # A docstring chunk covering only the prose head above a structured section
   # stops before the closing triple-quote, which stays with the untouched tail;
   # `_render` then omits it. Always True for comments and whole docstrings.
@@ -282,15 +363,17 @@ class ProseChunk:
   def reflow_width(self) -> int:
     """Print width for the markdown text, net of indent and prefix."""
     if self.kind is ChunkKind.COMMENT:
-      return max(1, self.line_width - self.indent - len('# '))
+      prefix_width = len(f'{self.comment_marker} ')
+      return max(1, self.line_width - self.indent - prefix_width)
     return max(1, self.line_width - self.indent)
 
 
 @dataclasses.dataclass(frozen=True)
 class _CommentLine:
-  """A whole-line comment: its indent column and text after the `#`."""
+  """A whole-line comment: its indent column, its marker, and the text after."""
 
   indent: int
+  marker: str
   content: str
 
 
@@ -298,8 +381,8 @@ def _tool_environment() -> Mapping[str, str]:
   """The process environment with both Homebrew bin directories on PATH.
 
   Hooks can run with a minimal environment, and the subprocesses this hook
-  shells out to — prettier, ruff, and shfmt among them — usually live in one of
-  those directories.
+  shells out to — prettier, ruff, rustfmt, and shfmt among them — usually live
+  in one of those directories.
   """
   environment = dict(os.environ)
   environment['PATH'] = '/opt/homebrew/bin:/usr/local/bin:' + environment.get(
@@ -529,7 +612,7 @@ def _full_line_comments(source: str) -> Mapping[int, _CommentLine]:
     # Tab-indented lines would break the spaces-only reinsertion math.
     if before.strip() or '\t' in before:
       continue
-    comments[row] = _CommentLine(column, token.string[1:].rstrip())
+    comments[row] = _CommentLine(column, '#', token.string[1:].rstrip())
   return comments
 
 
@@ -611,7 +694,74 @@ def _shell_comments(source: str) -> Mapping[int, _CommentLine]:
     before = source_lines[row - 1][:column]
     if before.strip() or '\t' in before:
       continue
-    comments[row] = _CommentLine(column, text.rstrip())
+    comments[row] = _CommentLine(column, '#', text.rstrip())
+  return comments
+
+
+def _rust_comment_marker(comment: str) -> str:
+  """The marker a `//` comment opens with, which says what kind it is.
+
+  `///` opens an outer doc comment and `//!` an inner one; four slashes or more
+  make a plain comment again, as the Rust reference specifies.
+  """
+  if comment.startswith('///') and not comment.startswith('////'):
+    return '///'
+  if comment.startswith('//!'):
+    return '//!'
+  return '//'
+
+
+def _rust_block_comment_end(source: str, start: int) -> int:
+  """The index just past the block comment opening at `start`.
+
+  Raises RustLexError when the source ends first.
+  """
+  depth = 0
+  for delimiter in _RUST_BLOCK_COMMENT_DELIMITER_PATTERN.finditer(
+    source, start
+  ):
+    depth += 1 if delimiter[0] == '/*' else -1
+    if depth == 0:
+      return delimiter.end()
+  raise RustLexError(
+    f'block comment never closes: {source[start : start + 80]!r}'
+  )
+
+
+def _rust_comments(source: str) -> Mapping[int, _CommentLine]:
+  """Map line number to comment for every whole-line `//` comment in Rust.
+
+  Trailing and tab-indented comments are excluded for the same reasons as in
+  Python, and by the same test against the text preceding the `//`. Raises
+  RustLexError when the source ends inside a string or block comment.
+  """
+  line_starts = [0, *(newline.end() for newline in re.finditer('\n', source))]
+  comments: dict[int, _CommentLine] = {}
+  position = 0
+  while position < len(source):
+    token = _RUST_TOKEN_PATTERN.match(source, position)
+    if not token:
+      raise RuntimeError(
+        f'no Rust token matched, though `other` takes any character: '
+        f'{source[position : position + 80]!r}'
+      )
+    position = token.end()
+
+    if token['block_comment_open']:
+      position = _rust_block_comment_end(source, token.start())
+    elif token['unterminated_string']:
+      raise RustLexError(
+        f'string never closes: {source[token.start() : token.start() + 80]!r}'
+      )
+    elif comment := token['line_comment']:
+      row = bisect.bisect_right(line_starts, token.start())
+      before = source[line_starts[row - 1] : token.start()]
+      if before.strip() or '\t' in before:
+        continue
+      marker = _rust_comment_marker(comment)
+      comments[row] = _CommentLine(
+        len(before), marker, comment[len(marker) :].rstrip()
+      )
   return comments
 
 
@@ -622,8 +772,8 @@ def _is_verbatim_line(content: str) -> bool:
   One home for the verbatim policy: shebangs, linter/formatter/type-checker
   directives, license tag lines, `--- subject ---` section headers (which an
   adjacent prose line would otherwise absorb, on the prettier path too), and
-  text stuck to the `#` (not this codebase's comment style — don't guess at its
-  meaning).
+  text stuck to the comment marker (not this codebase's comment style — don't
+  guess at its meaning).
   """
   return (
     content.startswith('!')
@@ -639,41 +789,55 @@ def _comment_chunks(
 ) -> Sequence[ProseChunk]:
   """Split whole-line comments into reflowable prose chunks.
 
-  A chunk is a maximal run of adjacent `# `-prefixed prose lines at one indent.
-  Blank `#` lines, directives, `#`-stuck text, indented blocks, `fmt: off`
-  regions, and inline script metadata blocks end the current chunk and stay
-  verbatim.
+  A chunk is a maximal run of adjacent prose lines at one indent under one
+  comment marker. Blank comment lines, directives, marker-stuck text, indented
+  blocks, fenced blocks, `fmt: off` regions, and inline script metadata blocks
+  end the current chunk and stay verbatim.
   """
   chunks: list[ProseChunk] = []
   run: list[tuple[int, str]] = []
   is_formatting_disabled = False
   is_in_script_metadata = False
-  # Both track structure within the current run, so both reset when it ends.
-  has_open_list = False
+  # A fence outlasts a run, since a blank comment line inside one ends the run
+  # but not the fence; it lasts until the comment block itself ends.
   is_in_fence = False
+  # Tracks structure within the current run, so it resets when the run ends.
+  has_open_list = False
   previous_row = None
   previous_indent = None
+  previous_marker = None
 
   def flush() -> None:
-    nonlocal has_open_list, is_in_fence
+    nonlocal has_open_list
     if run:
-      text = '\n'.join(line for _, line in run)
-      indent = comments[run[0][0]].indent
+      first_comment = comments[run[0][0]]
       chunks.append(
         ProseChunk(
-          ChunkKind.COMMENT, run[0][0], run[-1][0], indent, text, line_width
+          ChunkKind.COMMENT,
+          run[0][0],
+          run[-1][0],
+          first_comment.indent,
+          '\n'.join(line for _, line in run),
+          line_width,
+          comment_marker=first_comment.marker,
         )
       )
       run.clear()
     has_open_list = False
-    is_in_fence = False
 
   for row in sorted(comments):
     comment = comments[row]
-    if row != previous_row or comment.indent != previous_indent:
+    # A gap, a new indent, or a new marker starts a new comment block.
+    if (
+      row != previous_row
+      or comment.indent != previous_indent
+      or comment.marker != previous_marker
+    ):
       flush()
+      is_in_fence = False
     previous_row = row + 1
     previous_indent = comment.indent
+    previous_marker = comment.marker
 
     content = comment.content
     if is_formatting_disabled:
@@ -697,7 +861,15 @@ def _comment_chunks(
       flush()
       is_in_script_metadata = True
       continue
-    # A bare `#` is a paragraph break; keep it verbatim between chunks.
+    # A fenced block stays verbatim whole, fence lines included. Checked ahead
+    # of the paragraph break below, since a blank line inside a fence is code.
+    is_fence_line = content.strip().startswith(_FENCE_PREFIXES)
+    if is_in_fence or is_fence_line:
+      flush()
+      if is_fence_line:
+        is_in_fence = not is_in_fence
+      continue
+    # A bare marker is a paragraph break; keep it verbatim between chunks.
     if not content:
       flush()
       continue
@@ -706,13 +878,9 @@ def _comment_chunks(
       continue
 
     text = content[1:]
-    # A fence opens a verbatim region, where the indent rule below must stay off
-    # — fenced content is indented as often as not.
-    if text.strip().startswith(_FENCE_PREFIXES):
-      is_in_fence = not is_in_fence
     # An indented line is a block to leave alone rather than prose to refill,
     # unless a list item is open, whose continuations are indented by nature.
-    elif text[:1].isspace() and not has_open_list and not is_in_fence:
+    if text[:1].isspace() and not has_open_list:
       flush()
       continue
     if _LIST_ITEM_PATTERN.match(text):
@@ -881,11 +1049,11 @@ def _fill_chunk(chunk: ProseChunk) -> str:
 def _drop_blank_lines(markdown: str) -> str:
   """Strip the blank lines a markdown formatter inserted between blocks.
 
-  A comment chunk carries no blank line of its own — a bare `#` ends the chunk —
-  so every blank line here is one the formatter added to set a block apart from
-  the paragraph above it. Dropping them keeps a flag legend tight against its
-  introducing line; an author wanting the break writes the bare `#`, which
-  splits the chunk in two and separates the paragraphs that way.
+  A comment chunk carries no blank line of its own — a bare comment marker ends
+  the chunk — so every blank line here is one the formatter added to set a block
+  apart from the paragraph above it. Dropping them keeps a flag legend tight
+  against its introducing line; an author wanting the break writes the bare
+  marker, which splits the chunk in two and separates the paragraphs that way.
   """
   return '\n'.join(line for line in markdown.split('\n') if line.strip())
 
@@ -1042,7 +1210,8 @@ def _render(chunk: ProseChunk, markdown: str) -> Sequence[str]:
   prefix = ' ' * chunk.indent
   lines = [line.rstrip() for line in markdown.split('\n')]
   if chunk.kind is ChunkKind.COMMENT:
-    return [prefix + ('# ' + line if line else '#') for line in lines]
+    marker = chunk.comment_marker
+    return [prefix + (f'{marker} {line}' if line else marker) for line in lines]
 
   rendered = [prefix + line if line else '' for line in lines]
 
@@ -1065,9 +1234,10 @@ def reflow_source(
 ) -> str:
   """Reflow all comment and docstring prose in source to `line_width`.
 
-  Raises SyntaxError (or tokenize.TokenError) on Python that doesn't parse, and
-  ShellParseError when shfmt cannot report a shell source's comments; the caller
-  owns deciding what a source it cannot read means.
+  Raises SyntaxError (or tokenize.TokenError) on Python that doesn't parse,
+  ShellParseError when shfmt cannot report a shell source's comments, and
+  RustLexError on Rust ending inside a string or block comment; the caller owns
+  deciding what a source it cannot read means.
   """
   # Any carriage return skips the whole file rather than corrupting it: a CRLF
   # file would come back with reflowed lines LF-only, mixing endings. This
@@ -1080,6 +1250,8 @@ def reflow_source(
   chunks: Sequence[ProseChunk]
   if language is Language.SHELL:
     chunks = _comment_chunks(_shell_comments(source), line_width)
+  elif language is Language.RUST:
+    chunks = _comment_chunks(_rust_comments(source), line_width)
   else:
     chunks = [
       *_comment_chunks(_full_line_comments(source), line_width),
@@ -1111,29 +1283,42 @@ def reflow_source(
   return '\n'.join(source_lines)
 
 
-def _discover_line_width(path: Path) -> int:
+def _discover_line_width(path: Path, language: Language) -> int:
   """The width to reflow a file's prose to: the width its project wraps code at.
 
-  Prose reads best wrapped where the surrounding code wraps, and ruff is asked
-  for that width rather than the configuration being read a second time here:
-  `--show-settings` reports what a real `ruff format` would use, so every
-  configuration file, `extend` chain, and user-level default is already
-  accounted for. Whenever ruff cannot answer — not installed, a configuration it
-  rejects, output without the setting in it — the 80-column house style stands
-  in.
+  Prose reads best wrapped where the surrounding code wraps, and the formatter
+  is asked for that width rather than its configuration being read a second time
+  here. For Python, ruff's `--show-settings` reports what a real `ruff format`
+  would use, so every configuration file, `extend` chain, and user-level default
+  is already accounted for. Whenever the formatter cannot answer — not
+  installed, a configuration it rejects, output without the setting in it — the
+  80-column house style stands in.
 
-  Shell files ask the same question, since ruff resolves a width from the path's
-  directory rather than from what the file contains. That gives a project one
-  width across both languages, and a project with no ruff configuration at all
-  falls through to the same 80 columns it would have been given anyway.
+  Shell files ask ruff the same question, since ruff resolves a width from the
+  path's directory rather than from what the file contains. That gives a project
+  one width across both languages, and a project with no ruff configuration at
+  all falls through to the same 80 columns it would have been given anyway.
 
-  The call costs roughly 10 ms, paid on every edit rather than only on the ones
+  Rust files ask rustfmt, whose `--print-config current` resolves the
+  configuration formatting that path would use. A crate with no `rustfmt.toml`
+  gets rustfmt's own default of 100 rather than the house 80, matching where its
+  code wraps.
+
+  Either call costs 10 to 20 ms, paid on every edit rather than only on the ones
   that reflow something: the width is what decides whether a file is already
   wrapped, so it has to be known before that question can be asked.
   """
+  if language is Language.RUST:
+    # `current` reads the configuration for `path`; the `default` and `minimal`
+    # modes would instead write a configuration file over it.
+    command = ['rustfmt', '--print-config', 'current', str(path)]
+    width_pattern = _RUSTFMT_WIDTH_PATTERN
+  else:
+    command = ['ruff', 'check', '--show-settings', str(path)]
+    width_pattern = _RUFF_WIDTH_PATTERN
   try:
     result = subprocess.run(
-      ['ruff', 'check', '--show-settings', str(path)],
+      command,
       text=True,
       capture_output=True,
       env=_tool_environment(),
@@ -1144,15 +1329,15 @@ def _discover_line_width(path: Path) -> int:
       timeout=3,
     )
   except (OSError, subprocess.TimeoutExpired, UnicodeDecodeError):
-    # No ruff on PATH, or a hang: reflow is best-effort, and a width it can
+    # No formatter on PATH, or a hang: reflow is best-effort, and a width it can
     # guess well enough must never block the edit loop.
     return DEFAULT_LINE_WIDTH
-  # `--show-settings` reports settings instead of running the check, so lint
-  # violations in the file leave the exit status at zero; a nonzero one means
-  # ruff could not resolve the settings at all.
+  # Both commands report settings instead of checking or formatting the file, so
+  # its own lint violations and syntax errors leave the exit status at zero; a
+  # nonzero one means the formatter could not resolve the settings at all.
   if result.returncode != 0:
     return DEFAULT_LINE_WIDTH
-  setting = _LINE_WIDTH_PATTERN.search(result.stdout)
+  setting = width_pattern.search(result.stdout)
   return int(setting['width']) if setting else DEFAULT_LINE_WIDTH
 
 
@@ -1173,16 +1358,17 @@ def reflow_file(
     # Unreadable file (permissions, or it vanished between the is_file check and
     # here): reflow is best-effort, never a blocker.
     return False
-  line_width = _discover_line_width(path)
+  line_width = _discover_line_width(path, language)
   try:
     updated = reflow_source(
       source, format_comment_markdown, line_width, language
     )
-  except (SyntaxError, tokenize.TokenError, ShellParseError):
+  except (SyntaxError, tokenize.TokenError, ShellParseError, RustLexError):
     # Mid-turn edits pass through broken states, so a quiet skip is the correct
     # contract here: the real syntax errors are reported at Stop, by ruff for
-    # Python and by shfmt and shellcheck for shell. ShellParseError also covers
-    # an absent shfmt, which likewise leaves the file as the author wrote it.
+    # Python, by shfmt and shellcheck for shell, and by rustfmt for Rust.
+    # ShellParseError also covers an absent shfmt, which likewise leaves the
+    # file as the author wrote it.
     return False
   if updated == source:
     return False
@@ -1214,6 +1400,8 @@ def _language_of(path: Path) -> Language | None:
   """The language to read a path as; None for a file this hook never reflows."""
   if path.suffix == '.py':
     return Language.PYTHON
+  if path.suffix == '.rs':
+    return Language.RUST
   if path.suffix in _SHELL_SUFFIXES or path.name in _SHELL_FILENAMES:
     return Language.SHELL
   return None

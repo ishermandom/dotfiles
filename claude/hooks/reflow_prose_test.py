@@ -15,6 +15,7 @@ from reflow_prose import (
   Language,
   MarkdownFormatter,
   PrettierError,
+  RustLexError,
   ShellParseError,
   main,
   reflow_file,
@@ -363,9 +364,8 @@ def test_prose_resumes_reflowing_below_an_indented_block() -> None:
   )
 
 
-def test_a_fence_keeps_its_indented_content_in_one_chunk() -> None:
-  """Fenced content is often indented, and a split would break the fence."""
-  calls, counting_fill = _make_counting_formatter()
+def test_prose_above_a_fence_reflows_while_the_fence_stays_verbatim() -> None:
+  """A fence ends the chunk above it and keeps its indented content as is."""
   source = (
     '# ragged intro one\n'
     '# ragged intro two\n'
@@ -375,11 +375,25 @@ def test_a_fence_keeps_its_indented_content_in_one_chunk() -> None:
     'x = 1\n'
   )
 
-  reflow_source(source, counting_fill)
+  result = reflow_source(source, fill_markdown)
 
-  # One document spanning the whole fence, not a chunk split at its indent.
-  assert len(calls) == 1
-  assert 'indented fence content' in calls[0]
+  assert result == (
+    '# ragged intro one ragged intro two\n'
+    '# ```\n'
+    '#   indented fence content\n'
+    '# ```\n'
+    'x = 1\n'
+  )
+
+
+def test_a_fence_stays_verbatim_across_a_blank_comment_line() -> None:
+  """A bare `#` inside a fence is code, not a paragraph break ending the fence.
+
+  Were it a break, the lines below it would read as prose and merge.
+  """
+  source = '# ```\n# import widgets\n#\n# alpha = 1\n# beta = 2\n# ```\nx = 1\n'
+
+  assert reflow_source(source, fill_markdown) == source
 
 
 def test_docstring_indented_block_stays_verbatim() -> None:
@@ -973,7 +987,7 @@ def test_zsh_startup_file_is_recognized_by_name(tmp_path: Path) -> None:
   assert target.read_text() == '# alpha beta gamma delta\n'
 
 
-def test_a_file_of_neither_language_is_skipped(tmp_path: Path) -> None:
+def test_a_file_in_no_supported_language_is_skipped(tmp_path: Path) -> None:
   """Only the languages this hook can parse are touched."""
   target = tmp_path / 'notes.md'
   target.write_text('# alpha beta\n# gamma delta\n')
@@ -982,6 +996,200 @@ def test_a_file_of_neither_language_is_skipped(tmp_path: Path) -> None:
 
   # A markdown heading, not comment prose — prettier owns this file elsewhere.
   assert target.read_text() == '# alpha beta\n# gamma delta\n'
+
+
+# --- Rust comment reflow ---
+
+
+def _reflow_rust(source: str) -> str:
+  """Reflow Rust source at the house width, through the test's formatter."""
+  return reflow_source(source, fill_markdown, 80, Language.RUST)
+
+
+@pytest.mark.parametrize('marker', ['//', '///', '//!'])
+def test_ragged_rust_comment_lines_merge_under_their_marker(
+  marker: str,
+) -> None:
+  """Plain, outer doc, and inner doc comments all refill as prose."""
+  source = f'{marker} alpha beta\n{marker} gamma delta\nfn f() {{}}\n'
+
+  result = _reflow_rust(source)
+
+  assert result == f'{marker} alpha beta gamma delta\nfn f() {{}}\n'
+
+
+def test_overlong_doc_comment_wraps_under_its_marker() -> None:
+  """The wider `/// ` prefix counts against the width like `# ` does."""
+  source = (
+    '/// This doc comment is written as one very long line that runs well past'
+    ' the eighty column limit and therefore needs wrapping.\n'
+    'fn f() {}\n'
+  )
+
+  result = _reflow_rust(source)
+
+  # Every line but the trailing `fn f() {}` and the empty one after it.
+  comment_lines = result.split('\n')[:-2]
+  assert len(comment_lines) == 2
+  assert all(line.startswith('/// ') for line in comment_lines)
+  assert all(len(line) <= 80 for line in comment_lines)
+
+
+def test_a_doc_comment_does_not_merge_into_a_plain_one_beside_it() -> None:
+  """Merging would move prose into or out of the rendered documentation."""
+  source = '/// alpha beta\n// gamma delta\nfn f() {}\n'
+
+  assert _reflow_rust(source) == source
+
+
+def test_a_doctest_keeps_its_blank_line_and_its_code_lines() -> None:
+  """The bare `///` inside the fence is part of the example, not a break."""
+  source = (
+    '/// ```\n'
+    '/// use widgets::Widget;\n'
+    '///\n'
+    '/// let alpha = 1;\n'
+    '/// let beta = 2;\n'
+    '/// ```\n'
+    'fn f() {}\n'
+  )
+
+  assert _reflow_rust(source) == source
+
+
+def test_comment_text_inside_a_string_is_left_alone() -> None:
+  """String contents are data, however much they look like comments."""
+  source = 'let s = "\n// alpha beta\n// gamma delta";\n'
+
+  assert _reflow_rust(source) == source
+
+
+def test_quotes_inside_a_raw_string_close_nothing() -> None:
+  """A raw string ends only at `"#`, so the quotes inside it close nothing.
+
+  Read as an ordinary string, the first two quotes would pair up and expose the
+  comment-shaped lines to reflow.
+  """
+  source = 'let s = r#"\n"\n// alpha beta\n// gamma delta\n"\n"#;\n'
+
+  assert _reflow_rust(source) == source
+
+
+def test_a_raw_strings_trailing_backslash_escapes_nothing() -> None:
+  """`r"C:\\"` ends at its quote, so the comments below it are comments."""
+  source = 'let path = r"C:\\";\n// alpha beta\n// gamma delta\n'
+
+  result = _reflow_rust(source)
+
+  assert result == 'let path = r"C:\\";\n// alpha beta gamma delta\n'
+
+
+def test_a_quote_in_a_character_literal_opens_no_string() -> None:
+  """`'"'` is one character, so the comments below it are comments."""
+  source = "let quote = '\"';\n// alpha beta\n// gamma delta\n"
+
+  result = _reflow_rust(source)
+
+  assert result == "let quote = '\"';\n// alpha beta gamma delta\n"
+
+
+def test_a_lifetime_is_not_a_character_literal() -> None:
+  """Read as quotes, the two lifetimes would enclose the comments between."""
+  source = "fn f<'a>() {}\n// alpha beta\n// gamma delta\nfn g<'b>() {}\n"
+
+  result = _reflow_rust(source)
+
+  assert result == "fn f<'a>() {}\n// alpha beta gamma delta\nfn g<'b>() {}\n"
+
+
+def test_comment_text_inside_a_nested_block_comment_is_left_alone() -> None:
+  """Block comments nest, so the first `*/` closes only the inner one."""
+  source = '/* outer /* inner */\n// alpha beta\n// gamma delta\n*/\n'
+
+  assert _reflow_rust(source) == source
+
+
+def test_rust_trailing_comment_is_left_alone() -> None:
+  """Reflowing a comment that follows code would move it off its statement."""
+  source = (
+    'let x = 1; // a trailing comment written long enough that it runs past'
+    ' the eighty column limit\n'
+  )
+
+  assert _reflow_rust(source) == source
+
+
+@pytest.mark.parametrize(
+  'source',
+  [
+    'let s = "\n// alpha beta\n// gamma delta\n',
+    'let s = r#"\n// alpha beta\n// gamma delta\n',
+    '/* open\n// alpha beta\n// gamma delta\n',
+  ],
+  ids=['string', 'raw string', 'block comment'],
+)
+def test_rust_ending_inside_a_literal_propagates(source: str) -> None:
+  """Past an unclosed literal, comments and data can't be told apart."""
+  with pytest.raises(RustLexError):
+    _reflow_rust(source)
+
+
+def test_broken_rust_file_is_left_untouched(tmp_path: Path) -> None:
+  """Mid-turn edits pass through broken states; reflow must not block them."""
+  target = tmp_path / 'lib.rs'
+  source = 'let s = "\n// alpha beta\n// gamma delta\n'
+  target.write_text(source)
+
+  changed = reflow_file(target, fill_markdown, Language.RUST)
+
+  assert not changed
+  assert target.read_text() == source
+
+
+def test_a_crates_max_width_sets_the_rust_reflow_width(tmp_path: Path) -> None:
+  """Rust prose wraps where rustfmt says that crate's code wraps.
+
+  Runs the real `rustfmt`. The width is one rustfmt would never pick on its own
+  — neither its default of 100 nor the house 80 — so only a width actually read
+  out of the configuration passes.
+  """
+  (tmp_path / 'rustfmt.toml').write_text('max_width = 90\n')
+  target = tmp_path / 'lib.rs'
+  target.write_text('// ' + 'word ' * 25 + '\n')
+
+  changed = reflow_file(target, fill_markdown, Language.RUST)
+
+  assert changed
+  widest = max(len(line) for line in target.read_text().split('\n'))
+  assert 80 < widest <= 90
+
+
+def test_configuration_rustfmt_rejects_falls_back_to_the_default_width(
+  tmp_path: Path,
+) -> None:
+  """A width rustfmt cannot resolve leaves the house style standing."""
+  # Truncated TOML: rustfmt exits nonzero and reports no configuration at all.
+  (tmp_path / 'rustfmt.toml').write_text('max_width = \n')
+  target = tmp_path / 'lib.rs'
+  target.write_text('// ' + 'word ' * 25 + '\n')
+
+  changed = reflow_file(target, fill_markdown, Language.RUST)
+
+  assert changed
+  # The 80-column default, not rustfmt's own 100.
+  widest = max(len(line) for line in target.read_text().split('\n'))
+  assert 60 < widest <= 80
+
+
+@pytest.mark.slow
+def test_rust_file_is_recognized_by_its_suffix(tmp_path: Path) -> None:
+  """Dispatch sends a `.rs` file to the Rust lexer."""
+  target = tmp_path / 'lib.rs'
+  target.write_text('// alpha beta\n// gamma delta\n')
+
+  main(['reflow_prose.py', str(target)])
+
+  assert target.read_text() == '// alpha beta gamma delta\n'
 
 
 # --- third-party checkouts ---
@@ -1332,26 +1540,6 @@ def test_prettier_merging_a_listing_falls_back_to_plain_fill() -> None:
     '#       make install\n'
     'x = 1\n'
   )
-
-
-@pytest.mark.slow
-def test_a_fenced_copy_does_not_excuse_a_merged_listing() -> None:
-  """The same text elsewhere is not the block; both sides are read alike."""
-  source = (
-    '# - Set up the thing, with wording long enough that this line certainly'
-    ' needs to be rewrapped by prettier:\n'
-    '#       make install\n'
-    '# ```\n'
-    '#       make install\n'
-    '# ```\n'
-    'x = 1\n'
-  )
-
-  result = reflow_source(source, run_prettier)
-
-  # The listing holds its line even though an identical one sits in the fence
-  # below it, which a check reading only the output would have accepted.
-  assert '#   be rewrapped by prettier:\n#       make install\n' in result
 
 
 @pytest.mark.slow

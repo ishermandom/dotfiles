@@ -2,19 +2,6 @@
 
 Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` dropped
 
-- [ ] **Teach `reflow_prose.py` to reflow Rust comments** — the hook reflows
-      only Python and shell, and stable rustfmt doesn't wrap comments, so Rust
-      comment prose is wrapped by hand.
-  - Rationale: queued 2026-11-16, while hand-wrapping comments in the
-    acrostic-club fork.
-  - Note: a Rust project sets its line width in `rustfmt.toml` as `max_width`,
-    which defaults to 100.
-  - Note: the hook skips acrostic-club as a third-party repo, so Rust support
-    alone won't reach that fork. Whether the hook should own the third-party
-    check at all is a separate question the user is weighing; leave the check as
-    it is.
-  - Worktree: reflow-rust
-
 - [ ] **Stop `reflow_prose.py` stranding the closing quotes of a one-line
       docstring** — when a line exceeds 80 only because the trailing `"""`
       counts, the hook moves those three characters to a line of their own,
