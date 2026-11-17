@@ -932,21 +932,6 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     necessity check turns on whether markdown.md's "Record decisions, not
     operative details" already covers the case.
 
-- [ ] **Record upstream's preference for owned data over lifetimes in structs**
-      — in the code style section of `acrostic-club/CLAUDE.local.md`. Reviewing
-      pull request 34, upstream's owner flagged `Run<'a>`: they clone values
-      rather than give a struct a lifetime, and put a value inside `Rc` or `Arc`
-      when cloning it costs enough to matter, since too many lifetimes in
-      structs leave you arguing with the borrow checker.
-  - Note: the acrostic-club checkout reaches this file through a symlink into
-    the dotfiles main checkout, so sessions there read `main`'s copy, not the
-    worktree's.
-  - Note: the owner's other point from that review, that mutation passes over
-    committed puzzles must stay nominally consistent with regenerating them from
-    scratch, goes in `generator/src/maintenance/mod.rs` through a separate lane.
-    Keep it out of this rule.
-  - Worktree: acrostic-lifetimes-rule
-
 ---
 
 ## Recurring maintenance
