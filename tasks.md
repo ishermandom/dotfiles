@@ -15,6 +15,18 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     it is.
   - Worktree: reflow-rust
 
+- [ ] **Let `reflow_prose.py` reflow any file named on its command line** — the
+      script skips third-party repos however it runs, so a manual run in one
+      silently does nothing. Keep the skip when the script runs as a hook.
+  - Rationale: queued 2026-11-16, after finding that a manual run in the
+    acrostic-club fork would do nothing.
+  - Open question: the mechanism — a wrapper script registered as the hook, or
+    the script itself telling a hook run from a command-line run.
+  - Note: rewrapping a whole file, rather than only the comments an edit
+    touched, is fine as it is; the task covers only where the skip applies.
+  - Note: the `reflow-rust` lane edits the same script concurrently.
+  - Worktree: reflow-hook-skip
+
 - [ ] **Stop `reflow_prose.py` stranding the closing quotes of a one-line
       docstring** — when a line exceeds 80 only because the trailing `"""`
       counts, the hook moves those three characters to a line of their own,
