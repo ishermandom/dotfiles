@@ -3,6 +3,8 @@
 #
 # Tests for the prose reflow hook.
 
+import io
+import json
 import subprocess
 import textwrap
 import tokenize
@@ -994,8 +996,13 @@ def _make_checkout(directory: Path, origin_url: str) -> None:
   )
 
 
+def _make_hook_payload(path: Path) -> io.StringIO:
+  """The JSON an Edit or Write hook reads on stdin, naming the edited path."""
+  return io.StringIO(json.dumps({'tool_input': {'file_path': str(path)}}))
+
+
 @pytest.mark.slow
-def test_a_file_in_someone_elses_checkout_is_left_untouched(
+def test_the_hook_leaves_a_file_in_someone_elses_checkout_untouched(
   tmp_path: Path,
 ) -> None:
   """Another project's comment prose stays as its author wrapped it."""
@@ -1003,15 +1010,29 @@ def test_a_file_in_someone_elses_checkout_is_left_untouched(
   target = tmp_path / 'module.py'
   target.write_text('# alpha beta\n# gamma delta\n')
 
-  main(['reflow_prose.py', str(target)])
+  main(['reflow_prose.py'], stdin=_make_hook_payload(target))
 
   assert target.read_text() == '# alpha beta\n# gamma delta\n'
 
 
 @pytest.mark.slow
-def test_a_file_in_an_owned_checkout_is_reflowed(tmp_path: Path) -> None:
+def test_the_hook_reflows_a_file_in_an_owned_checkout(tmp_path: Path) -> None:
   """The mirror case: an owned remote leaves the hook doing its usual work."""
   _make_checkout(tmp_path, 'git@github.com:ishermandom/dotfiles.git')
+  target = tmp_path / 'module.py'
+  target.write_text('# alpha beta\n# gamma delta\n')
+
+  main(['reflow_prose.py'], stdin=_make_hook_payload(target))
+
+  assert target.read_text() == '# alpha beta gamma delta\n'
+
+
+@pytest.mark.slow
+def test_a_named_file_in_someone_elses_checkout_is_reflowed(
+  tmp_path: Path,
+) -> None:
+  """A path named on the command line asks for reflow wherever it sits."""
+  _make_checkout(tmp_path, 'https://github.com/zed-industries/zed.git')
   target = tmp_path / 'module.py'
   target.write_text('# alpha beta\n# gamma delta\n')
 

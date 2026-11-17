@@ -119,6 +119,7 @@ import time
 import tokenize
 from collections.abc import Callable, Iterator, Mapping, Sequence
 from pathlib import Path
+from typing import TextIO
 
 # Width for a file whose project states none — the 80-column house style.
 DEFAULT_LINE_WIDTH = 80
@@ -1194,10 +1195,10 @@ def reflow_file(
   return True
 
 
-def _path_from_hook_payload() -> Path | None:
+def _path_from_hook_payload(stdin: TextIO) -> Path | None:
   """Read the edited file's path from the hook JSON payload on stdin."""
   try:
-    payload = json.load(sys.stdin)
+    payload = json.load(stdin)
   except json.JSONDecodeError:
     return None
   if not isinstance(payload, dict):
@@ -1221,7 +1222,7 @@ def _language_of(path: Path) -> Language | None:
 def _is_third_party_repo(path: Path) -> bool:
   """Whether a path sits in a checkout of someone else's project.
 
-  Another project's comment prose is theirs to wrap, so a file there is left as
+  Another project's comment prose is theirs to wrap, so a hook run leaves it as
   its author wrote it. The judgment itself lives in `is-third-party-repo.sh`
   beside this file — shared with the formatting hooks, which ask the same
   question — and `resolve()` reaches it through the `~/.claude` symlink.
@@ -1244,11 +1245,13 @@ def _is_third_party_repo(path: Path) -> bool:
   return result.returncode == 0
 
 
-def main(argv: Sequence[str]) -> int:
+def main(argv: Sequence[str], stdin: TextIO = sys.stdin) -> int:
   """Reflow the given paths, or the hook payload's path when none are given."""
   paths = [Path(argument) for argument in argv[1:]]
-  if not paths:
-    payload_path = _path_from_hook_payload()
+  # A run naming no paths is the hook, which passes its payload on stdin.
+  is_hook_run = not paths
+  if is_hook_run:
+    payload_path = _path_from_hook_payload(stdin)
     paths = [payload_path] if payload_path else []
 
   # A prettier failure never propagates here: _reflow_chunks degrades to the
@@ -1257,9 +1260,9 @@ def main(argv: Sequence[str]) -> int:
     language = _language_of(path)
     if language is None or not path.is_file():
       continue
-    # Checked per path rather than once, since the paths given need not share a
-    # repo — the dotfiles checkout and the session's are routinely both in play.
-    if _is_third_party_repo(path):
+    # The hook fires unasked on every edit, so only a hook run skips someone
+    # else's checkout; a path named on the command line is an explicit request.
+    if is_hook_run and _is_third_party_repo(path):
       continue
     reflow_file(path, run_prettier, language)
   return 0
