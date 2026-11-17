@@ -68,10 +68,16 @@ The user opens every pull request (PR) from their main account, so never run
    folder, which holds the scratchpad and `$CLAUDE_JOB_DIR/tmp`. Git ignores
    `.claude/` through `.git/info/exclude`.
 
-   Keep the description to the essence of the change: enough for upstream's
-   reviewer to grasp what the change does and why. The pull request shows its
-   commits alongside, so leave detail to their messages rather than restating it
-   in the description.
+   Keep the description to the main change: what it does and why, usually in a
+   paragraph or two. The pull request shows its commits alongside, so leave
+   everything else to their messages, even ideas that are true and relevant.
+
+   Before keeping an idea in the description, ask whether upstream's reviewer
+   needs it to grasp the main change. Ideas that usually fail this test include
+   where the tests live, side effects unlikely to matter, and tidy-ups or
+   follow-up tasks riding along on the branch. When shortening a draft, cut the
+   ideas that fail rather than just rewording the ones that pass: rewording
+   saves words but still leaves the reviewer every idea to read.
 
    Write each paragraph of the description on a single line rather than wrapping
    at 80 columns: GitHub shows every newline in a pull request description as a
