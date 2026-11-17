@@ -68,6 +68,11 @@ The user opens every pull request (PR) from their main account, so never run
    folder, which holds the scratchpad and `$CLAUDE_JOB_DIR/tmp`. Git ignores
    `.claude/` through `.git/info/exclude`.
 
+   Keep the description to the essence of the change: enough for upstream's
+   reviewer to grasp what the change does and why. The pull request shows its
+   commits alongside, so leave detail to their messages rather than restating it
+   in the description.
+
    Write each paragraph of the description on a single line rather than wrapping
    at 80 columns: GitHub shows every newline in a pull request description as a
    line break, unlike in a Markdown file. Note that Prettier does not run in
