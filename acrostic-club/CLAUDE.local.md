@@ -132,6 +132,9 @@ In this fork, a lane lands when upstream merges its pull request, not through
 - **Follow upstream's conventions where they apply**:
   - never add a license header; the repository's `LICENSE` covers its files
   - write plain `//` comments, never `///` doc comments
+  - avoid lifetime parameters on structs, since too many make the borrow checker
+    hard to satisfy: clone values into the struct instead, wrapping a value too
+    costly to clone in `Rc` or `Arc`
 - **In new code, follow the user's preferences over upstream's habits**:
   - `.expect("…")` with a message stating the invariant that should hold, never
     a bare `.unwrap()`
