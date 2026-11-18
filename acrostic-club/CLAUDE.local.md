@@ -169,6 +169,18 @@ In this fork, a lane lands when upstream merges its pull request, not through
   nothing. When the generator can't read `quotes.csv.br` or another file under
   `submodules/`, the worktree has missed this step.
 
+- **When removing a worktree reports uncommitted changes inside `submodules/`**,
+  as `ExitWorktree` does: the changes are the data clones from the step above.
+  Run the command below from the worktree; it compares the clones with the main
+  checkout's copies, skipping the `.git` link file that only the main checkout's
+  copies carry. When it prints nothing, discard the clones without asking the
+  user. When it prints a difference, ask the user first: the branch may have
+  changed the data.
+
+  ```bash
+  diff -rq --exclude=.git submodules /Users/Shared/code/acrostic-club/submodules
+  ```
+
 - **Before running a `global` stage in a worktree, or when the generator can't
   open a file under `build/`**: run
   `/Users/Shared/code/acrostic-club/generator/clone-build.sh` from inside the
