@@ -143,8 +143,11 @@ user's lines carry `git config user.email` as their author.
 - **In new code, follow the user's preferences over upstream's habits**:
   - `.expect("…")` with a message stating the invariant that should hold, never
     a bare `.unwrap()`
-  - inline named format arguments such as `{elapsed:?}`, never positional `{}`;
-    bind an expression to a descriptive local first
+  - inline named format arguments such as `{elapsed:?}` for plain variables, and
+    a positional `{}` for a short expression such as `e.message`, mixing the two
+    in one string where needed: `println!("{answer}: {}", entry.clue)`. Bind an
+    expression to a local only when the local's name says something the
+    expression doesn't, never just to inline it
   - full-word names
 - **Put tests for new code in the crate's `tests/` directory**, which reaches
   the crate through its library target.
