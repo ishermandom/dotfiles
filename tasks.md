@@ -63,6 +63,13 @@ Status key: `[ ]` not started · `[~]` in progress · `[x]` done · `[-]` droppe
     that which version gates a repo is now deterministic, which is what makes
     aligning three tools on one standard tractable at all.
 
+- [ ] **Delete the retired `~/.venvs/default` by 2027-01-01**
+      {#delete-retired-venvs} — each account's copy was renamed to
+      `~/.venvs/default.retired` rather than deleted, in case something still
+      reached for it. Delete both once nothing has, or sooner.
+  - Note: Claude can delete only the sandbox account's copy; the user's own
+    account's is the user's to delete.
+
 - [ ] **Rewrap Python prose in all repos, one repo at a time** — the reflow hook
       (`claude/hooks/reflow_prose.py`) rewraps a file's comment and docstring
       prose only when that file is next edited, so files untouched since the
