@@ -66,6 +66,27 @@ security add-generic-password -s "Claude Code-credentials" -a tester -w secret \
 output=$(run_audit)
 expect_equal "stays silent" "$output" ""
 
+begin_case write_check_present
+keychain=$(make_keychain)
+security add-generic-password -s "Claude Code-credentials" -a tester -w secret \
+  "$keychain"
+# Claude Code saves this entry itself before refreshing its login, to prove the
+# keychain takes a write.
+security add-generic-password -s "Claude Code-write-check" -a tester \
+  -w "not a secret" "$keychain"
+output=$(run_audit)
+expect_equal "accepts Claude Code's write check" "$output" ""
+
+begin_case write_check_alone_leaves_credential_missing
+keychain=$(make_keychain)
+# The write check shares the credential's `Claude Code-` prefix, but only the
+# credential itself satisfies the audit.
+security add-generic-password -s "Claude Code-write-check" -a tester \
+  -w "not a secret" "$keychain"
+output=$(run_audit)
+expect "reports the credential missing" \
+  contains "$output" "is missing Claude Code-credentials"
+
 begin_case unexpected_service
 keychain=$(make_keychain)
 security add-generic-password -s "Claude Code-credentials" -a tester -w secret \

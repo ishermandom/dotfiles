@@ -7,8 +7,8 @@
 # default keychain. This account is reached over ssh, where its login keychain
 # stays locked, so Claude has nowhere it can write — without the dedicated
 # keychain below, every session re-prompts for /login and Remote Control fails.
-# Unlock it at login, and warn if Claude's credential goes missing or any other
-# entry appears.
+# Unlock it at login, and warn if Claude's credential goes missing or an entry
+# other than Claude Code's own appears.
 #
 # Note: one-time setup on a new machine — create the keychain with an empty
 # password, keep it unlocked, and make it the default write target:
@@ -66,6 +66,10 @@ claude_keychain_init() {
   local keychain_path="$HOME/Library/Keychains/claude-code.keychain-db"
   local required_service="Claude Code-credentials"
   local required_entry="password: $required_service"
+  # Claude Code's write test: before refreshing its login, Claude Code saves the
+  # fixed text "not a secret" under this name to prove the keychain takes a
+  # write, then leaves the entry in place.
+  local write_check_entry="password: Claude Code-write-check"
   # `-a` declares these as arrays, holding one element per keychain entry.
   local -a entries claude_entries unexpected_entries
 
@@ -90,10 +94,11 @@ claude_keychain_init() {
   entries=(${(f)"$(claude_keychain_entries "$keychain_path")"})
 
   # `${array:#pattern}` drops the elements matching the pattern, and the `M`
-  # flag keeps them instead, so these two are complements — one split of the
-  # entry list answers both of the questions below.
+  # flag keeps them instead. Only the credential is required, but the write
+  # check is expected too, so the `|` alternation drops either one from the
+  # unexpected list.
   claude_entries=(${(M)entries:#$required_entry})
-  unexpected_entries=(${entries:#$required_entry})
+  unexpected_entries=(${entries:#($required_entry|$write_check_entry)})
 
   # A missing credential means the login did not persist — surface that here
   # rather than leave the next session to meet a surprise /login prompt.
@@ -107,7 +112,8 @@ claude_keychain_init() {
   # stores without naming a keychain, of every kind — a certificate or key as
   # readily as a password. Logging the account into a desktop session is one such
   # source, since macOS's own services then store entries here too. Fix an
-  # arrival at its source rather than adding it to an allowlist here.
+  # arrival at its source rather than accepting it above: the write check earns
+  # its place only by holding no secret.
   if ((${#unexpected_entries} > 0)); then
     echo "WARNING: $keychain_path holds unexpected entries" >&2
     echo "  this keychain unlocks with an empty password," \
