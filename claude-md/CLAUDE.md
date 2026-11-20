@@ -440,6 +440,12 @@ Every session, without being asked:
   - A cross-reference earns its place only where the second location needs the
     first to be intelligible. Prefer naming the symbol or section over restating
     a summary of it — a summary is a copy too, and drifts like one.
+  - **Always state a definition's contract directly in its docstring**, briefly
+    and with an example, even when it delegates the work to another symbol.
+    Watch for phrases such as "as `X` describes" or "as `X` does" standing in
+    for the contract. That contract is the definition's own fact rather than a
+    copy of `X`'s, so the summary rule above doesn't apply. Point at `X` only
+    for detail beyond the brief statement.
 
 ### Cross-references {#cross-references}
 
