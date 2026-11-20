@@ -129,6 +129,11 @@ In this fork, a lane lands when upstream merges its pull request, not through
 
 ## Code style
 
+In this section, upstream's code means code that the upstream owner wrote. Code
+from the user's earlier pull requests, written with Claude, stays the user's own
+even after upstream merges it. To tell the two apart, run `git blame -e`: the
+user's lines carry `git config user.email` as their author.
+
 - **Follow upstream's conventions where they apply**:
   - never add a license header; the repository's `LICENSE` covers its files
   - write plain `//` comments, never `///` doc comments
@@ -143,8 +148,9 @@ In this fork, a lane lands when upstream merges its pull request, not through
   - full-word names
 - **Put tests for new code in the crate's `tests/` directory**, which reaches
   the crate through its library target.
-- **Leave existing code outside the change as it is**: don't reformat or tidy it
-  in passing. `tasks.md` queues the codebase-wide tidy-ups.
+- **Leave upstream's code outside the change as it is**: don't reformat or tidy
+  it in passing. `tasks.md` queues the codebase-wide tidy-ups. The user's own
+  code may be improved in passing.
 - **Format Rust by running `~/.claude/scripts/quiet-rustfmt.sh`** from the
   repository root. The end-of-turn formatter skips this fork as someone else's
   project, so nothing else formats the code. rustfmt leaves comments alone, so
