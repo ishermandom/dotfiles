@@ -322,6 +322,43 @@ def test_character_rewrites_fall_back_to_the_plain_filler() -> None:
   assert result == '# Accepts *args and **kwargs.\nx = 1\n'
 
 
+# --- quoted text examples ---
+
+
+def test_quoted_text_example_stays_on_one_line() -> None:
+  """A quoted example moves to the next line rather than breaking inside."""
+  # Filled word by word, the first line would end at `"hello`, splitting the
+  # example across the break.
+  source = '# A greeting such as "hello world" stays together.\nx = 1\n'
+
+  result = reflow_source(source, fill_markdown, 32)
+
+  assert (
+    result == '# A greeting such as\n# "hello world" stays together.\nx = 1\n'
+  )
+
+
+def test_quoted_text_wider_than_a_line_still_wraps() -> None:
+  """An example no line could hold breaks like prose rather than overflowing."""
+  source = '# See "one two three four five six" now.\nx = 1\n'
+
+  result = reflow_source(source, fill_markdown, 20)
+
+  assert all(len(line) <= 20 for line in result.split('\n'))
+
+
+def test_quotation_mark_in_a_code_span_does_not_pair_with_one_outside() -> None:
+  """The quotation mark inside `x"` leaves the example after it intact."""
+  # Paired with the quotation mark that opens the example, the one inside the
+  # code span would leave the example unprotected, ending the first line at
+  # `"hello`.
+  source = '# Run `x"` and then "hello world" here.\nx = 1\n'
+
+  result = reflow_source(source, fill_markdown, 27)
+
+  assert result == '# Run `x"` and then\n# "hello world" here.\nx = 1\n'
+
+
 # --- indented blocks ---
 
 
@@ -1461,6 +1498,18 @@ def test_swallowed_separator_falls_back_to_per_chunk_calls() -> None:
 
 
 # --- integration with real prettier ---
+
+
+@pytest.mark.slow
+def test_prettier_keeps_a_quoted_text_example_on_one_line() -> None:
+  """prettier, like the filler, never breaks inside a quoted example."""
+  source = '# A greeting such as "hello world" stays together.\nx = 1\n'
+
+  result = reflow_source(source, run_prettier, 32)
+
+  assert (
+    result == '# A greeting such as\n# "hello world" stays together.\nx = 1\n'
+  )
 
 
 @pytest.mark.slow

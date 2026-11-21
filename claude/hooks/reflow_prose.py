@@ -52,6 +52,12 @@
 #   two spaces. One shape does not: an ordered list numbered from anything but
 #   `1.` merges into the paragraph above, since only `1.` may interrupt a
 #   paragraph.
+# - A text example in a comment, set off by straight quotation marks as in
+#   "some text", stays on one line whenever it fits on one, the same way
+#   prettier keeps a backticked code span whole. An example wider than the line,
+#   or one already split across two lines, wraps like any prose, and docstrings
+#   are left out: each opens with its own quotation marks, which would throw off
+#   the pairing.
 # - An indented line — in a comment or a docstring — is a verbatim block (a
 #   usage listing, a shell setup recipe) rather than prose to refill, so it
 #   keeps its shape without needing a blank line above it. Markdown would
@@ -175,6 +181,21 @@ MarkdownFormatter = Callable[[str, int], str]
 # paying a subprocess start per chunk. As an HTML comment the sentinel forms its
 # own markdown paragraph and passes through prettier verbatim.
 _CHUNK_SEPARATOR = '<!-- reflow-chunk-boundary -->'
+
+# Stands in for each space inside a quoted text example while a comment chunk
+# reflows. Neither engine takes it for whitespace, so neither breaks a line
+# there, and the example fills as a single word. It is a private-use character,
+# which no text should hold by accident.
+_QUOTED_SPACE = chr(0xE000)
+
+# A quoted text example: a straight quotation mark, then anything short of
+# another one, a backtick, or a line break, then the closing quotation mark.
+# Excluding backticks keeps an example from reaching into or out of a code span,
+# whose quotation marks are code, as in `"Go,"he said`.
+# TODO: Rejoin an example that an earlier reflow split across two lines. A span
+# crossing a line break needs guarding against reaching into a list item, an
+# indented block, or a fence.
+_QUOTED_TEXT_PATTERN = re.compile(r'"[^"`\n]*"')
 
 # Directive names that mark a whole-line comment as machine configuration
 # (linter suppressions, formatter and type-checker switches), not prose. The
@@ -1226,6 +1247,38 @@ def _render(chunk: ProseChunk, markdown: str) -> Sequence[str]:
   return [*rendered, prefix + quote]
 
 
+def _join_quoted_text(chunk: ProseChunk) -> ProseChunk:
+  """Swap `_QUOTED_SPACE` for the spaces inside a comment chunk's examples.
+
+  Each quoted text example then fills as a single word. An example wider than
+  the chunk's width keeps its spaces, since no line could hold it whole. A
+  docstring chunk comes back unchanged, and so does a comment chunk whose own
+  text already holds `_QUOTED_SPACE`: `_restore_quoted_spaces` couldn't tell
+  that text's placeholders from the ones swapped in here.
+  """
+  if chunk.kind is not ChunkKind.COMMENT or _QUOTED_SPACE in chunk.markdown:
+    return chunk
+  width = chunk.reflow_width()
+
+  def join(example: re.Match[str]) -> str:
+    text = example.group()
+    return text if len(text) > width else text.replace(' ', _QUOTED_SPACE)
+
+  joined = _QUOTED_TEXT_PATTERN.sub(join, chunk.markdown)
+  return dataclasses.replace(chunk, markdown=joined)
+
+
+def _restore_quoted_spaces(chunk: ProseChunk, markdown: str) -> str:
+  """Turn `_QUOTED_SPACE` back into spaces in `markdown`, reflowed from `chunk`.
+
+  Only a chunk whose own text holds no `_QUOTED_SPACE` was joined, so only then
+  does every one in the reflowed text stand for a space.
+  """
+  if _QUOTED_SPACE in chunk.markdown:
+    return markdown
+  return markdown.replace(_QUOTED_SPACE, ' ')
+
+
 def reflow_source(
   source: str,
   format_comment_markdown: MarkdownFormatter,
@@ -1257,15 +1310,24 @@ def reflow_source(
       *_comment_chunks(_full_line_comments(source), line_width),
       *_docstring_chunks(source, source_lines, ast.parse(source), line_width),
     ]
-  reflowed = _reflow_chunks(chunks, format_comment_markdown)
+  # Quoted text examples fill as single words, then get their spaces back.
+  joined_chunks = [_join_quoted_text(chunk) for chunk in chunks]
+  reflowed = [
+    _restore_quoted_spaces(chunk, markdown)
+    for chunk, markdown in zip(
+      chunks,
+      _reflow_chunks(joined_chunks, format_comment_markdown),
+      strict=True,
+    )
+  ]
 
   # Replace bottom-up so earlier line numbers stay valid as lengths change.
   by_position = sorted(
-    zip(chunks, reflowed, strict=True),
-    key=lambda pair: pair[0].first_line,
+    zip(chunks, joined_chunks, reflowed, strict=True),
+    key=lambda entry: entry[0].first_line,
     reverse=True,
   )
-  for chunk, markdown in by_position:
+  for chunk, joined_chunk, markdown in by_position:
     keeps_content = _preserves_content(chunk.markdown, markdown)
     if chunk.kind is ChunkKind.COMMENT and not keeps_content:
       # prettier rewrote a character (an escape, an emphasis marker), or read an
@@ -1273,7 +1335,7 @@ def reflow_source(
       # plainly instead, which sacrifices markdown-aware layout but keeps both
       # the characters and the shape. Docstrings already come from the filler,
       # so a second filler pass would just recompute the same text.
-      markdown = _fill_chunk(chunk)
+      markdown = _restore_quoted_spaces(chunk, _fill_chunk(joined_chunk))
       keeps_content = _preserves_content(chunk.markdown, markdown)
     if not keeps_content:
       continue
