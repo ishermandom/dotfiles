@@ -154,10 +154,12 @@ user's lines carry `git config user.email` as their author.
 - **Leave upstream's code outside the change as it is**: don't reformat or tidy
   it in passing. `tasks.md` queues the codebase-wide tidy-ups. The user's own
   code may be improved in passing.
-- **Format Rust by running `~/.claude/scripts/quiet-rustfmt.sh`** from the
-  repository root. The end-of-turn formatter skips this fork as someone else's
-  project, so nothing else formats the code. rustfmt leaves comments alone, so
-  wrap them by hand at `rustfmt.toml`'s 100 columns, not `rust.md`'s 80.
+- **Before committing, run the repo's two formatters; run them freely while
+  working too**: `~/.claude/scripts/quiet-rustfmt.sh`, run from the repository
+  root, formats the code, and `~/.claude/hooks/reflow_prose.py`, given the
+  edited files' paths, fills comment prose to `rustfmt.toml`'s 100 columns.
+  Neither runs on its own here: the end-of-turn formatter and the reflow hook
+  both skip this fork as someone else's project.
 
 ## Building and testing
 
