@@ -161,33 +161,29 @@ user's lines carry `git config user.email` as their author.
 
 ## Building and testing
 
-- **After entering a worktree, or starting a session in one**: run the command
-  below. The generator reads its data from the worktree's `submodules/` folders,
-  which start out empty; the command fills them with copy-on-write clones of the
-  main checkout's files. A plain `git worktree add` runs a `post-checkout` hook
-  that does the same, but Claude Code creates worktrees with git hooks switched
-  off. The command skips any folder that already holds files, so running it
-  again is harmless.
+- **When the generator can't read a file under `submodules/`**, such as
+  `quotes.csv.br`: clone that one file from the main checkout, running the
+  command below from inside the worktree with the file's path swapped in. A
+  worktree's `submodules/` folders start out empty, and most lanes never read
+  them, so leave the clones out of worktree setup: the user wants clones only
+  where needed. `-c` clones the file at almost no disk cost rather than copying
+  it.
 
   ```bash
-  /Users/Shared/code/acrostic-club/.git/hooks/post-checkout \
-    0000000000000000000000000000000000000000
+  /bin/cp -c /Users/Shared/code/acrostic-club/submodules/Quotes-500K/quotes.csv.br \
+    submodules/Quotes-500K/
   ```
-
-  The all-zeros argument marks the worktree as new; without it, the command does
-  nothing. When the generator can't read `quotes.csv.br` or another file under
-  `submodules/`, the worktree has missed this step.
 
 - **When removing a worktree reports uncommitted changes inside `submodules/`**,
   as `ExitWorktree` does: the changes are the data clones from the step above.
   Run the command below from the worktree; it compares the clones with the main
-  checkout's copies, skipping the `.git` link file that only the main checkout's
-  copies carry. When it prints nothing, discard the clones without asking the
-  user. When it prints a difference, ask the user first: the branch may have
-  changed the data.
+  checkout's copies, skipping the files that only the main checkout holds. When
+  it prints nothing, discard the clones without asking the user. When it prints
+  a difference, ask the user first: the branch may have changed the data.
 
   ```bash
-  diff -rq --exclude=.git submodules /Users/Shared/code/acrostic-club/submodules
+  diff -rq submodules /Users/Shared/code/acrostic-club/submodules \
+    | grep -v '^Only in /Users/Shared/code/acrostic-club/submodules'
   ```
 
 - **Before running a `global` stage in a worktree, or when the generator can't
